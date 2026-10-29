@@ -1,9 +1,9 @@
 # Release hardening checkpoint
 
 The user resumed release work after UI refinement. Native unsigned candidates passed
-CI on 2026-10-29 at commit `22200049600b12f3d41ed919d547de6941902bd6`.
-Do not publish, sign off readiness, commit Claude's unfinished work, or call this a
-production release. Baseline source: `c71cc3f`; initial implementation checkpoint: `dd1d33f`.
+CI on 2026-10-29 at the clean source checkpoint `f217f221a64904463b5e105c1b9fd74747f31772`.
+Do not publish, sign off readiness, or call this a production release. Earlier development
+history is preserved locally in `tmp/chemez-before-attribution-20261029.bundle`.
 Windows target updated to Windows 10 and Windows 11 x64, using one NSIS installer.
 Both versions require separate clean-machine installation, upgrade and uninstall evidence.
 Neither Windows target has been verified yet.
@@ -37,12 +37,16 @@ The unsigned DMG is an audit artifact, not an approved installer. The dependency
 still fell back from the staged app to root `node_modules`; verify/minimize the resulting
 ASAR before claiming package savings. No Windows/Apple Silicon installation result exists.
 The native unsigned workflow passed on all four jobs: macOS Intel, macOS Apple Silicon,
-Windows x64 and Linux x64. GitHub run: https://github.com/researchbyayan/ChemEZ/actions/runs/40887674975
+Windows x64 and Linux x64. Current checkpoint run: https://github.com/researchbyayan/ChemEZ/actions/runs/40893491087
 Packaged UI, frozen backend, dual-provider/image, and About smokes passed on the
-requested Mac/Windows targets. Test artifact ZIP download sizes: Mac Intel 185,915,627
-bytes; Mac Apple Silicon 178,488,282 bytes; Windows x64 180,459,676 bytes. These are
+requested Mac/Windows targets. Current test artifact ZIP download sizes: Mac Intel 185,925,885
+bytes; Mac Apple Silicon 178,491,074 bytes; Windows x64 180,471,980 bytes. These are
 unsigned test artifacts, not exact signed installer sizes. The signed release workflow
 and clean-machine tests have not run.
+
+GitHub `release-signing` and `release-approval` environments now require review by
+`researchbyayan`. No signing or notarization secrets are configured. The public workflow
+must remain idle until owner certificates are supplied and the remaining readiness gates pass.
 
 `release-config/readiness.json` is a deliberately unapproved template. Supply a separate
 owner-reviewed readiness artifact via `CHEMEZ_READINESS_FILE`, tied to the exact release
@@ -50,6 +54,6 @@ commit, to avoid a self-referential tracked commit hash. The draft workflow acce
 artifact only after all native candidate jobs pass; protected environments require owner
 approval. Public publication remains a separate owner action.
 
-Remaining gates: source freeze after Claude finishes; certificates and notarization;
+Remaining gates: certificates and notarization;
 minimum-OS clean-machine installation/upgrade/uninstall checks; live chemistry/image
 accuracy suite; dataset/source redistribution review; final size/security/packaged tests.

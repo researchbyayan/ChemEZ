@@ -1,110 +1,80 @@
 <div align="center">
 
-<img src="assets/icon.png" width="88" alt="ChemEZ — benzene and lightning logo">
+<img src="assets/readme-hero.svg" width="100%" alt="ChemEZ: See the chemistry. Ask, draw, and follow the electrons.">
 
-# ChemEZ
+<br>
 
-### Chemistry you can actually see.
+**A chemistry chat that draws what it explains.**
 
-Ask a question. See the structure. Follow the electrons.
-
-**[Downloads & releases](https://github.com/researchbyayan/ChemEZ/releases)** · **[Get started](#get-started)** · **[Build from source](#build-from-source)** · **[MIT license](LICENSE)**
+[Download](#download) &nbsp;·&nbsp; [See it in action](#see-it-in-action) &nbsp;·&nbsp; [Connect a model](#connect-a-model) &nbsp;·&nbsp; [Build from source](#build-from-source)
 
 </div>
 
 ## Download
 
-| Your computer | Installer | Availability |
-| :--- | :--- | :--- |
-| **Mac · Apple Silicon** — M-series | Native arm64 `.dmg` · macOS 14+ | Coming soon |
-| **Mac · Intel** | x64 `.dmg` · macOS 14+ | Coming soon |
-| **Windows** | x64 setup `.exe` · Windows 10 / 11 | Coming soon |
+> **Release status:** Native build and packaged smoke tests pass on Mac Intel, Apple Silicon, and Windows. Signed public installers are being prepared. No public installer is available yet.
 
-**No public installers have been published yet.** [Open the releases page](https://github.com/researchbyayan/ChemEZ/releases) for downloads when they become available. Platform-specific direct links will go here once the files are published and verified.
+| Platform | Planned installer | Requirement | Download |
+| :--- | :--- | :--- | :--- |
+| **Mac, Apple Silicon** | Native arm64 DMG | macOS 14+ | [Releases](https://github.com/researchbyayan/ChemEZ/releases) |
+| **Mac, Intel** | Native x64 DMG | macOS 14+ | [Releases](https://github.com/researchbyayan/ChemEZ/releases) |
+| **Windows** | x64 setup EXE | Windows 10 or 11 | [Releases](https://github.com/researchbyayan/ChemEZ/releases) |
 
-Release goal: a complete download **under 250 MB**, with the chemistry runtime included. No separate Python, Node.js, LaTeX installation, or local language model is needed to use a packaged app.
+The release target is **under 250 MB per installer** with RDKit and the chemistry runtime included. Packaged users will not need to install Python, Node.js, LaTeX, or a local language model. [Follow release progress](docs/RELEASE_PROGRESS.md).
 
----
-
-## A chemistry workspace, not just a wall of text
-
-ChemEZ is a desktop chat app for learning and exploring chemistry. Molecular drawings, reaction schemes, equations, and explanations live together in the answer—so you can follow the chemistry without translating everything in your head.
-
-Bring your own AI service. ChemEZ handles the local drawing, formatting, and structural checks.
-
-| Explore | What you get |
-| :--- | :--- |
-| **Molecules** | Readable structures, molecular formulas, names, and functional groups. |
-| **Reactions** | Drawn reactants and products, reagents, conditions, and responsive layouts. |
-| **Mechanisms & resonance** | Ordered panels, lone pairs, electron-flow arrows, and bond-change details where supported. |
-| **3D structures** | Rotatable molecular models, alongside optional 2D detail views. |
-| **Images** | Attach, paste, or drop a chemistry image using a capable model or a separate image reader. |
-| **Your workspace** | Saved chats, a structure library, search, PNG exports, and answer copying. |
+## See it in action
 
 <div align="center">
-<img src="docs/images/reaction-example.png" width="340" alt="ChemEZ reaction card showing a Grignard addition with molecular structures, formulas, reagents, and export controls">
-<br>
-<sub>A reaction scheme rendered in ChemEZ.</sub>
+  <img src="docs/images/reaction-example.png" width="560" alt="ChemEZ reaction card showing drawn structures, reagents, conditions, molecular formulas, and export controls">
+  <br>
+  <sub>A reaction scheme shown beside the explanation, where you need it.</sub>
 </div>
 
-### As short—or as detailed—as you need
+<br>
 
-Choose **Quick answer**, **Explain**, or **Mechanism**. Set your chemistry level in Settings: **High school**, **University**, or **Graduate / professional**.
+| Ask for... | ChemEZ shows... |
+| :--- | :--- |
+| **One molecule** | One validated 2D drawing, its name and formula, with a 3D view when available. |
+| **A reaction** | Structures arranged as a scheme with reagents, conditions, and products. |
+| **A mechanism** | Ordered intermediates, supported bond changes, lone pairs, and curved arrows. |
+| **An image explanation** | An attached, pasted, or dropped image interpreted by a capable model or a separate image reader. |
 
-The interface keeps the focus on the answer: dark glass, mint accents, locally bundled math and fonts, and structure details when you need them.
+Choose **Quick answer**, **Explain**, or **Mechanism** for the amount of detail you need. Chemistry level lives in Settings. Equations, Markdown, syntax highlighting, fonts, and chemical notation are bundled locally.
 
-## Get started
+### What makes the drawings useful
 
-1. Open **Settings → Model & API**.
-2. Sign in with **OpenRouter**, or connect a supported provider using your API key.
-3. Choose an available model, connect, and ask your first question.
+- **Answer-first layout.** Molecules and schemes appear with the explanation, with a compact structure menu on hover.
+- **Chemistry checks.** RDKit validates supported structures, molecular formulas, charge, and stereochemistry before display. Supported electron-flow transitions receive additional checks.
+- **Room to inspect.** Explore a structure in 3D, read its IUPAC name and formula, or save a PNG.
+- **A real workspace.** Restore chats, search, keep a structure library, copy answers, and delete your data.
 
-**Supported connections:** OpenRouter, Google Gemini, OpenAI, Anthropic, NVIDIA, and custom OpenAI-compatible endpoints. Availability, image support, pricing, and quotas depend on the service and model you choose. A consumer chat subscription does not necessarily include API usage.
+## Connect a model
 
-Want a separate model for images? Configure the optional **Image reader**. Text questions use the chat model; image observations can be passed from the image reader to that model.
+Open **Settings → Model & API**, then sign in to OpenRouter or connect your own API key. ChemEZ supports Google Gemini, OpenAI, Anthropic, NVIDIA, and OpenAI-compatible endpoints. Model availability, image support, pricing, and quotas depend on the provider.
 
-### Try asking
+For image questions, you can configure a separate **Image reader**. It observes the image and passes that observation to your chat model. You do not need a local LLM.
 
 ```text
-Draw butan-1-ol and explain its functional groups.
+Draw butan-1-ol and identify the functional group.
 
-Show the resonance contributors of benzene and explain the electron movement.
+Show benzene's resonance contributors and the electron movement.
 
-Show the SN2 mechanism of hydroxide reacting with bromomethane.
+Explain the SN2 mechanism of hydroxide and bromomethane.
 ```
 
-### A few useful shortcuts for your questions
+Type `/` while writing a question, then **click** a command in the menu to activate it. Commands include comparison, synthesis, step-by-step work, nomenclature, lab questions, calculations, practice, and spectra.
 
-Type `/` anywhere in your message to open the menu, then **click a command** to activate it. Typing or pasting a command does not select it. The examples below are the question text to enter after selection.
+## Your data
 
-| Command | Try it |
-| :--- | :--- |
-| `/versus` | `chlorobenzene vs bromobenzene` |
-| `/stepbystep` | `calculate the moles in 10 g of NaOH` |
-| `/synthesis` | `benzene to benzoic acid` |
-| `/practice` | `electrophilic aromatic substitution` |
-| `/nomenclature` | `2-methylpropane` |
-| `/lab` | `esterification of ethanol and ethanoic acid` |
-| `/calc` | `molarity of 2 g NaOH in 250 mL` |
-| `/spectra` | `acetone` |
+Chats, diagrams, attached images, and preferences stay on your device. Your selected AI provider receives the question and relevant context. Images go to the configured chat model or image reader.
 
-## What stays local—and what goes to your model
+API credentials are stored separately in a private local file, or kept only for the session when session-only mode is enabled. Local credential storage is **not an encrypted vault**. Read [data handling](docs/PRIVACY.md) and [backup and recovery](docs/RECOVERY.md).
 
-Chats, attached images, diagrams, and preferences are stored on your device. Your selected AI service receives the question and relevant conversation context. Images go to the configured model or image reader.
-
-API keys are stored separately from chat history in a private local credentials file, or kept only for the session when session-only mode is enabled. Local storage is **not an encrypted vault**. See [data handling](docs/PRIVACY.md) and [backup & recovery](docs/RECOVERY.md).
-
-ChemEZ does not bundle a language model. RDKit and the chemistry runtime run locally; AI answers come from the service you connect.
-
-## Chemistry needs judgment
-
-A valid drawing is not proof of a correct reaction. ChemEZ checks structures and supported electron-flow transitions, but it cannot establish experimental correctness or guarantee an AI-proposed pathway.
-
-Ambiguous formulas may need clarification. Unsupported diagrams show limitations. Predicted spectra are estimates, even when informed by measured-reference data; they are not measurements of your sample. Verify important chemistry and laboratory decisions with reliable sources.
+> A valid molecular drawing does not prove a proposed reaction or mechanism is experimentally correct. Check important chemistry and laboratory decisions against reliable sources.
 
 ## Build from source
 
-Use **Node.js 24** and **Python 3.11** for the release toolchain, matching your computer’s architecture.
+Use **Node.js 24** and **Python 3.11** for the release toolchain on your target operating system and architecture.
 
 ```sh
 git clone https://github.com/researchbyayan/ChemEZ.git
@@ -114,24 +84,22 @@ npm run setup
 npm run dev
 ```
 
-To build a local installer on its target operating system and architecture:
+To package locally on that same operating system and architecture:
 
 ```sh
 npm run package
 ```
 
-Local builds may be unsigned. Public installers require signing, macOS notarization, and the release checks. Apple Silicon and Windows support must be verified on their native targets; an Intel Mac build does not verify either one.
+Local packages can be unsigned. The public release requires signed installers, macOS notarization, native packaged tests, and clean-machine checks. See the [development guide](docs/DEVELOPMENT.md) and [release status](docs/RELEASE_PROGRESS.md).
 
-See the [development guide](docs/DEVELOPMENT.md) for architecture, checks, and configuration. [Release progress](docs/RELEASE_PROGRESS.md) records the current verification work.
+## Credits and license
 
-## Built with open-source chemistry
+ChemEZ uses Electron, React, FastAPI, RDKit, 3Dmol.js, KaTeX, Vitrio, XSMILES, and other open-source work. Bundled software, incorporated datasets, and research references are identified separately in **Settings → About → Credits & licenses**, the [attribution registry](release-config/attributions.json), and [third-party notices](THIRD_PARTY_NOTICES.md).
 
-ChemEZ combines **RDKit**, **Electron**, **React**, **FastAPI**, **3Dmol.js**, **KaTeX**, **Vitrio**, **XSMILES**, and other open-source work. Compound and spectral-reference data have their own provenance and terms.
+ChemEZ's original code is [MIT-licensed](LICENSE). Third-party components and datasets keep their own licenses.
 
-Project credits distinguish **bundled software**, **incorporated data**, and **research references**. A listed research project is not necessarily an integrated engine. Explore **Settings → About → Credits & licenses**, the [attribution registry](release-config/attributions.json), and [third-party notices](THIRD_PARTY_NOTICES.md).
+<div align="center">
 
-**ChemEZ’s original code is [MIT-licensed](LICENSE).** Third-party components and datasets retain their respective licenses.
+Built by [Mohammed Ayan Mahmood](https://github.com/researchbyayan) &nbsp;·&nbsp; [Report an issue](https://github.com/researchbyayan/ChemEZ/issues)
 
----
-
-Built by **[Mohammed Ayan Mahmood](https://github.com/researchbyayan)** · [Report an issue](https://github.com/researchbyayan/ChemEZ/issues)
+</div>

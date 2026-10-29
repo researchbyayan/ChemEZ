@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="500" viewBox="0 0 1280 500" role="img" aria-labelledby="title desc">
+  <title id="title">ChemEZ, chemistry you can see</title>
+  <desc id="desc">Dark green ChemEZ banner with a benzene ring, electron movement arrow, and molecular reaction artwork.</desc>
+  <defs>
+    <linearGradient id="background" x2="1" y2="1">
+      <stop stop-color="#050b09"/>
+      <stop offset=".58" stop-color="#0a1712"/>
+      <stop offset="1" stop-color="#07100d"/>
+    </linearGradient>
+    <linearGradient id="mint" x2="1" y2="1">
+      <stop stop-color="#a9ffc1"/>
+      <stop offset=".52" stop-color="#5cf1a5"/>
+      <stop offset="1" stop-color="#1ab47c"/>
+    </linearGradient>
+    <linearGradient id="fade" x2="1">
+      <stop stop-color="#5cf1a5" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#5cf1a5" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#48e994" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#48e994" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#c4ffe0" stroke-opacity=".045"/>
+    </pattern>
+    <filter id="blur"><feGaussianBlur stdDeviation="28"/></filter>
+  </defs>
+  <rect width="1280" height="500" rx="28" fill="url(#background)"/>
+  <rect width="1280" height="500" rx="28" fill="url(#grid)"/>
+  <ellipse cx="1010" cy="225" rx="330" ry="295" fill="url(#glow)"/>
+  <path d="M28 1H1252Q1279 1 1279 28V472Q1279 499 1252 499H28Q1 499 1 472V28Q1 1 28 1Z" fill="none" stroke="#b4ffcc" stroke-opacity=".19" stroke-width="2"/>
+
+  <g transform="translate(75 69)">
+    <path d="M15 22 28 0h27l-5 9H33L25 23l9 16h19l-5 9H28Z" fill="#f5fff8"/>
+    <path d="M58 0h23L63 20h16L42 60l9-29H36Z" fill="url(#mint)"/>
+    <text x="102" y="39" fill="#f3fff7" font-family="Arial,Helvetica,sans-serif" font-size="39" font-weight="700" letter-spacing="-2">ChemEZ</text>
+  </g>
+
+  <g font-family="Arial,Helvetica,sans-serif">
+    <text x="76" y="217" fill="#f4fff7" font-size="64" font-weight="700" letter-spacing="-3">See the chemistry.</text>
+    <text x="77" y="268" fill="#a9c5b4" font-size="24">Ask. Draw. Follow the electrons.</text>
+    <path d="M78 300H630" stroke="url(#fade)"/>
+    <g font-size="16" font-weight="600">
+      <rect x="77" y="332" width="142" height="44" rx="22" fill="#7bf2aa" fill-opacity=".13" stroke="#7bf2aa" stroke-opacity=".42"/>
+      <text x="100" y="359" fill="#b9ffd0">Molecules</text>
+      <rect x="229" y="332" width="136" height="44" rx="22" fill="#7bf2aa" fill-opacity=".13" stroke="#7bf2aa" stroke-opacity=".42"/>
+      <text x="252" y="359" fill="#b9ffd0">Reactions</text>
+      <rect x="375" y="332" width="151" height="44" rx="22" fill="#7bf2aa" fill-opacity=".13" stroke="#7bf2aa" stroke-opacity=".42"/>
+      <text x="398" y="359" fill="#b9ffd0">Mechanisms</text>
+    </g>
+    <text x="77" y="439" fill="#728e7c" font-size="15" letter-spacing="2">CHEMISTRY CHAT  /  DESKTOP</text>
+  </g>
+
+  <g transform="translate(810 93)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-24" y="-23" width="424" height="335" rx="24" fill="#0c1b15" fill-opacity=".52" stroke="#93ffc0" stroke-opacity=".17"/>
+    <path d="M73 71 141 32 209 71 209 149 141 188 73 149Z" stroke="#e6fff0" stroke-width="4"/>
+    <path d="M86 78 141 46M195 79v62M141 173 86 143" stroke="#e6fff0" stroke-width="3"/>
+    <path d="M234 102h54m-12-9 12 9-12 9M302 118h-54m12-9-12 9 12 9" stroke="url(#mint)" stroke-width="2.5"/>
+    <path d="M321 85 351 102v35l-30 17-30-17v-35Z" stroke="#e6fff0" stroke-width="3"/>
+    <path d="M325 93 344 105M298 106v27M344 135 325 146" stroke="#e6fff0" stroke-width="2"/>
+    <path d="M324 194c-32 35-77 33-105 13" stroke="#a9ffc1" stroke-width="2.5"/>
+    <path d="m229 207-13-1 4 13" stroke="#a9ffc1" stroke-width="2.5"/>
+    <circle cx="303" cy="185" r="3.5" fill="#a9ffc1" stroke="none"/>
+    <circle cx="316" cy="185" r="3.5" fill="#a9ffc1" stroke="none"/>
+    <path d="M23 234H352" stroke="#a9ffc1" stroke-opacity=".18"/>
+    <text x="26" y="269" fill="#a4cdb2" stroke="none" font-family="Arial,Helvetica,sans-serif" font-size="17" letter-spacing="1">RESONANCE  /  ELECTRON FLOW</text>
+  </g>
+</svg>
