@@ -12,7 +12,7 @@
   <ellipse cx="990" cy="150" rx="260" ry="205" fill="url(#glow)"/>
   <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 430 430" fill="none" x="50" y="42"><rect width="430" height="430" rx="86" fill="#E5E5E5" /><defs><linearGradient id="bolt" x1="165.217" y1="26" x2="365.028" y2="331.953" gradientUnits="userSpaceOnUse"><stop stop-color="#94FFC0" /><stop offset=".48" stop-color="#65F5A2" /><stop offset="1" stop-color="#13A77E" /></linearGradient></defs><path d="M103.956 53.53H209.6L188.9 103.47H128.93L70.44 199.701L124.99 293.93H181.3L161.6 345.873H100.023L13.5 199.701L103.956 53.53Z" fill="#090909" /><path d="M251.085 26H403.811L306.8 172.171H386.768L173.083 397L235.353 232.475H165.217L251.085 26Z" fill="url(#bolt)" /></svg>
   <g font-family="Arial,Helvetica,sans-serif">
-    <text x="112" y="75" fill="#EAF3ED" font-size="30" font-weight="700" letter-spacing="-1.3">ChemEZ</text>
+    <text x="112" y="75" fill="#EAF3ED" font-size="30" font-weight="700" letter-spacing="-1.3">Chem<tspan fill="#AEB7B1">EZ</tspan></text>
     <text x="50" y="160" fill="#F0F7F2" font-size="53" font-weight="700" letter-spacing="-2.2">See the chemistry.</text>
     <text x="52" y="202" fill="#A8BCAF" font-size="21">Clear structures. Better explanations.</text>
     <text x="52" y="278" fill="#9CD9B0" font-size="11" font-weight="600" letter-spacing="1.8">MOLECULES  /  REACTIONS  /  MECHANISMS</text>
