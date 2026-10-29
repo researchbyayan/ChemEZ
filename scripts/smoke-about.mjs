@@ -2,23 +2,48 @@ import {_electron as electron,expect} from '@playwright/test';
 import {mkdtemp,rm,mkdir} from 'node:fs/promises';import {createServer} from 'node:http';import path from 'node:path';import os from 'node:os';
 import {root} from './python-path.mjs';
 const profile=await mkdtemp(path.join(os.tmpdir(),'ChemEZ release QA ü '));const packaged=process.argv.includes('--packaged');
+const captureReadme=process.argv.includes('--capture-readme');
 const executable=process.env.CHEMEZ_ELECTRON_EXE||(packaged?path.join(root,'release',process.platform==='darwin'?(process.arch==='arm64'?'mac-arm64':'mac')+'/ChemEZ.app/Contents/MacOS/ChemEZ':process.platform==='win32'?'win-unpacked/ChemEZ.exe':'linux-unpacked/chemez'):undefined);
 const answer={blocks:[{type:'reaction',caption:'Grignard addition to a ketone gives a tertiary alcohol',reactants:[{smiles:'CC(=O)C',label:'Acetone'},{smiles:'C[Mg]Br',label:'Methylmagnesium bromide'}],products:[{smiles:'CC(C)(C)O',label:'tert-Butanol'}],reagents:'1. CH3MgBr, Et2O  2. H3O+',conditions:'Dry ether, then dilute acid'}]};
+if(captureReadme){
+ answer.blocks=[
+  {type:'markdown',text:'**Acetone gives tert-butanol (2-methylpropan-2-ol), a tertiary alcohol.** Methyl addition forms a new carbon-carbon bond. Acidic workup then protonates the resulting alkoxide to give the alcohol.'},
+  {...answer.blocks[0],caption:'Grignard addition, then acidic workup',reagents:'1. Et2O; 2. H3O+',conditions:''}
+ ];
+}
 const server=createServer((req,res)=>{let body='';req.on('data',chunk=>body+=chunk);req.on('end',()=>{const content=body.includes('single most useful next message')?'What controls the selectivity of Grignard addition?':JSON.stringify(answer);res.writeHead(200,{'Content-Type':'text/event-stream'});res.end('data: '+JSON.stringify({choices:[{delta:{content}}]})+'\n\ndata: [DONE]\n\n');});});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 let instance;
 try{
- instance=await electron.launch({...(executable?{executablePath:executable,args:[]}:{args:[path.join(root,'electron/main.cjs')]}),env:{...process.env,CHEMEZ_PROFILE:profile,CHEMEZ_SESSION_ONLY:'1'},timeout:60000});
+ const captureArgs=captureReadme?['--force-device-scale-factor=2']:[];
+ instance=await electron.launch({...(executable?{executablePath:executable,args:captureArgs}:{args:[...captureArgs,path.join(root,'electron/main.cjs')]}),env:{...process.env,CHEMEZ_PROFILE:profile,CHEMEZ_SESSION_ONLY:'1'},timeout:60000});
  const page=await instance.firstWindow();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.evaluate(()=>localStorage.setItem('chemez-level','undergraduate'));
- await page.evaluate(config=>window.chemez.request('saveConfig',config),{provider:'compatible',endpoint:`http://127.0.0.1:${server.address().port}/v1`,model:'release-fixture',auth_mode:'none'});await page.reload();
+ await page.evaluate(config=>window.chemez.request('saveConfig',config),{provider:'compatible',endpoint:`http://127.0.0.1:${server.address().port}/v1`,model:captureReadme?'ChemEZ demo':'release-fixture',auth_mode:'none'});await page.reload();
  if(process.argv.includes('--preview-only')||process.argv.includes('--capture-readme')){
-  await page.getByRole('textbox',{name:'Chemistry question'}).fill('Show Grignard addition of methylmagnesium bromide to acetone');await page.getByRole('button',{name:'Send question',exact:true}).click();await expect(page.locator('.reaction-card')).toBeVisible({timeout:60000});
-  if(process.argv.includes('--capture-readme')){
+  if(captureReadme)await instance.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].setContentSize(1120,1060));
+  await page.getByRole('textbox',{name:'Chemistry question'}).fill(captureReadme?'Acetone + methylmagnesium bromide, then acidic workup: what forms?':'Show Grignard addition of methylmagnesium bromide to acetone');await page.getByRole('button',{name:'Send question',exact:true}).click();await expect(page.locator('.reaction-card')).toBeVisible({timeout:60000});
+  if(captureReadme){
    await mkdir(path.join(root,'docs/images'),{recursive:true});
-   await page.locator('.reaction-card').evaluate(el=>{el.style.width='340px';el.style.maxWidth='100%';});
+   await expect(page.getByRole('button',{name:'Send question',exact:true})).toBeVisible({timeout:60000});
+   await expect(page.locator('.message.user')).toContainText('methylmagnesium bromide');
+   await expect(page.locator('.message.assistant')).toContainText('protonates the resulting alkoxide');
+   await page.evaluate(()=>document.fonts.ready);
    await page.waitForFunction(()=>Array.from(document.querySelectorAll('.reaction-card img')).every(image=>image.complete&&image.naturalWidth));
-   await page.locator('.reaction-card').screenshot({path:path.join(root,'docs/images/reaction-example.png')});
-   console.log('README reaction screenshot captured from the app.');
+   await page.evaluate(()=>{document.querySelector('.conversation-scroll').scrollTop=0;});
+   await page.mouse.move(5,5);
+   await page.waitForTimeout(400);
+   const scale=await page.evaluate(()=>devicePixelRatio);
+   if(scale<2)throw new Error('README capture requires at least 2x display density.');
+   const clip=await page.evaluate(()=>{
+    const messages=document.querySelector('.messages').getBoundingClientRect();
+    const prompt=document.querySelector('.message.user').getBoundingClientRect();
+    const answer=document.querySelector('.message.assistant .answer-flow').getBoundingClientRect();
+    const composer=document.querySelector('.composer-area').getBoundingClientRect();
+    if(answer.bottom>composer.top)throw new Error('Demo answer must fit above the composer.');
+    return {x:messages.x,y:prompt.y,width:messages.width,height:answer.bottom-prompt.y+12};
+   });
+   await page.screenshot({path:path.join(root,'docs/images/chemistry-chat-demo.png'),clip,scale:'device'});
+   console.log(`README prompt and complete answer captured from ChemEZ at ${scale}x density. Fixed demo response through the real backend and RDKit, with no live provider calls.`);
   }else{
   await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:'About',exact:true}).click();
   await expect(page.locator('.about-app-menu')).toBeVisible();await instance.evaluate(({BrowserWindow})=>{const win=BrowserWindow.getAllWindows()[0];win.setSize(1100,820);win.show();win.focus();});await page.bringToFront();

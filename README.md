@@ -27,12 +27,27 @@ The release target is **under 250 MB per installer** with RDKit and the chemistr
 ## See it in action
 
 <div align="center">
-  <img src="docs/images/reaction-example.png" width="560" alt="ChemEZ reaction card showing drawn structures, reagents, conditions, molecular formulas, and export controls">
+  <a href="docs/images/chemistry-chat-demo.png"><img src="docs/images/chemistry-chat-demo.png" width="100%" alt="Prompt: Acetone plus methylmagnesium bromide, then acidic workup: what forms? ChemEZ answers tert-butanol and explains the addition and protonation, followed by a drawn reaction with molecular formulas."></a>
   <br>
-  <sub>A reaction scheme shown beside the explanation, where you need it.</sub>
+  <sub>The question, explanation, and drawn reaction in one answer. Click the image for full resolution.</sub>
 </div>
 
-<br>
+<details>
+<summary>Read the demo prompt and answer</summary>
+
+**Prompt**
+
+> Acetone + methylmagnesium bromide, then acidic workup: what forms?
+
+**Answer**
+
+Acetone gives **tert-butanol (2-methylpropan-2-ol), a tertiary alcohol**. Methyl addition forms a new carbon-carbon bond. Acidic workup then protonates the resulting alkoxide to give the alcohol.
+
+The reaction drawing shows acetone and methylmagnesium bromide forming tert-butanol after the two stages: ether, then acidic workup.
+
+<sub>This reproducible demo uses a fixed response rendered through ChemEZ's backend and RDKit.</sub>
+
+</details>
 
 | Ask for... | ChemEZ shows... |
 | :--- | :--- |
