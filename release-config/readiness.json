@@ -1,0 +1,13 @@
+{
+  "sourceCommit": null,
+  "approvals": {
+    "sourceCheckpoint": false,
+    "datasetRedistribution": false,
+    "liveChemistryEvaluation": false,
+    "cleanMacIntel": false,
+    "cleanMacSilicon": false,
+    "cleanWindows11": false,
+    "cleanWindows10": false
+  },
+  "evidence": {}
+}

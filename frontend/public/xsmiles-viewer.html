@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<!-- Loaded only in a sandboxed iframe (opaque origin, no app bridge). RDKit MinimalLib needs
+     eval for its bindings, so it is confined here instead of relaxing the app's own CSP. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:"/>
+<style>html,body{margin:0;background:#fff;color:#172d35;font-family:system-ui,sans-serif;overflow:hidden}#view{display:flex;justify-content:center;padding:8px 0}</style>
+</head>
+<body>
+<div id="view"></div>
+<script>
+const reply=message=>parent.postMessage(message,'*');
+window.addEventListener('message',async event=>{
+  const data=event.data;
+  if(event.source!==parent||!data||data.type!=='render')return;
+  try{
+    if(!window.RDKit){
+      (0,eval)(data.rdkit);
+      const binary=Uint8Array.from(atob(data.wasm.slice(data.wasm.indexOf(',')+1)),c=>c.charCodeAt(0));
+      window.RDKit=await initRDKitModule({wasmBinary:binary});
+      (0,eval)(data.xsmiles);
+    }
+    const view=document.getElementById('view');
+    view.replaceChildren();
+    xsmiles.appendSingleView(view,data.setup);
+    new ResizeObserver(()=>reply({type:'size',height:Math.ceil(document.documentElement.scrollHeight)})).observe(document.body);
+    reply({type:'ready'});
+  }catch(error){reply({type:'error',message:String(error&&error.message||error).slice(0,200)});}
+});
+reply({type:'loaded'});
+</script>
+</body>
+</html>

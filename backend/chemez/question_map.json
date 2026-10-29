@@ -1,0 +1,36 @@
+{
+  "_about": "Questions ChemEZ answers from verified data before (or instead of) asking the AI model. Checked top to bottom; the first pattern that matches wins. {name}, {a} and {b} are compound names looked up locally or on PubChem. 'show' lists what the answer contains; 'ai' says what the model writes (never structures).",
+  "intents": [
+    {
+      "id": "compare",
+      "scenario": "G - chloroform vs phosgene",
+      "patterns": ["^compare\\s+(?P<a>.+?)\\s+(?:and|with|to)\\s+(?P<b>.+?)$", "^(?P<a>.+?)\\s+(?:vs\\.?|versus|compared (?:to|with))\\s+(?P<b>.+?)$"],
+      "show": ["card:a", "card:b"],
+      "ai": "comparison"
+    },
+    {
+      "id": "structure",
+      "scenario": "B - phosgene structure",
+      "patterns": ["^(?:(?:draw|show|give)(?: me)?\\s+)?(?:the\\s+|a\\s+)?(?:2d\\s+|skeletal\\s+)?(?:structure|structural formula|skeletal formula)\\s+(?:of|for)\\s+(?P<name>.+?)$", "^(?:draw|show)(?: me)?\\s+(?P<name>.+?)$", "^(?P<name>.+?)\\s+(?:structure|structural formula)$"],
+      "show": ["structure:name"],
+      "ai": "one_line"
+    },
+    {
+      "id": "properties",
+      "scenario": "C - properties of methane",
+      "patterns": ["^(?:what are\\s+)?(?:the\\s+)?(?:physical\\s+|chemical\\s+)?properties\\s+of\\s+(?P<name>.+?)$", "^(?P<name>.+?)\\s+properties$"],
+      "show": ["card:name"],
+      "ai": "one_line"
+    },
+    {
+      "id": "name",
+      "scenario": "A - just a name: phosgene",
+      "patterns": ["^(?:what is\\s+|what's\\s+|tell me about\\s+)?(?P<name>[^?]{2,60}?)$"],
+      "max_words": 5,
+      "quiet": true,
+      "show": ["card:name"],
+      "ai": "one_line"
+    }
+  ],
+  "everything_else": "D, E, H and other questions go to the model with the verified structures of any compounds they name (scenarios D/H). Formula-only questions (I) are handled by formula_only_question. Unknown or ambiguous names (F) get a clarification with the possible compounds."
+}

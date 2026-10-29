@@ -1,0 +1,15 @@
+# Optional external gateway. Requires a separately installed Ollama server and
+# the llama3.2:3b model downloaded locally. This file contains no credentials.
+model_list:
+  - model_name: chem-local
+    litellm_params:
+      model: ollama_chat/llama3.2:3b
+      api_base: http://127.0.0.1:11434
+
+litellm_settings:
+  drop_params: true
+  num_retries: 0
+  request_timeout: 120
+
+general_settings:
+  master_key: os.environ/CHEMEZ_GATEWAY_KEY

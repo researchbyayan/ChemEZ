@@ -1,0 +1,75 @@
+name: Native desktop builds
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: mac-arm64
+          - os: macos-15-intel
+            target: mac-x64
+          - os: windows-latest
+            target: windows-x64
+          - os: ubuntu-22.04
+            target: linux-x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: npm ci
+      - run: npm run setup
+      - run: npm test
+      - run: npm run test:images
+      - run: npm run test:backend
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm run package
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - run: npm run smoke:backend
+      - name: Packaged Electron smoke
+        if: runner.os != 'Linux'
+        run: node scripts/smoke-electron.mjs --packaged
+      - name: Packaged Electron smoke (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/smoke-electron.mjs --packaged --no-sandbox
+      - name: Packaged dual API and root recovery smoke
+        if: runner.os != 'Linux'
+        run: node scripts/smoke-dual-api.mjs --packaged
+      - name: About and overlap smoke
+        if: runner.os != 'Linux'
+        run: node scripts/smoke-about.mjs --packaged
+      - name: Packaged dual API and root recovery smoke (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/smoke-dual-api.mjs --packaged --no-sandbox
+      - name: Save native test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chemez-${{ matrix.target }}-test-evidence
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chemez-${{ matrix.target }}
+          path: |
+            release/*.dmg
+            release/*.exe
+            release/*.AppImage
+          if-no-files-found: error

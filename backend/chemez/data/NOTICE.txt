@@ -1,0 +1,10 @@
+Contains information from nmrshiftdb2 (www.nmrshiftdb.org), which is made available
+here under the nmrshiftdb2 Database License.
+License: https://nmrshiftdb.nmr.uni-koeln.de/nmrshiftdbhtml/nmrshiftdb2datalicense.txt
+The full license accompanies this table as nmrshiftdb2-database-license.txt.
+
+c13_shifts.json.gz is a machine-readable derived database of aggregated carbon
+environments and observed shifts, based on the 2024-06-06 source data. It retains
+the nmrshiftdb2 Database License; it is not relicensed under ChemEZ's MIT license.
+The transformation algorithm is scripts/build-c13-table.py in the ChemEZ source
+release. Predictions using aggregate records are not measurements of a sample.

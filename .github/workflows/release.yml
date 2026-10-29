@@ -1,0 +1,127 @@
+name: Signed release candidates
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      readiness_run_id:
+        description: 'Actions run containing owner-reviewed chemez-readiness artifact for this exact commit'
+        required: false
+        type: string
+permissions:
+  contents: read
+jobs:
+  desktop:
+    environment: release-signing
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            arch: arm64
+            target: mac-arm64
+          - os: macos-15-intel
+            arch: x64
+            target: mac-x64
+          - os: windows-latest
+            arch: x64
+            target: win-x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    env:
+      CSC_LINK: ${{ matrix.os != 'windows-latest' && secrets.MAC_CERT_P12_BASE64 || secrets.WIN_CERT_P12_BASE64 }}
+      CSC_KEY_PASSWORD: ${{ matrix.os != 'windows-latest' && secrets.MAC_CERT_PASSWORD || secrets.WIN_CERT_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          architecture: ${{ matrix.arch }}
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: ${{ matrix.arch }}
+      - run: node scripts/release-gate.mjs --preflight
+      - run: npm ci
+      - run: npm run setup
+      - run: npm test
+      - run: npm run test:images
+      - run: npm run test:backend
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm run setup:runtime
+      - run: npm run build
+      - run: npm run bundle:backend
+      - run: npm run stage:app
+      - name: Package signed native installer (no publication)
+        shell: bash
+        run: npx electron-builder --config release-config/public.cjs --publish never --${{ runner.os == 'macOS' && 'mac' || 'win' }} --${{ matrix.arch }}
+      - run: node scripts/notarize-installers.mjs
+      - run: node scripts/smoke-installer.mjs
+      - run: npm run smoke:backend
+      - run: node scripts/smoke-electron.mjs --packaged
+      - run: node scripts/smoke-dual-api.mjs --packaged
+      - run: node scripts/smoke-about.mjs --packaged
+      - run: npm run release:verify
+      - name: Save installer and checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-${{ matrix.target }}
+          if-no-files-found: error
+          path: |
+            release/*.dmg
+            release/*.exe
+            test-results/release/artifacts.json
+      - name: Save test and attribution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-${{ matrix.target }}
+          path: |
+            test-results/
+            playwright-report/
+            dist/release/
+            dist/THIRD_PARTY_NOTICES.md
+  draft:
+    needs: desktop
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.readiness_run_id != '' }}
+    runs-on: ubuntu-latest
+    environment: release-approval
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: candidate-*
+          path: candidates
+      - uses: actions/download-artifact@v4
+        with:
+          name: chemez-readiness
+          run-id: ${{ inputs.readiness_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: approved-readiness
+      - run: node scripts/release-gate.mjs --readiness
+        env:
+          CHEMEZ_READINESS_FILE: approved-readiness/readiness.json
+      - name: Assemble draft only after every target and owner evidence pass
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p 'JSON.parse(require("fs").readFileSync("package.json")).version')
+          find candidates -name '*.dmg' -o -name '*.exe' > installers.txt
+          test "$(wc -l < installers.txt)" -eq 3
+          git archive --format=tar.gz --output="ChemEZ-$VERSION-source.tar.gz" HEAD
+          gh release create "v$VERSION" --draft --target "$GITHUB_SHA" --title "ChemEZ $VERSION" --notes "Signed native candidates. See attached validation reports and checksums. Owner approval is required before publication."
+          gh release upload "v$VERSION" "ChemEZ-$VERSION-source.tar.gz"
+          while IFS= read -r file; do gh release upload "v$VERSION" "$file"; done < installers.txt
+          for report in candidates/*/artifacts.json; do TARGET=$(basename "$(dirname "$report")"); cp "$report" "$TARGET-validation.json"; gh release upload "v$VERSION" "$TARGET-validation.json"; done

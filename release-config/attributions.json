@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "chemez",
+      "name": "ChemEZ",
+      "url": "https://github.com/researchbyayan/ChemEZ",
+      "group": "software",
+      "license": "MIT",
+      "note": "Original application code.",
+      "licenseFiles": [
+        "LICENSE"
+      ]
+    },
+    {
+      "id": "seq-encode",
+      "name": "seq_encode",
+      "url": "https://github.com/hcji/seq_encode",
+      "group": "software",
+      "license": "MIT",
+      "note": "Optional sequence diagnostics; vendored commit 9515620390910dba252c67feb17223717448e119.",
+      "licenseFiles": [
+        "backend/vendor/seq_encode/LICENSE"
+      ]
+    },
+    {
+      "id": "vitrio",
+      "name": "Vitrio",
+      "url": "https://github.com/eamonliu/vitrio",
+      "group": "software",
+      "license": "MIT",
+      "note": "Liquid-glass rendering; commit 3fed16666d3f6b5a0c9657182199aeb72c510db1.",
+      "licenseFiles": [
+        "frontend/src/vendor/vitrio/LICENSE"
+      ]
+    },
+    {
+      "id": "xsmiles",
+      "name": "XSMILES",
+      "url": "https://github.com/Bayer-Group/xsmiles",
+      "group": "software",
+      "license": "BSD-3-Clause",
+      "note": "SMILES viewer, version 0.7.0; commit f8395c5f099b197366b51172281989206638c574.",
+      "licenseFiles": [
+        "frontend/src/vendor/xsmiles/LICENSE",
+        "frontend/src/vendor/xsmiles/xsmiles.js.LICENSE.txt"
+      ]
+    },
+    {
+      "id": "rdkit-wasm",
+      "name": "RDKit MinimalLib",
+      "url": "https://github.com/rdkit/rdkit",
+      "group": "software",
+      "license": "BSD-3-Clause",
+      "note": "Local WebAssembly chemistry in the sandboxed SMILES viewer.",
+      "licenseFiles": [
+        "frontend/src/vendor/rdkit/LICENSE"
+      ]
+    },
+    {
+      "id": "chem-skill",
+      "name": "chem-skill",
+      "url": "https://github.com/ghutchis/chem-skill",
+      "group": "data",
+      "license": "MIT",
+      "note": "Common-molecule tables and aliases; commit bdb58112cd010cbf6a68a244ed904f4dfb90496f.",
+      "licenseFiles": [
+        "licenses/chem-skill-LICENSE.txt"
+      ]
+    },
+    {
+      "id": "pubchem",
+      "name": "PubChem",
+      "url": "https://pubchem.ncbi.nlm.nih.gov",
+      "group": "data",
+      "license": "See upstream data policies",
+      "note": "Compound identifiers and source molecular records. Not an experimental guarantee.",
+      "licenseFiles": []
+    },
+    {
+      "id": "nmrshiftdb",
+      "name": "NMRShiftDB2",
+      "url": "https://nmrshiftdb.nmr.uni-koeln.de/nmrshiftdbhtml/nmrshiftdb2datalicense.txt",
+      "group": "data",
+      "license": "LicenseRef-nmrshiftdb2",
+      "note": "Derived carbon-environment shift table, based on 2024-06-06 data. Predictions informed by measured records are not a measured spectrum for the queried sample.",
+      "licenseFiles": [
+        "licenses/nmrshiftdb2-database-license.txt"
+      ]
+    },
+    {
+      "id": "chatbot-template",
+      "name": "chatbot-template",
+      "url": "https://github.com/IndrajeetPatil/chatbot-template",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "React/FastAPI architecture reference; no upstream code/assets redistributed. No license at reviewed commit.",
+      "licenseFiles": []
+    },
+    {
+      "id": "chemclaw",
+      "name": "ChemClaw",
+      "url": "https://github.com/InternScience/ChemClaw",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "3D/property feature reference; no upstream code redistributed.",
+      "licenseFiles": []
+    },
+    {
+      "id": "chemdraw-mcp",
+      "name": "chemdraw-mcp",
+      "url": "https://github.com/jurimaxam-dotcom/chemdraw-mcp",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Drawing conventions and comparison reference; no upstream code redistributed.",
+      "licenseFiles": []
+    },
+    {
+      "id": "openmolclaw",
+      "name": "openmolclaw",
+      "url": "https://github.com/scottmreed/openmolclaw",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Stereo/identifier feature reference; no upstream code redistributed.",
+      "licenseFiles": []
+    },
+    {
+      "id": "chemcp",
+      "name": "ChemCP",
+      "url": "https://github.com/scottmreed/ChemCP",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Property-panel reference; no upstream code redistributed.",
+      "licenseFiles": []
+    },
+    {
+      "id": "reshiki",
+      "name": "ReShiki",
+      "url": "https://github.com/Ameyanagi/ReShiki",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Arrow conventions reference; no upstream code redistributed.",
+      "licenseFiles": []
+    },
+    {
+      "id": "markdown-simplechem",
+      "name": "markdown-simplechem",
+      "url": "https://github.com/dmishin/markdown-simplechem",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Plain-text chemistry arrow conventions; no upstream code redistributed.",
+      "licenseFiles": []
+    },
+    {
+      "id": "chemaxon",
+      "name": "Chemaxon documentation",
+      "url": "https://docs.chemaxon.com",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Electron-flow conventions reference; no proprietary editor code/assets redistributed.",
+      "licenseFiles": []
+    },
+    {
+      "id": "rmg",
+      "name": "RMG-Py",
+      "url": "https://github.com/ReactionMechanismGenerator/RMG-Py",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Reaction-recipe research reference. The full RMG solver is not bundled or executed.",
+      "licenseFiles": []
+    },
+    {
+      "id": "molbart",
+      "name": "MolBART",
+      "url": "https://github.com/MolecularAI/MolBART",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "SMILES-model research reference; no model/checkpoint bundled or executed.",
+      "licenseFiles": []
+    },
+    {
+      "id": "launchworthy",
+      "name": "Launchworthy",
+      "url": "https://github.com/Wunderlandmedia/launchworthy",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Release-audit checklist reference; not a runtime dependency.",
+      "licenseFiles": []
+    },
+    {
+      "id": "portkey",
+      "name": "Portkey AI Gateway",
+      "url": "https://github.com/Portkey-AI/gateway",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Gateway research reference; not bundled.",
+      "licenseFiles": []
+    },
+    {
+      "id": "litellm",
+      "name": "LiteLLM",
+      "url": "https://github.com/BerriAI/litellm",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Optional external gateway compatibility; not bundled.",
+      "licenseFiles": []
+    },
+    {
+      "id": "routerly",
+      "name": "Routerly",
+      "url": "https://github.com/Inebrio/Routerly",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Optional external gateway compatibility; not bundled.",
+      "licenseFiles": []
+    },
+    {
+      "id": "aiclient2api",
+      "name": "AIClient2API",
+      "url": "https://github.com/justlovemaki/AIClient2API",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Gateway research reference; not bundled.",
+      "licenseFiles": []
+    },
+    {
+      "id": "api-backend",
+      "name": "API-backend",
+      "url": "https://github.com/Kingknight23/API-backend",
+      "group": "reference",
+      "license": "Reference only",
+      "note": "Gateway research reference; not bundled.",
+      "licenseFiles": []
+    }
+  ]
+}

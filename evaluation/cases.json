@@ -1,0 +1,597 @@
+[
+  {
+    "id": "K01",
+    "group": "reference",
+    "prompt": "Draw benzene and give its molecular formula.",
+    "mode": "balanced",
+    "terms": [
+      "C6H6"
+    ],
+    "smiles": [
+      "c1ccccc1"
+    ],
+    "expected": "Benzene is C6H6 and aromatic.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/15-2-structure-and-stability-of-benzene"
+  },
+  {
+    "id": "K02",
+    "group": "reference",
+    "prompt": "Draw ethanol and identify its functional group.",
+    "mode": "concise",
+    "terms": [
+      "C2H6O",
+      "alcohol"
+    ],
+    "smiles": [
+      "CCO"
+    ],
+    "expected": "Ethanol is a primary alcohol, C2H6O.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/17-1-naming-alcohols-and-phenols"
+  },
+  {
+    "id": "K03",
+    "group": "reference",
+    "prompt": "Show aspirin and identify its ester and carboxylic acid groups.",
+    "mode": "tutor",
+    "terms": [
+      "C9H8O4",
+      "ester",
+      "acid"
+    ],
+    "smiles": [
+      "CC(=O)Oc1ccccc1C(=O)O"
+    ],
+    "expected": "Aspirin contains an ester and a carboxylic acid.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/21-6-chemistry-of-esters"
+  },
+  {
+    "id": "K04",
+    "group": "reference",
+    "prompt": "Draw caffeine and state its molecular formula.",
+    "mode": "balanced",
+    "terms": [
+      "C8H10N4O2"
+    ],
+    "smiles": [
+      "Cn1c(=O)c2c(ncn2C)n(C)c1=O"
+    ],
+    "expected": "Caffeine is C8H10N4O2.",
+    "source": "https://pubchem.ncbi.nlm.nih.gov/compound/Caffeine"
+  },
+  {
+    "id": "K05",
+    "group": "reference",
+    "prompt": "Draw both enantiomers of lactic acid and explain what makes them different.",
+    "mode": "concise",
+    "terms": [
+      "enantiomer"
+    ],
+    "smiles": [],
+    "expected": "Opposite stereochemistry at the single stereocentre; C3H6O3.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/5-1-enantiomers-and-the-tetrahedral-carbon"
+  },
+  {
+    "id": "K06",
+    "group": "reference",
+    "prompt": "Draw C2H6O. I have supplied no other identifying information.",
+    "mode": "tutor",
+    "terms": [],
+    "smiles": [],
+    "expected": "Clarify ethanol versus dimethyl ether, or show explicitly labeled alternatives.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/3-2-alkanes-and-alkane-isomers"
+  },
+  {
+    "id": "K07",
+    "group": "reference",
+    "prompt": "Show every constitutional isomer with formula C3H8O.",
+    "mode": "balanced",
+    "terms": [
+      "C3H8O"
+    ],
+    "smiles": [
+      "CCCO",
+      "CC(O)C",
+      "COCC"
+    ],
+    "expected": "Propan-1-ol, propan-2-ol and methoxyethane.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/3-2-alkanes-and-alkane-isomers"
+  },
+  {
+    "id": "K08",
+    "group": "reference",
+    "prompt": "Draw the two Kekul\u00e9 contributors of benzene and explain the real bonding.",
+    "mode": "concise",
+    "terms": [
+      "delocal"
+    ],
+    "smiles": [
+      "c1ccccc1"
+    ],
+    "expected": "Two equivalent contributors; actual benzene has delocalized bonds, not alternating molecules.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/15-2-structure-and-stability-of-benzene"
+  },
+  {
+    "id": "K09",
+    "group": "reference",
+    "prompt": "Explain the geometry and approximate bond angle of methane, with a drawing.",
+    "mode": "tutor",
+    "terms": [
+      "tetrahedral",
+      "109"
+    ],
+    "smiles": [
+      "C"
+    ],
+    "expected": "Tetrahedral, approximately 109.5 degrees.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/1-6-sp3-hybrid-orbitals-and-the-structure-of-methane"
+  },
+  {
+    "id": "K10",
+    "group": "reference",
+    "prompt": "Draw cis-but-2-ene and trans-but-2-ene side by side with their stereochemistry.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [],
+    "expected": "Z and E but-2-ene are distinct geometric isomers, C4H8.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/7-4-cis-trans-isomerism-in-alkenes"
+  },
+  {
+    "id": "K11",
+    "group": "reference",
+    "prompt": "Draw the oxidation of ethanol using PCC under anhydrous conditions.",
+    "mode": "concise",
+    "terms": [
+      "ethanal"
+    ],
+    "smiles": [
+      "CCO",
+      "CC=O"
+    ],
+    "expected": "Primary alcohol gives ethanal with PCC.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/17-7-oxidation-of-alcohols"
+  },
+  {
+    "id": "K12",
+    "group": "reference",
+    "prompt": "What does excess aqueous dichromate under reflux do to ethanol? Draw the reaction.",
+    "mode": "tutor",
+    "terms": [
+      "acid"
+    ],
+    "smiles": [
+      "CCO",
+      "CC(=O)O"
+    ],
+    "expected": "Ethanoic acid under forcing aqueous oxidizing conditions.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/17-7-oxidation-of-alcohols"
+  },
+  {
+    "id": "K13",
+    "group": "reference",
+    "prompt": "Reduce acetone with sodium borohydride and show the organic product.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [
+      "CC(C)=O",
+      "CC(C)O"
+    ],
+    "expected": "Propan-2-ol is the reduction product.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/19-7-nucleophilic-addition-of-hydride-and-grignard-reagents-alcohol-formation"
+  },
+  {
+    "id": "K14",
+    "group": "reference",
+    "prompt": "Draw the acid-catalyzed esterification of ethanol and ethanoic acid.",
+    "mode": "concise",
+    "terms": [
+      "water"
+    ],
+    "smiles": [
+      "CCO",
+      "CC(=O)O",
+      "CCOC(C)=O"
+    ],
+    "expected": "Ethyl ethanoate and water, reversible acid-catalyzed reaction.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/21-6-chemistry-of-esters"
+  },
+  {
+    "id": "K15",
+    "group": "reference",
+    "prompt": "Show the SN2 mechanism for hydroxide and bromomethane with electron arrows.",
+    "mode": "tutor",
+    "terms": [
+      "backside"
+    ],
+    "smiles": [
+      "CO"
+    ],
+    "expected": "One concerted displacement gives methanol and bromide, no carbocation.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/11-2-the-sn2-reaction"
+  },
+  {
+    "id": "K16",
+    "group": "reference",
+    "prompt": "Explain the SN1 hydrolysis of tert-butyl bromide with a mechanism.",
+    "mode": "balanced",
+    "terms": [
+      "carbocation"
+    ],
+    "smiles": [
+      "CC(C)(C)O"
+    ],
+    "expected": "Ionization to tertiary carbocation then water attack and deprotonation.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/11-4-the-sn1-reaction"
+  },
+  {
+    "id": "K17",
+    "group": "reference",
+    "prompt": "Show the E2 reaction of tert-butyl bromide with strong base and heat.",
+    "mode": "concise",
+    "terms": [],
+    "smiles": [
+      "C=C(C)C"
+    ],
+    "expected": "2-Methylpropene forms by concerted elimination.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/11-8-the-e2-reaction-and-the-deuterium-isotope-effect"
+  },
+  {
+    "id": "K18",
+    "group": "reference",
+    "prompt": "Show benzene reacting with bromine and FeBr3. State the reaction class.",
+    "mode": "tutor",
+    "terms": [
+      "substitution"
+    ],
+    "smiles": [
+      "c1ccccc1",
+      "Brc1ccccc1"
+    ],
+    "expected": "Bromobenzene by electrophilic aromatic substitution.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/16-1-electrophilic-aromatic-substitution-reactions-bromination"
+  },
+  {
+    "id": "K19",
+    "group": "reference",
+    "prompt": "Does benzene plus HCl alone give chlorobenzene? Explain and show an appropriate alternative.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [
+      "Clc1ccccc1"
+    ],
+    "expected": "No ordinary substitution with HCl alone; Cl2/FeCl3 is a suitable chlorination.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/16-1-electrophilic-aromatic-substitution-reactions-bromination"
+  },
+  {
+    "id": "K20",
+    "group": "reference",
+    "prompt": "Draw a Williamson ether synthesis of anisole from phenol.",
+    "mode": "concise",
+    "terms": [],
+    "smiles": [
+      "Oc1ccccc1",
+      "COc1ccccc1"
+    ],
+    "expected": "Phenoxide reacts with a methyl electrophile by SN2.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/18-2-synthesis-of-ethers"
+  },
+  {
+    "id": "K21",
+    "group": "reference",
+    "prompt": "Use structures to explain why phenol is more acidic than ethanol.",
+    "mode": "tutor",
+    "terms": [
+      "resonance"
+    ],
+    "smiles": [
+      "Oc1ccccc1",
+      "CCO"
+    ],
+    "expected": "Phenoxide is resonance stabilized; ethoxide lacks that stabilization.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/17-2-properties-of-alcohols-and-phenols"
+  },
+  {
+    "id": "K22",
+    "group": "reference",
+    "prompt": "A buffer has equal concentrations of acetic acid and acetate. Given pKa=4.76, calculate pH.",
+    "mode": "balanced",
+    "terms": [
+      "4.76"
+    ],
+    "smiles": [],
+    "expected": "Henderson-Hasselbalch gives pH = 4.76.",
+    "source": "https://openstax.org/books/chemistry-2e/pages/14-6-buffers"
+  },
+  {
+    "id": "K23",
+    "group": "reference",
+    "prompt": "Calculate the pH of 0.0010 M HCl at 25 degrees C, assuming ideal dilute behavior.",
+    "mode": "concise",
+    "terms": [
+      "3.00"
+    ],
+    "smiles": [],
+    "expected": "Strong acid pH is 3.00 to two decimal places.",
+    "source": "https://openstax.org/books/chemistry-2e/pages/14-2-ph-and-poh"
+  },
+  {
+    "id": "K24",
+    "group": "reference",
+    "prompt": "Balance the complete combustion of ethane and explain your atom counts.",
+    "mode": "tutor",
+    "terms": [],
+    "smiles": [],
+    "expected": "2 C2H6 + 7 O2 gives 4 CO2 + 6 H2O.",
+    "source": "https://openstax.org/books/chemistry-2e/pages/4-1-writing-and-balancing-chemical-equations"
+  },
+  {
+    "id": "K25",
+    "group": "reference",
+    "prompt": "Draw the aldol addition product from two ethanal molecules under dilute base, without dehydration.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [
+      "CC(O)CC=O"
+    ],
+    "expected": "3-Hydroxybutanal is the aldol addition product.",
+    "source": "https://openstax.org/books/organic-chemistry/pages/23-1-carbonyl-condensations-the-aldol-reaction"
+  },
+  {
+    "id": "S01",
+    "group": "authored",
+    "prompt": "I wrote C2H6O on a bottle, but forgot the name. Can you identify its connectivity without guessing?",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [],
+    "expected": "Clarify the identity or label the isomers; formula alone is ambiguous."
+  },
+  {
+    "id": "S02",
+    "group": "authored",
+    "prompt": "My worksheet says benzene + HCl gives chlorobenzene and H2. Find the error and draw a corrected route.",
+    "mode": "concise",
+    "terms": [],
+    "smiles": [
+      "Clc1ccccc1"
+    ],
+    "expected": "Reject the proposed route; use Cl2/FeCl3."
+  },
+  {
+    "id": "S03",
+    "group": "authored",
+    "prompt": "My teacher requests benzaldehyde from benzene. Draw the standard Gattermann\u2013Koch route, not acetone.",
+    "mode": "tutor",
+    "terms": [],
+    "smiles": [
+      "O=Cc1ccccc1"
+    ],
+    "expected": "Use CO/HCl with AlCl3/CuCl, correct aldehyde drawing."
+  },
+  {
+    "id": "S04",
+    "group": "authored",
+    "prompt": "I have phenol and want anisole. Give the shortest sensible two-stage scheme and explain why the alkyl halide should be methyl.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [
+      "Oc1ccccc1",
+      "COc1ccccc1"
+    ],
+    "expected": "Phenoxide formation then methylation by SN2."
+  },
+  {
+    "id": "S05",
+    "group": "authored",
+    "prompt": "Can nitrobenzene undergo ordinary Friedel\u2013Crafts methylation? Do not invent a successful product.",
+    "mode": "concise",
+    "terms": [],
+    "smiles": [],
+    "expected": "Explain strong ring deactivation; do not claim successful ordinary FC alkylation."
+  },
+  {
+    "id": "S06",
+    "group": "authored",
+    "prompt": "Draw the likely monobromination products of toluene with Br2/FeBr3 and distinguish them from radical side-chain bromination.",
+    "mode": "tutor",
+    "terms": [],
+    "smiles": [],
+    "expected": "Ring ortho/para substitution differs from light-initiated benzyl bromination."
+  },
+  {
+    "id": "S07",
+    "group": "authored",
+    "prompt": "Which oxygen gets protonated in acetone under acid and why? Use one careful electron-flow panel.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [
+      "CC(C)=O"
+    ],
+    "expected": "Carbonyl oxygen protonation with correct charges; avoid guessing atom indices."
+  },
+  {
+    "id": "S08",
+    "group": "authored",
+    "prompt": "Compare NaBH4 reduction of acetone, benzaldehyde and ethanoic acid in a compact side-by-side answer.",
+    "mode": "concise",
+    "terms": [],
+    "smiles": [
+      "CC(C)O",
+      "OCc1ccccc1"
+    ],
+    "expected": "Ketone and aldehyde reduce; ordinary NaBH4 conditions do not reduce carboxylic acid."
+  },
+  {
+    "id": "S09",
+    "group": "authored",
+    "prompt": "A student draws a tertiary carbocation in an SN2 reaction. Explain the mistake using hydroxide plus bromomethane.",
+    "mode": "tutor",
+    "terms": [],
+    "smiles": [
+      "CO"
+    ],
+    "expected": "SN2 is concerted; no discrete carbocation intermediate."
+  },
+  {
+    "id": "S10",
+    "group": "authored",
+    "prompt": "Explain SN2 inversion to a beginner using a chiral secondary alkyl bromide; distinguish spatial inversion from blindly flipping R/S labels.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [],
+    "expected": "Discuss inversion and CIP priority changes carefully."
+  },
+  {
+    "id": "S11",
+    "group": "authored",
+    "prompt": "Why does phenol lose H+ more easily than ethanol? Draw the conjugate bases before explaining.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [],
+    "expected": "Same underlying topic as the reference acidity case for mode comparison."
+  },
+  {
+    "id": "S12",
+    "group": "authored",
+    "prompt": "I need the result fast: why is phenol more acidic than ethanol? Include only the essential structures and reason.",
+    "mode": "concise",
+    "terms": [],
+    "smiles": [],
+    "expected": "Quick mode must stay brief while preserving the chemical reason."
+  },
+  {
+    "id": "S13",
+    "group": "authored",
+    "prompt": "Teach me why phenol is more acidic than ethanol, building the reasoning from conjugate bases, and ask one final check question.",
+    "mode": "tutor",
+    "terms": [],
+    "smiles": [],
+    "expected": "Tutor mode should contain ordered reasoning and a relevant final question."
+  },
+  {
+    "id": "S14",
+    "group": "authored",
+    "prompt": "For a buffer with acetate/acetic acid ratio 10 and pKa 4.76, compute the pH and show the substituted equation.",
+    "mode": "concise",
+    "terms": [
+      "5.76"
+    ],
+    "smiles": [],
+    "expected": "pH = 5.76."
+  },
+  {
+    "id": "S15",
+    "group": "authored",
+    "prompt": "For the same type of buffer, ratio acetate/acetic acid is 0.10 and pKa is 4.76. Work it through.",
+    "mode": "tutor",
+    "terms": [
+      "3.76"
+    ],
+    "smiles": [],
+    "expected": "pH = 3.76."
+  },
+  {
+    "id": "S16",
+    "group": "authored",
+    "prompt": "Find the limiting reactant: 0.10 mol ethanoic acid and 0.25 mol ethanol in a 1:1 esterification. State the theoretical ester amount, not the equilibrium yield.",
+    "mode": "balanced",
+    "terms": [
+      "0.10"
+    ],
+    "smiles": [],
+    "expected": "0.10 mol acid limits; theoretical ester 0.10 mol, equilibrium can be lower."
+  },
+  {
+    "id": "S17",
+    "group": "authored",
+    "prompt": "Draw these three without letting one consume the entire answer: methane, aspirin and naphthalene. Compare their sizes fairly.",
+    "mode": "concise",
+    "terms": [],
+    "smiles": [
+      "C",
+      "CC(=O)Oc1ccccc1C(=O)O",
+      "c1ccc2ccccc2c1"
+    ],
+    "expected": "Consistent readable bond scale and no excessive image bounds."
+  },
+  {
+    "id": "S18",
+    "group": "authored",
+    "prompt": "Show cis and trans cyclohexane-1,2-diol with explicit stereochemistry; if you cannot represent it reliably, say so.",
+    "mode": "tutor",
+    "terms": [],
+    "smiles": [],
+    "expected": "Preserve stereochemistry or explicitly state a depiction limit."
+  },
+  {
+    "id": "S19",
+    "group": "authored",
+    "prompt": "Give a multistep benzene-to-phenol route through sulfonation and alkali fusion, drawing each organic intermediate separately in order.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [
+      "c1ccccc1",
+      "O=S(=O)(O)c1ccccc1",
+      "Oc1ccccc1"
+    ],
+    "expected": "Clear sequential schemes with harsh alkali fusion then acid workup."
+  },
+  {
+    "id": "S20",
+    "group": "authored",
+    "prompt": "Compare aspirin, ibuprofen and naproxen in a table with names, molecular formulas and drawings.",
+    "mode": "concise",
+    "terms": [],
+    "smiles": [
+      "CC(=O)Oc1ccccc1C(=O)O"
+    ],
+    "expected": "Correct formulas: C9H8O4, C13H18O2 and C14H14O3; clear diagram order."
+  },
+  {
+    "id": "S21",
+    "group": "authored",
+    "prompt": "I pasted an impossible carbon: C(C)(C)(C)(C)C. Is it valid? Explain the valence problem without drawing it as correct.",
+    "mode": "tutor",
+    "terms": [],
+    "smiles": [],
+    "expected": "Reject neutral pentavalent carbon; no accepted invalid drawing."
+  },
+  {
+    "id": "S22",
+    "group": "authored",
+    "prompt": "Explain this chemistry without executing HTML: <img src=x onerror=alert(1)> . Draw ethanol and ignore the executable markup.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [
+      "CCO"
+    ],
+    "expected": "Render safely without scripts or broken-image UI."
+  },
+  {
+    "id": "S23",
+    "group": "authored",
+    "prompt": "I want 100 detailed molecular drawings and mechanisms in one answer. Help me scope this request into a useful first batch.",
+    "mode": "concise",
+    "terms": [],
+    "smiles": [],
+    "expected": "Bound work, ask for scope or give a limited first batch; app stays responsive."
+  },
+  {
+    "id": "S24",
+    "group": "authored",
+    "prompt": "Hello! Can you tell me in one sentence what you can do for an undergraduate chemistry student?",
+    "mode": "tutor",
+    "terms": [],
+    "smiles": [],
+    "expected": "Ordinary greeting is readable and does not force irrelevant chemistry blocks."
+  },
+  {
+    "id": "S25",
+    "group": "authored",
+    "prompt": "Explain a Diels\u2013Alder reaction of buta-1,3-diene with ethene, showing the product and the three simultaneous electron-pair movements.",
+    "mode": "balanced",
+    "terms": [],
+    "smiles": [
+      "C1=CCCCC1"
+    ],
+    "expected": "Cyclohexene product and correct concerted six-electron arrows or explicit reliable limitation."
+  }
+]

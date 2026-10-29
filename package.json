@@ -1,0 +1,144 @@
+{
+  "name": "chemez",
+  "version": "0.1.2",
+  "private": true,
+  "description": "Chemistry chat with validated molecular diagrams",
+  "author": "Mohammed Ayan Mahmood",
+  "license": "MIT",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test electron/*.test.cjs && vitest run",
+    "test:backend": "node scripts/python.mjs -m pytest backend/tests -q",
+    "test:images": "node --test shared/image-input.test.mjs",
+    "test:e2e": "playwright test",
+    "bundle:backend": "node scripts/bundle-backend.mjs",
+    "package": "npm run setup:runtime && npm run build && npm run bundle:backend && npm run stage:app && electron-builder --publish never",
+    "package:dir": "npm run setup:runtime && npm run build && npm run bundle:backend && npm run stage:app && electron-builder --dir --publish never",
+    "smoke:backend": "node scripts/smoke-backend.mjs",
+    "icons": "node scripts/generate-icons.mjs",
+    "setup:runtime": "node scripts/setup-runtime.mjs",
+    "stage:app": "node scripts/stage-app.mjs",
+    "release:preflight": "node scripts/release-gate.mjs --preflight",
+    "release:verify": "node scripts/release-gate.mjs --artifacts",
+    "release:readiness": "node scripts/release-gate.mjs --readiness"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "3dmol": "^2.5.5",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.19.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.2",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.1",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.8.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  },
+  "build": {
+    "appId": "org.chemez.desktop",
+    "productName": "ChemEZ",
+    "directories": {
+      "output": "release",
+      "app": "build/desktop-app"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/*.cjs",
+      "shared/*.mjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "backend-dist/chemez-backend",
+        "to": "backend"
+      },
+      {
+        "from": "dist/THIRD_PARTY_NOTICES.md",
+        "to": "THIRD_PARTY_NOTICES.md"
+      },
+      {
+        "from": "backend/vendor/seq_encode/LICENSE",
+        "to": "seq_encode-LICENSE"
+      },
+      {
+        "from": "frontend/src/vendor/xsmiles/LICENSE",
+        "to": "xsmiles-LICENSE"
+      },
+      {
+        "from": "frontend/src/vendor/xsmiles/xsmiles.js.LICENSE.txt",
+        "to": "xsmiles-bundled-LICENSES.txt"
+      },
+      {
+        "from": "frontend/src/vendor/rdkit/LICENSE",
+        "to": "rdkit-minimallib-LICENSE"
+      },
+      {
+        "from": "frontend/src/vendor/vitrio/LICENSE",
+        "to": "vitrio-LICENSE"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        {
+          "target": "dmg"
+        }
+      ],
+      "hardenedRuntime": true,
+      "minimumSystemVersion": "14.0"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Education"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
+    },
+    "icon": "assets/icon.png",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "researchbyayan",
+        "repo": "ChemEZ",
+        "releaseType": "draft"
+      }
+    ],
+    "artifactName": "ChemEZ-${version}-${os}-${arch}.${ext}",
+    "compression": "maximum"
+  },
+  "overrides": {
+    "katex": "^0.19.1"
+  },
+  "type": "module"
+}
