@@ -90,7 +90,7 @@ To package locally on that same operating system and architecture:
 npm run package
 ```
 
-Local packages can be unsigned. The public release requires signed installers, macOS notarization, native packaged tests, and clean-machine checks. See the [development guide](docs/DEVELOPMENT.md) and [release status](docs/RELEASE_PROGRESS.md).
+Local packages can be unsigned. The public release requires signed installers, macOS notarization, native packaged tests, and clean-machine checks. See the [development guide](docs/DEVELOPMENT.md), [release status](docs/RELEASE_PROGRESS.md), and [signing prerequisites](docs/RELEASE_SIGNING.md).
 
 ## Credits and license
 
