@@ -4,9 +4,15 @@
 
 <br>
 
-**A chemistry chat that draws what it explains.**
+<a href="https://github.com/researchbyayan/ChemEZ/releases"><img src="assets/readme-button-releases.svg" width="188" alt="Open releases"></a>
+&nbsp;
+<a href="#see-it-in-action"><img src="assets/readme-button-features.svg" width="188" alt="See features"></a>
+&nbsp;
+<a href="#connect-a-model"><img src="assets/readme-button-start.svg" width="188" alt="Get started"></a>
 
-[Download](#download) &nbsp;·&nbsp; [See it in action](#see-it-in-action) &nbsp;·&nbsp; [Connect a model](#connect-a-model) &nbsp;·&nbsp; [Build from source](#build-from-source)
+<br>
+
+**A chemistry chat that draws what it explains.**
 
 </div>
 

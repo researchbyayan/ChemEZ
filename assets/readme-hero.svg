@@ -12,6 +12,11 @@
       <stop offset=".52" stop-color="#5cf1a5"/>
       <stop offset="1" stop-color="#1ab47c"/>
     </linearGradient>
+    <linearGradient id="original-bolt" x1="165.217" y1="26" x2="365.028" y2="331.953" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#94FFC0"/>
+      <stop offset=".48" stop-color="#65F5A2"/>
+      <stop offset="1" stop-color="#13A77E"/>
+    </linearGradient>
     <linearGradient id="fade" x2="1">
       <stop stop-color="#5cf1a5" stop-opacity=".5"/>
       <stop offset="1" stop-color="#5cf1a5" stop-opacity="0"/>
@@ -30,24 +35,17 @@
   <ellipse cx="1010" cy="225" rx="330" ry="295" fill="url(#glow)"/>
   <path d="M28 1H1252Q1279 1 1279 28V472Q1279 499 1252 499H28Q1 499 1 472V28Q1 1 28 1Z" fill="none" stroke="#b4ffcc" stroke-opacity=".19" stroke-width="2"/>
 
-  <g transform="translate(75 69)">
-    <path d="M15 22 28 0h27l-5 9H33L25 23l9 16h19l-5 9H28Z" fill="#f5fff8"/>
-    <path d="M58 0h23L63 20h16L42 60l9-29H36Z" fill="url(#mint)"/>
-    <text x="102" y="39" fill="#f3fff7" font-family="Arial,Helvetica,sans-serif" font-size="39" font-weight="700" letter-spacing="-2">ChemEZ</text>
+  <g transform="translate(75 66) scale(.16)">
+    <path d="M103.956 53.53H209.6L188.9 103.47H128.93L70.44 199.701L124.99 293.93H181.3L161.6 345.873H100.023L13.5 199.701L103.956 53.53Z" fill="#fff"/>
+    <path d="M251.085 26H403.811L306.8 172.171H386.769L173.083 397L235.353 232.475H165.217L251.085 26Z" fill="url(#original-bolt)"/>
   </g>
+  <text x="158" y="108" fill="#f3fff7" font-family="Arial,Helvetica,sans-serif" font-size="39" font-weight="700" letter-spacing="-2">ChemEZ</text>
 
   <g font-family="Arial,Helvetica,sans-serif">
     <text x="76" y="217" fill="#f4fff7" font-size="64" font-weight="700" letter-spacing="-3">See the chemistry.</text>
     <text x="77" y="268" fill="#a9c5b4" font-size="24">Ask. Draw. Follow the electrons.</text>
     <path d="M78 300H630" stroke="url(#fade)"/>
-    <g font-size="16" font-weight="600">
-      <rect x="77" y="332" width="142" height="44" rx="22" fill="#7bf2aa" fill-opacity=".13" stroke="#7bf2aa" stroke-opacity=".42"/>
-      <text x="100" y="359" fill="#b9ffd0">Molecules</text>
-      <rect x="229" y="332" width="136" height="44" rx="22" fill="#7bf2aa" fill-opacity=".13" stroke="#7bf2aa" stroke-opacity=".42"/>
-      <text x="252" y="359" fill="#b9ffd0">Reactions</text>
-      <rect x="375" y="332" width="151" height="44" rx="22" fill="#7bf2aa" fill-opacity=".13" stroke="#7bf2aa" stroke-opacity=".42"/>
-      <text x="398" y="359" fill="#b9ffd0">Mechanisms</text>
-    </g>
+    <text x="78" y="356" fill="#a9e5bc" font-size="16" font-weight="600" letter-spacing="2">MOLECULES  /  REACTIONS  /  MECHANISMS</text>
     <text x="77" y="439" fill="#728e7c" font-size="15" letter-spacing="2">CHEMISTRY CHAT  /  DESKTOP</text>
   </g>
 
