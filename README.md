@@ -14,20 +14,20 @@
 
 ## Download
 
-> **Beta available:** ChemEZ 0.1.2 beta is live as an unsigned test build. It includes the bundled chemistry runtime and has passed the native packaged smoke suite. [Read the beta notes](https://github.com/researchbyayan/ChemEZ/releases/tag/beta-0.1.2).
+> **ChemEZ 0.1.3 is out** as an unsigned build. It includes the bundled chemistry runtime and has passed the native packaged smoke suite. [Read the release notes](https://github.com/researchbyayan/ChemEZ/releases/tag/0.1.3).
 
 | Platform | Installer | Requirement | Direct download |
 | :--- | :--- | :--- | :--- |
-| **Mac, Apple Silicon** | Native arm64 DMG | macOS 14+ | [Download DMG](https://github.com/researchbyayan/ChemEZ/releases/download/beta-0.1.2/ChemEZ-0.1.2-mac-arm64.dmg) |
-| **Mac, Intel** | Native x64 DMG | macOS 14+ | [Download DMG](https://github.com/researchbyayan/ChemEZ/releases/download/beta-0.1.2/ChemEZ-0.1.2-mac-x64.dmg) |
-| **Windows** | x64 setup EXE | Windows 10 or 11 | [Download setup](https://github.com/researchbyayan/ChemEZ/releases/download/beta-0.1.2/ChemEZ-0.1.2-win-x64.exe) |
-| **Linux** | x64 AppImage | 64-bit Linux | [Download AppImage](https://github.com/researchbyayan/ChemEZ/releases/download/beta-0.1.2/ChemEZ-0.1.2-linux-x86_64.AppImage) |
+| **Mac, Apple Silicon** | Native arm64 DMG | macOS 14+ | [Download DMG](https://github.com/researchbyayan/ChemEZ/releases/download/0.1.3/ChemEZ-0.1.3-mac-arm64.dmg) |
+| **Mac, Intel** | Native x64 DMG | macOS 14+ | [Download DMG](https://github.com/researchbyayan/ChemEZ/releases/download/0.1.3/ChemEZ-0.1.3-mac-x64.dmg) |
+| **Windows** | x64 setup EXE | Windows 10 or 11 | [Download setup](https://github.com/researchbyayan/ChemEZ/releases/download/0.1.3/ChemEZ-0.1.3-win-x64.exe) |
+| **Linux** | x64 AppImage | 64-bit Linux | [Download AppImage](https://github.com/researchbyayan/ChemEZ/releases/download/0.1.3/ChemEZ-0.1.3-linux-x86_64.AppImage) |
 
-Every beta installer is under 250 MB and includes RDKit and the chemistry runtime. Packaged users do not need to install Python, Node.js, LaTeX, or a local language model. Verify downloads with the [beta SHA256 checksums](https://github.com/researchbyayan/ChemEZ/releases/download/beta-0.1.2/SHA256SUMS.txt). [Follow release progress](docs/RELEASE_PROGRESS.md).
+Every installer is under 250 MB and includes RDKit and the chemistry runtime. Packaged users do not need to install Python, Node.js, LaTeX, or a local language model. Verify downloads with the [SHA256 checksums](https://github.com/researchbyayan/ChemEZ/releases/download/0.1.3/SHA256SUMS.txt). [Follow release progress](docs/RELEASE_PROGRESS.md).
 
-The beta is unsigned, so macOS and Windows may show an initial security warning. Follow the one-time opening steps in the [beta release notes](https://github.com/researchbyayan/ChemEZ/releases/tag/beta-0.1.2).
+ChemEZ is unsigned, so macOS and Windows may show an initial security warning. Follow the one-time opening steps in the [release notes](https://github.com/researchbyayan/ChemEZ/releases/tag/0.1.3).
 
-**Updates:** from 0.1.3, ChemEZ checks GitHub for a new release and offers it at most once a week. On Windows and Linux it downloads in the background and installs when you restart. On Mac it downloads the new DMG and opens it for you to drag into Applications (installing in place needs an Apple-signed app). The 0.1.2 beta can't update itself, so install 0.1.3 by hand once.
+**Updates:** ChemEZ checks GitHub for a new release and offers it at most once a week. On Windows and Linux it downloads in the background and installs when you restart. On Mac it downloads the new DMG and opens it for you to drag into Applications (installing in place needs an Apple-signed app). If you have the 0.1.2 beta, install 0.1.3 by hand once; it can't update itself.
 
 ## See it in action
 
