@@ -217,7 +217,8 @@ ipcMain.handle('chemez:save-text', async (event, text) => {
 });
 function createWindow() {
   const area=screen.getPrimaryDisplay().workAreaSize;
-  window = new BrowserWindow({width:Math.min(1320,Math.max(840,area.width-40)),height:Math.min(900,Math.max(620,area.height-40)),minWidth:840,minHeight:620,frame:false,backgroundColor:'#00000000',transparent:true,...(process.platform==='darwin'?{vibrancy:'under-window',visualEffectState:'active'}:process.platform==='win32'?{backgroundMaterial:'acrylic'}:{}),title:'ChemEZ',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  // On Windows a transparent window loses both the acrylic backdrop and the system's rounded corners.
+  window = new BrowserWindow({width:Math.min(1320,Math.max(840,area.width-40)),height:Math.min(900,Math.max(620,area.height-40)),minWidth:840,minHeight:620,frame:false,backgroundColor:'#00000000',transparent:process.platform!=='win32',...(process.platform==='darwin'?{vibrancy:'under-window',visualEffectState:'active'}:process.platform==='win32'?{backgroundMaterial:'acrylic'}:{}),title:'ChemEZ',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
   if (process.platform === 'darwin') window.setVibrancy(nativeTheme.prefersReducedTransparency ? null : 'hud');
   window.setBackgroundColor('#00000000');
   window.webContents.setWindowOpenHandler(() => ({action:'deny'}));
