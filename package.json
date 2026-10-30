@@ -111,13 +111,15 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "icon": "assets/icon-full.png"
     },
     "linux": {
       "target": [
         "AppImage"
       ],
-      "category": "Education"
+      "category": "Education",
+      "icon": "assets/icon-full.png"
     },
     "nsis": {
       "oneClick": false,
