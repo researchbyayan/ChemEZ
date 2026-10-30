@@ -40,7 +40,14 @@ jobs:
       # Unsigned candidates are ad-hoc signed as a whole on macOS: without a sealed bundle,
       # Apple silicon Macs report the downloaded app as "damaged". Hardened runtime needs a
       # real Developer ID, so it stays off here (the signed release workflow keeps it on).
-      - run: npm run package -- -c.mac.identity=- -c.mac.hardenedRuntime=false
+      - name: Package (macOS, ad-hoc signed)
+        if: runner.os == 'macOS'
+        run: npm run package -- -c.mac.identity=- -c.mac.hardenedRuntime=false
+      - name: Package
+        if: runner.os != 'macOS'
+        run: npm run package
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - run: npm run smoke:backend
       - name: Packaged Electron smoke
         if: runner.os != 'Linux'
