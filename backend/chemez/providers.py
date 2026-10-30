@@ -66,6 +66,10 @@ class Provider:
             if self.image_support()=='unsupported' and any(self._parts(m['content'])[1] for m in messages):
                 raise ProviderError('This NVIDIA model accepts text only. Choose a vision-capable model in Model & API to ask about images. Your attachment has been kept; no image was sent.')
             body={'model':model,'messages':[{'role':'system','content':system},*self._openai_messages(messages)],'stream':True}
+            if self.is_nvidia() and model.lower().startswith('nvidia/nemotron-3.5-'):
+                # NVIDIA enables reasoning by default. Direct answers avoid spending
+                # the request budget on hidden reasoning before chemistry JSON arrives.
+                body.update(max_tokens=8192, chat_template_kwargs={'enable_thinking':False})
             if self.is_nvidia() and 'nemotron-3.5-bolt-e4b' in model.lower() and system.startswith(SYSTEM):
                 # NVIDIA documents constrained JSON-schema output for this endpoint.
                 # Instructions alone produced invalid JSON in the live baseline run.
