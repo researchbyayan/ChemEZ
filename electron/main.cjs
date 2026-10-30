@@ -124,6 +124,9 @@ ipcMain.handle('chemez:credits',event=>{trusted(event);return releaseInfo.credit
 ipcMain.handle('chemez:license',(event,id)=>{trusted(event);return releaseInfo.license(id);});
 ipcMain.handle('chemez:credit-source',async(event,id)=>{trusted(event);return shell.openExternal(await releaseInfo.source(id));});
 ipcMain.handle('chemez:updates',event=>{trusted(event);return releaseInfo.updates();});
+const updater=require('./updater.cjs').createUpdater({app,shell,releaseInfo,send:value=>{if(window&&!window.isDestroyed())window.webContents.send('chemez:update',value);}});
+ipcMain.handle('chemez:update-download',event=>{trusted(event);return updater.download();});
+ipcMain.handle('chemez:update-install',event=>{trusted(event);updater.install();});
 ipcMain.handle('chemez:open-reference', (event, url) => {
   trusted(event);
   if(typeof url!=='string'||url.length>2000)return false;
@@ -245,6 +248,7 @@ else {
     // Paint the lightweight shell while Python warms up; IPC waits for health.
     backendReady=startBackend();
     createWindow();
+    updater.start();
     backendReady.catch(error=>{dialog.showErrorBox('ChemEZ could not start',error.message);app.quit();});
     app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0)createWindow();});
   }).catch(error=>{dialog.showErrorBox('ChemEZ could not start',error.message);app.quit();});

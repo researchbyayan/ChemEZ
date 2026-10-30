@@ -28,6 +28,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "3dmol": "^2.5.5",
+    "electron-updater": "6.8.11",
     "highlight.js": "^11.11.1",
     "katex": "^0.19.1",
     "react": "^19.1.0",

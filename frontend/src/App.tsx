@@ -18,6 +18,7 @@ import {LEVELS,saveLevel,storedLevel,type Level} from './levels';
 import {LevelChooser} from './LevelChooser';
 import {GlassEdges,storedGlassMode,type GlassMode} from './GlassEdges';
 import {Wordmark} from './Wordmark';
+import {UpdateCard} from './UpdateCard';
 import {HeroWord} from './HeroWord';
 import {errorMessage} from './errors';
 import {applyDiagramPreferences,DiagramPreferences} from './DiagramPreferences';
@@ -237,6 +238,7 @@ export default function App(){
   return <>
     <div className="ambient" aria-hidden="true"/>
     <GlassEdges mode={glassMode}/>
+    <UpdateCard/>
     <div className={'app-shell'+(collapsed?' sidebar-collapsed':'')}>
       <aside className="sidebar" ref={menuRef}>
         <a className="brand" href="#" aria-label="ChemEZ home" onClick={event=>{event.preventDefault();newChat();}}>

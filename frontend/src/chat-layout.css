@@ -503,3 +503,11 @@ main:not(:has(.welcome)) .composer-area::before{content:'';position:absolute;top
 /* A chat still answering in the background shows a small pulsing dot in the sidebar. */
 .running-dot { display:inline-block; width:6px; height:6px; margin-right:7px; border-radius:50%; background:var(--green,#8be0a4); vertical-align:middle; animation:pulse 1.4s ease-in-out infinite; }
 @media (prefers-reduced-motion:reduce){ .running-dot { animation:none; } }
+.update-card { position:fixed; right:18px; bottom:18px; z-index:60; width:300px; padding:14px 16px; border-radius:14px; border:1px solid #ffffff1c; background:#121b16f2; box-shadow:0 10px 30px #0006; color:#e2e7e4; font-size:13px; }
+.update-card b { display:block; font-size:13.5px; margin-bottom:4px; }
+.update-card p { margin:0 0 10px; color:#a9b8af; line-height:1.4; }
+.update-card div { display:flex; justify-content:flex-end; gap:8px; }
+.update-card progress { width:100%; height:6px; accent-color:#7fcf9b; }
+.update-card button { padding:6px 12px!important; border-radius:8px; font-size:12.5px; min-height:0!important; }
+.update-card .update-later { background:transparent!important; border:1px solid #ffffff1f!important; box-shadow:none!important; color:#b9c8bf; }
+.update-card .update-go { background:linear-gradient(145deg,#b8f2c9,#7fcf9b)!important; border:0!important; color:#102719; }

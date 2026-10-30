@@ -17,6 +17,10 @@ go to the chat service. Both services' account terms and data retention apply.
 Model discovery and connection checks also contact the configured service; the
 image-reader connection check sends a generated blank image.
 
+The installed app asks GitHub for the latest ChemEZ release at launch and every few
+hours. That request sends no conversation data; downloading an update happens only
+when you click **Update**.
+
 ChemEZ does not include analytics, remote fonts, automatic cloud conversation sync,
 or remote error reporting. Optional evaluation capture is a developer-only explicit
 environment setting; it writes test prompts and outputs to a local folder. It must

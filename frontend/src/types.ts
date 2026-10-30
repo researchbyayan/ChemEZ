@@ -25,6 +25,9 @@ export interface Bridge {
   license?(id:string):Promise<string>;
   openCreditSource?(id:string):Promise<unknown>;
   checkUpdates?():Promise<import('./About').UpdateResult>;
+  downloadUpdate?():Promise<void>;
+  installUpdate?():Promise<void>;
+  onUpdate?(callback:(value:import('./UpdateCard').UpdateState)=>void):()=>void;
 
   appearance():Promise<{reducedTransparency:boolean}>;
   saveText(text:string):Promise<boolean>;

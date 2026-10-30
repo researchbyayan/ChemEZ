@@ -93,6 +93,23 @@ The CI matrix builds Apple Silicon macOS, Intel macOS, x64 Windows, and x64 Linu
 natively. Windows/Linux and Apple Silicon results are unverified until that CI
 runs. A build on Intel macOS does not validate an Apple Silicon binary.
 
+## Publishing an update
+
+Installed copies update from normal (not pre-release) GitHub releases.
+
+1. Set `version` in `package.json` (for example `0.1.3`) and commit.
+2. Push a tag with exactly that version and no `v`: `git tag 0.1.3 && git push origin 0.1.3`.
+   `v` tags start the signed release workflow instead.
+3. The native build workflow builds all four targets, then its `publish` job creates the
+   release with the installers, `SHA256SUMS.txt`, `latest.yml`, `latest-linux.yml` and
+   blockmaps. It stops if the tag and `package.json` version differ.
+
+`electron/updater.cjs` checks at launch and every 6 hours and shows the update card at
+most once every 7 days. Windows and AppImage builds use electron-updater (download in the
+background, install on restart). An unsigned Mac app cannot replace itself, so the Mac
+build downloads the DMG to Downloads and opens it. Main-process packages are copied into
+the app by `scripts/stage-app.mjs` (its `RUNTIME` list).
+
 Unsigned local builds are suitable for development. Distribution signing and
 Apple notarization require the owner's credentials. Configure Electron Builder's
 standard `CSC_*`/Apple notarization environment for release distribution; don't

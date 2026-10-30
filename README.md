@@ -27,6 +27,8 @@ Every beta installer is under 250 MB and includes RDKit and the chemistry runtim
 
 The beta is unsigned, so macOS and Windows may show an initial security warning. Follow the one-time opening steps in the [beta release notes](https://github.com/researchbyayan/ChemEZ/releases/tag/beta-0.1.2).
 
+**Updates:** from 0.1.3, ChemEZ checks GitHub for a new release and offers it at most once a week. On Windows and Linux it downloads in the background and installs when you restart. On Mac it downloads the new DMG and opens it for you to drag into Applications (installing in place needs an Apple-signed app). The 0.1.2 beta can't update itself, so install 0.1.3 by hand once.
+
 ## See it in action
 
 <div align="center">
