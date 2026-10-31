@@ -10,6 +10,10 @@
 &nbsp;
 <a href="#connect-a-model"><img src="assets/readme-button-start.svg" width="138" height="34" alt="Get started"></a>
 
+<br><br>
+
+<a href="https://devhunt.org/tool/chemez" target="_blank" rel="noopener noreferrer" title="ChemEZ on DevHunt"><img src="https://devhunt.org/badge/chemez.svg" alt="ChemEZ - Featured on DevHunt" width="220" height="54"></a>
+
 </div>
 
 ## Download
