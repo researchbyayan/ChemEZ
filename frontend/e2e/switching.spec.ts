@@ -106,10 +106,10 @@ test('composer collapses to a slim bar, preserves a draft and still sends with E
   const form=page.locator('form.composer');
   await expect.poll(async()=>await form.evaluate(el=>el.getBoundingClientRect().height)).toBeLessThanOrEqual(58);
   await expect(page.getByRole('textbox',{name:'Chemistry question'})).toHaveValue('Draw ethanol');
-  await expect(page.getByRole('button',{name:'Attach chemistry image'})).toBeHidden();
+  await expect(page.getByRole('button',{name:'Chat tools'})).toBeHidden();
   await page.screenshot({path:test.info().outputPath('composer-compact.png')});
   await page.locator('.composer-area').hover();
-  await expect(page.getByRole('button',{name:'Attach chemistry image'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Chat tools'})).toBeVisible();
   await expect.poll(()=>form.evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThan(80);
   await page.screenshot({path:test.info().outputPath('composer-expanded.png')});
   await page.getByRole('textbox',{name:'Chemistry question'}).press('Enter');
@@ -146,13 +146,70 @@ test('native fullscreen preference persists and controls the window expand actio
   await expect.poll(()=>page.evaluate(()=>(window as unknown as {windowActions:string[]}).windowActions.includes('toggle-maximize'))).toBe(true);
   await page.getByRole('button',{name:'Settings',exact:true}).click();
   await page.getByRole('button',{name:'Appearance',exact:true}).click();
-  await page.getByRole('switch',{name:'Native fullscreen',exact:true}).click();
-  await expect(page.getByRole('switch',{name:'Native fullscreen',exact:true})).toHaveAttribute('aria-checked','true');
+  await page.getByRole('switch',{name:'Windowed maximize',exact:true}).click();
+  await expect(page.getByRole('switch',{name:'Windowed maximize',exact:true})).toHaveAttribute('aria-checked','false');
   await page.getByRole('button',{name:'Close Settings',exact:true}).click();
   await page.getByRole('button',{name:'Maximize or restore window'}).click();
   await expect.poll(()=>page.evaluate(()=>(window as unknown as {windowActions:string[]}).windowActions.includes('toggle-fullscreen'))).toBe(true);
   await page.reload();
   await page.getByRole('button',{name:'Settings',exact:true}).click();
   await page.getByRole('button',{name:'Appearance',exact:true}).click();
-  await expect(page.getByRole('switch',{name:'Native fullscreen',exact:true})).toHaveAttribute('aria-checked','true');
+  await expect(page.getByRole('switch',{name:'Windowed maximize',exact:true})).toHaveAttribute('aria-checked','false');
+});
+
+
+test('floating composer and tools are explicit and preserve default docked mode',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await expect(page.locator('.composer-area')).not.toHaveClass(/composer-floating/);
+  await page.locator('.composer-area').hover();
+  await page.getByRole('button',{name:'Chat tools',exact:true}).click();
+  await expect(page.getByRole('menuitem',{name:/Add image/})).toBeVisible();
+  await expect(page.getByRole('menu',{name:'Chat tools'}).getByRole('menuitem').last()).toContainText('Add image');
+  await page.screenshot({path:test.info().outputPath('chat-tools-menu.png')});
+  await page.getByRole('menuitem',{name:'/synthesis',exact:false}).click();
+  await expect(page.locator('.slash-chip')).toContainText('Synthesis');
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  await expect(page.getByRole('switch',{name:'Windowed maximize',exact:true})).toHaveAttribute('aria-checked','true');
+  await page.getByRole('switch',{name:'Dock chatbox at bottom'}).click();
+  await page.getByRole('button',{name:'Close Settings',exact:true}).click();
+  await page.mouse.move(5,5);
+  await expect(page.locator('.composer-area')).toHaveClass(/composer-floating/);
+  await expect(page.locator('.composer-area')).toHaveCSS('opacity','0.25');
+  await page.locator('.composer-area').hover();
+  await expect(page.locator('.composer-area')).toHaveCSS('opacity','1');
+});
+
+test('floating reply anchors the nearby question and clears on chat navigation',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  await page.getByRole('switch',{name:'Dock chatbox at bottom'}).click();
+  await page.getByRole('button',{name:'Close Settings',exact:true}).click();
+  const handle=page.getByRole('button',{name:'Move floating chatbox'});
+  const initial=await handle.boundingBox();expect(initial).not.toBeNull();
+  await page.mouse.move(initial!.x+initial!.width/2,initial!.y+initial!.height/2);
+  await page.mouse.down();await page.mouse.move(initial!.x+initial!.width/2,160,{steps:12});await page.mouse.up();
+  await expect.poll(async()=>((await handle.boundingBox())?.y||0)).toBeLessThan(initial!.y-100);
+  await page.getByRole('textbox',{name:'Chemistry question'}).fill('Why is that?');
+  await expect(page.locator('.reply-anchor')).toContainText('Why is ethanol polar?');
+  await expect(page.locator('.composer-area')).toHaveClass(/composer-reply/);
+  await page.screenshot({path:test.info().outputPath('floating-contextual-reply.png')});
+  await page.getByRole('textbox',{name:'Chemistry question'}).press('Enter');
+  await expect(page.locator('.message.user').last()).toContainText('Replying to the earlier question "Why is ethanol polar?"');
+  await expect(page.getByText('First part of the answer.')).toBeVisible();await finish(page);
+  await history(page).getByTitle('Benzene resonance',{exact:true}).click();
+  await expect(page.locator('.reply-anchor')).toHaveCount(0);
+});
+
+test('disabled send keeps the original arrow while only its circle dims',async({page})=>{
+  await mockChats(page);await page.goto('/');await page.locator('.composer-area').hover();
+  const send=page.getByRole('button',{name:'Send question',exact:true});
+  await expect(send).toBeDisabled();await expect(send.locator('i')).toHaveClass(/fa-arrow-up/);
+  const idle=await send.evaluate(el=>({arrow:getComputedStyle(el.querySelector('i')!).color,opacity:getComputedStyle(el).opacity,circle:getComputedStyle(el,'::before').opacity}));
+  await page.getByRole('textbox',{name:'Chemistry question'}).fill('Draw benzene');await expect(send).toBeEnabled();
+  await expect.poll(()=>send.evaluate(el=>getComputedStyle(el,'::before').opacity)).toBe('1');
+  const ready=await send.evaluate(el=>({arrow:getComputedStyle(el.querySelector('i')!).color,opacity:getComputedStyle(el).opacity,circle:getComputedStyle(el,'::before').opacity}));
+  expect(idle.arrow).toBe(ready.arrow);expect(idle.opacity).toBe('1');expect(ready.opacity).toBe('1');expect(Number(idle.circle)).toBeLessThan(Number(ready.circle));
 });

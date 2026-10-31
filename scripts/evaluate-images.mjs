@@ -40,7 +40,7 @@ try{
   await page.reload();await expect(page.getByRole('textbox',{name:'Chemistry question'})).toBeVisible();
   await test('I01','Native PNG picker retains attachment and explains text-only capability',async()=>{
     await instance.evaluate(({dialog},file)=>{dialog.showOpenDialog=async()=>({canceled:false,filePaths:[file]});},fixture('ethanol.png'));
-    await page.getByRole('button',{name:'Attach chemistry image'}).click();
+    await page.locator('.composer-area').hover();await page.getByRole('button',{name:'Chat tools',exact:true}).click();await page.getByRole('menuitem',{name:/Add image/}).click();
     await expect(page.getByLabel('Attached images')).toBeVisible();
     await expect(page.getByText('This model is text-only.')).toBeVisible();
     await page.getByRole('button',{name:'Send question'}).click();
@@ -56,7 +56,7 @@ try{
   await test('I08','Corrupt PNG is rejected without a renderer failure',async()=>{await drop(['corrupt.png']);await expect(page.getByRole('alert')).toContainText('not a readable');});
   await test('I09','140 megapixel PNG rejected before native decode',async()=>{
     await instance.evaluate(({dialog},file)=>{dialog.showOpenDialog=async()=>({canceled:false,filePaths:[file]});},fixture('oversized-pixels.png'));
-    await page.getByRole('button',{name:'Attach chemistry image'}).click();await expect(page.getByRole('alert')).toContainText('24 megapixels');
+    await page.locator('.composer-area').hover();await page.getByRole('button',{name:'Chat tools',exact:true}).click();await page.getByRole('menuitem',{name:/Add image/}).click();await expect(page.getByRole('alert')).toContainText('24 megapixels');
   });
   await test('I10','140 megapixel PNG rejected before clipboard decode',async()=>{await drop(['oversized-pixels.png'],'paste');await expect(page.getByRole('alert')).toContainText('24 megapixels');});
   await test('I11','Files above 15 MB are rejected',async()=>{

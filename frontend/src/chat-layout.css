@@ -524,3 +524,33 @@ main:not(:has(.welcome)) .composer-area::before{content:'';position:absolute;top
 .composer-area.composer-compact .composer-footer{max-height:0;opacity:0;margin-top:0;visibility:hidden}
 .composer-area.composer-compact .composer-caption,.composer-area.composer-compact .suggestions{display:none}
 @media(prefers-reduced-motion:reduce){.composer-area .composer,.composer-area .composer textarea,.composer-area .composer-footer{transition:none}}
+
+:root .app-shell .jump{opacity:.25;transition:opacity .12s ease}
+:root .app-shell .jump:hover,:root .app-shell .jump:focus-visible{opacity:1}
+/* Limit expensive backdrop sampling to a small fixed blur radius. */
+:root .app-shell .composer{backdrop-filter:blur(12px) saturate(1.1);-webkit-backdrop-filter:blur(12px) saturate(1.1)}
+
+/* Keep the original arrow legible; dim only the idle button's circle. */
+:root .app-shell .send-button{position:relative;isolation:isolate;background:transparent!important;box-shadow:none!important;color:#102719!important;opacity:1!important}
+:root .app-shell .send-button::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(145deg,#b8f2c9,#7fcf9b);box-shadow:inset 0 1px #ffffff38;opacity:1;transition:opacity .14s ease}
+:root .app-shell .send-button:disabled{opacity:1!important}
+:root .app-shell .send-button:disabled::before{opacity:.32}
+:root .app-shell .send-button i{opacity:1!important;color:#102719!important}
+
+/* Floating mode overlays answers; only the floating surface fades with inactivity. */
+main .composer-area.composer-floating{position:absolute;z-index:6;bottom:18px;left:16px;right:16px;margin:0 auto;transform:translateY(var(--floating-y,0px));opacity:.25;transition:opacity .12s ease;pointer-events:auto}
+main .composer-area.composer-floating:hover,main .composer-area.composer-floating:focus-within{opacity:1}
+.composer-floating .composer{background:linear-gradient(125deg,#07110dc9,#092a1dc2)!important}
+.composer-floating.composer-reply .composer{background:linear-gradient(125deg,#071222c9,#103c68c2)!important;border-color:#91c9f088;transform:translateX(8px);transition:transform .16s ease,background .16s ease}
+.reply-anchor{display:flex;align-items:center;gap:8px;padding:5px 15px;color:#b6d9fa;font-size:11px}
+.reply-anchor span{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.reply-anchor button{padding:2px 6px;font-size:16px}
+@media(prefers-reduced-motion:reduce){.composer-floating.composer-reply .composer{transition:none}}
+
+/* The plus menu reuses the existing slash menu rather than separate glass cards. */
+.composer-mini-menu{z-index:12;max-width:calc(100vw - 100px);max-height:min(380px,60vh);overflow:auto}
+:root .app-shell .composer-mini-menu .image-menu-action{border-top:1px solid #ffffff14!important;border-radius:0!important;margin-top:4px!important;padding-top:10px}
+.image-menu-action i{margin-right:5px}
+/* Drag from the top edge; no visible tab or extra badge. */
+:root .app-shell .composer-drag{position:absolute;top:0;left:calc(50% - 40px);width:80px;height:12px;min-height:0;padding:0!important;z-index:4;cursor:grab;touch-action:none;background:transparent!important;border:0!important;box-shadow:none!important}
+.composer-drag span{display:none}

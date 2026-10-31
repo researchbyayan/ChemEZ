@@ -75,3 +75,23 @@ Requested scope: composer collapses with a sliding animation into a search-bar-h
 - Settings-to-API transition passed its independent rerun (14.6 seconds). No change to that transition was required.
 - Existing tests now explicitly approach the composer before using controls hidden by the new proximity behavior.
 - Owner requested more changes; details remain pending. All changes remain local and installer builds stay cancelled.
+
+### New owner feedback: floating contextual composer
+
+Requested: app self-knowledge; always-outline send arrow; jump button idle opacity 25%; plus-menu with slash commands/images; fast compositor behavior; docked versus floating setting; floating composer idle opacity 25% including text; near-question reply anchor, short rightward motion and blue gradient; default green Windowed maximize toggle.
+
+First dev pass adds the outlined send SVG, jump opacity, commands/image tools menu, factual app support context in the assistant prompt, and relabels/inverts the window preference to Windowed maximize (on by default). Composer blur reduced from 28 to 12 px to limit sampling work.
+
+Outstanding: docked/floating layout and persistent position, explicit contextual reply anchor/payload, blue reply styling and movement, full interaction/menu and accessibility checks, updating tests for new tool semantics. No installer builds are authorized yet.
+
+### Floating-mode implementation checkpoint
+
+- Dock chatbox at bottom defaults on; off makes a movable answer-overlay surface with 25% idle opacity (including text) and full hover/focus opacity.
+- A drag handle moves the floating composer vertically within the chat area. Starting a draft within 280 px of an earlier question selects an explicit reply anchor; it is cleared on conversation switch and visible before send. Reply context is included in submitted text, not silently inferred by the backend.
+- Reply state uses a blue gradient and short rightward shift, with reduced-motion override.
+- Restored original solid send arrow per owner correction. Circle dims independently of the arrow in disabled state.
+- Revised window-preference test passes; tools/floating test required a selector correction and is rerunning. Contextual drag/reply and image-menu integration still require validation. No push or installer rebuild.
+
+- Owner rejected the first plus-menu styling. It now reuses `.slash-menu` and `.slash-command` directly, with Add image last/nearest the trigger for the upward-opening menu. Screenshot and menu regression passed.
+- Removed the visible drag tab; floating composer remains draggable from its top edge.
+- Contextual floating reply test passed after settling layout; confirms movement, explicit question binding, submitted reply context, and context clearing on chat navigation. Original-arrow/disabled-circle test passed after waiting for its opacity transition.

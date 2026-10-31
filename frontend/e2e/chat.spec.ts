@@ -56,7 +56,7 @@ test('glass canvas, aligned glyphs, drafts and chat management',async({page})=>{
   await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
   await expect.poll(()=>page.locator('.ambient').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0.85)');
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
-  for(const name of ['Attach chemistry image','Collapse sidebar','Minimize window']){
+  for(const name of ['Chat tools','Collapse sidebar','Minimize window']){
     const button=page.getByRole('button',{name,exact:true});
     const offset=await button.evaluate(el=>{const a=el.getBoundingClientRect(),b=el.querySelector('i')!.getBoundingClientRect();return {x:Math.abs((a.left+a.right-b.left-b.right)/2),y:Math.abs((a.top+a.bottom-b.top-b.bottom)/2)};});
     expect(offset.x).toBeLessThanOrEqual(1);expect(offset.y).toBeLessThanOrEqual(1);
@@ -140,7 +140,7 @@ test('drafts survive navigation and images have accessible zoom previews',async(
   await mockDesktop(page);await page.goto('/');
   const input=page.getByRole('textbox',{name:'Chemistry question'});
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
-  await page.getByRole('button',{name:'Attach chemistry image'}).click();
+  await page.locator('.composer-area').hover();await page.getByRole('button',{name:'Chat tools',exact:true}).click();await page.getByRole('menuitem',{name:/Add image/}).click();
   await input.fill('Draw ethanol');await input.press('Enter');
   await expect(page.getByRole('button',{name:'Copy answer',exact:true})).toBeVisible();
   await input.fill('Keep this follow-up');
@@ -357,12 +357,12 @@ test('chat supports Shift Enter for multiline input',async({page})=>{
 test('image intake previews, removes, sends and restores an attachment',async({page})=>{
   await mockDesktop(page);await page.goto('/');
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
-  await page.getByRole('button',{name:'Attach chemistry image'}).click();
+  await page.locator('.composer-area').hover();await page.getByRole('button',{name:'Chat tools',exact:true}).click();await page.getByRole('menuitem',{name:/Add image/}).click();
   await expect(page.getByLabel('Attached images').getByText('reaction-question.png')).toBeVisible();
   await page.getByRole('button',{name:'Remove reaction-question.png'}).click();
   await expect(page.getByLabel('Attached images')).toHaveCount(0);
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
-  await page.getByRole('button',{name:'Attach chemistry image'}).click();
+  await page.locator('.composer-area').hover();await page.getByRole('button',{name:'Chat tools',exact:true}).click();await page.getByRole('menuitem',{name:/Add image/}).click();
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Read this structure');
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('button',{name:'Send question'}).click();
