@@ -41,7 +41,7 @@ export interface Bridge {
   request(command:'analyseStructure',payload:{smiles:string}):Promise<StructureAnalysis>;
   request(command:'suggestQuestion',payload:{id:string;mode:'concise'|'balanced'|'mechanism';command?:string}):Promise<{question:string}>;
   request(command:'rewindConversation',payload:{id:string;before_message_id:string}):Promise<{id:string;messages:Message[]}>;
-  windowAction(action:'minimize'|'toggle-maximize'|'close'|'repaint'):Promise<boolean>;
+  windowAction(action:'minimize'|'toggle-maximize'|'toggle-fullscreen'|'close'|'repaint'):Promise<boolean>;
   pickImage():Promise<ImageAttachment|null>;
   request(command:'loadModels',payload:{credential_slot?:'chat'|'vision';api_key?:string;provider?:'gemini'|'ollama'|'compatible'|'openai'|'anthropic';endpoint?:string;auth_mode?:'api_key'|'none'}):Promise<{models:{id:string;label:string;free_tier?:boolean}[]}>;
   request(command:'getConfig'):Promise<ConfigState>;

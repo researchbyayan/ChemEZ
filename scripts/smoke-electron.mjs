@@ -48,6 +48,17 @@ try{
   const page=await instance.firstWindow();
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await expect(page.getByRole('heading',{name:/Chemistry, clearer/})).toBeVisible();
+  // Exercise the real main-process window actions, not a mocked renderer bridge.
+  await page.evaluate(()=>window.chemez.windowAction('toggle-maximize'));
+  await expect.poll(()=>instance.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isMaximized())).toBe(true);
+  const maximized=await instance.evaluate(({BrowserWindow,screen})=>{const w=BrowserWindow.getAllWindows()[0];return {bounds:w.getBounds(),area:screen.getDisplayMatching(w.getBounds()).workArea};});
+  if(Math.abs(maximized.bounds.width-maximized.area.width)>20||Math.abs(maximized.bounds.height-maximized.area.height)>60)throw new Error('Maximize does not fill the desktop work area.');
+  await page.evaluate(()=>window.chemez.windowAction('toggle-maximize'));
+  await expect.poll(()=>instance.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isMaximized())).toBe(false);
+  await page.evaluate(()=>window.chemez.windowAction('toggle-fullscreen'));
+  await expect.poll(()=>instance.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isFullScreen())).toBe(true);
+  await page.evaluate(()=>window.chemez.windowAction('toggle-fullscreen'));
+  await expect.poll(()=>instance.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isFullScreen())).toBe(false);
   const canvas=await page.locator('html').evaluate(element=>({scheme:getComputedStyle(element).colorScheme,background:getComputedStyle(element).backgroundColor}));
   if(canvas.scheme!=='normal'||canvas.background!=='rgba(0, 0, 0, 0)')throw new Error('The browser canvas is opaque.');
   await page.screenshot({path:path.join(root,'test-results','packaged-glass-welcome.png'),omitBackground:true});

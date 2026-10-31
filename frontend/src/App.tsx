@@ -45,6 +45,10 @@ export default function App(){
   // The chat whose answer is generating; other chats stay open to browse and start meanwhile.
   const [runCid,setRunCid]=useState<string|null>(null);
   const runActivity=useRef(0);
+  // The running answer's chat and messages, kept while other chats are open so it can be shown again.
+  const run=useRef<{cid:string|null;messages:Message[]}|null>(null);
+  const viewingRun=()=>!!run.current&&(activity.current===runActivity.current||(run.current.cid!==null&&cidRef.current===run.current.cid));
+  const updateRun=(change:(items:Message[])=>Message[])=>{if(!run.current)return;run.current.messages=change(run.current.messages);if(viewingRun())setMessages(run.current.messages);};
   const [status,setStatus]=useState('');
   const [error,setError]=useState('');
   const [copied,setCopied]=useState('');
@@ -55,6 +59,9 @@ export default function App(){
   const [showJump,setShowJump]=useState(false);
   const [search,setSearch]=useState('');
   const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('chemez-sidebar')==='collapsed');
+  const [nativeFullscreen,setNativeFullscreen]=useState(()=>localStorage.getItem('chemez-native-fullscreen')==='on');
+  const [composerCompact,setComposerCompact]=useState(()=>localStorage.getItem('chemez-composer-compact')==='on');
+  useEffect(()=>{localStorage.setItem('chemez-composer-compact',composerCompact?'on':'off');},[composerCompact]);
   const [chatMenu,setChatMenu]=useState<string|null>(null);
   const [chatMenuPlace,setChatMenuPlace]=useState<CSSProperties>({});
   const chatMenuRef=useRef<HTMLDivElement>(null);
@@ -133,21 +140,25 @@ export default function App(){
       if(event.type==='start'){
         submissionStarted.current=true;
         setRunCid(event.conversation_id!);
-        if(activity.current===runActivity.current){cidRef.current=event.conversation_id!;setCid(event.conversation_id!);setMessages(items=>items.map(m=>m.id==='pending-user'?{...m,id:event.user_id!}:m));}
+        if(run.current)run.current.cid=event.conversation_id!;
+        if(activity.current===runActivity.current){cidRef.current=event.conversation_id!;setCid(event.conversation_id!);}
+        updateRun(items=>items.map(m=>m.id==='pending-user'?{...m,id:event.user_id!}:m));
+        // A new chat belongs in the history as soon as it exists, not when its answer ends.
+        void refresh().catch(()=>{});
       }else if(event.type==='status')setStatus(event.message||'');
-      else if(event.type==='draft'&&event.text)setMessages(items=>items.map(m=>m.id==='pending-assistant'?{...m,draft:event.text}:m));
-      else if(event.type==='block'&&event.block)setMessages(items=>items.map(m=>m.id==='pending-assistant'?{...m,draft:undefined,content:[...(m.content as Block[]),event.block!]}:m));
-      else if(event.type==='done')setMessages(items=>items.map(message=>message.id==='pending-assistant'?{...message,id:event.message_id||message.id,...(event.follow_ups?.length?{follow_ups:event.follow_ups}:{})}:message));
-      else if(event.type==='error')setError(event.message||'The request failed.');
+      else if(event.type==='draft'&&event.text)updateRun(items=>items.map(m=>m.id==='pending-assistant'?{...m,draft:event.text}:m));
+      else if(event.type==='block'&&event.block)updateRun(items=>items.map(m=>m.id==='pending-assistant'?{...m,draft:undefined,content:[...(m.content as Block[]),event.block!]}:m));
+      else if(event.type==='done')updateRun(items=>items.map(message=>message.id==='pending-assistant'?{...message,id:event.message_id||message.id,...(event.follow_ups?.length?{follow_ups:event.follow_ups}:{})}:message));
+      else if(event.type==='error'){if(viewingRun())setError(event.message||'The request failed.');}
       else if(event.type==='finished'){
-        setRunCid(null);
+        const showing=viewingRun(),completedId=run.current?.cid??null;
+        run.current=null;setRunCid(null);
         if(!submissionStarted.current&&submission.current&&activity.current===runActivity.current){const draft=submission.current;setInput(current=>current||draft.text);setImages(current=>current.length?current:draft.images);setMessages(items=>items.filter(message=>!message.id.startsWith('pending-')));}
         submission.current=null;
         setBusy(false);setStatus('');
         void refresh().catch(e=>setError(errorMessage(e)));
-        const completedId=cidRef.current;
         const completedActivity=activity.current;
-        if(completedId)void window.chemez.request('getConversation',completedId).then(data=>{if(cidRef.current===completedId&&activity.current===completedActivity)setMessages(data.messages);}).catch(e=>setError(errorMessage(e)));
+        if(showing&&completedId)void window.chemez.request('getConversation',completedId).then(data=>{if(cidRef.current===completedId&&activity.current===completedActivity)setMessages(data.messages);}).catch(e=>setError(errorMessage(e)));
       }
     });
   },[refresh]);
@@ -176,11 +187,12 @@ export default function App(){
     try{
       let previous=messages;
       if(branchQuestion&&cidRef.current){const rewound=await window.chemez.request('rewindConversation',{id:cidRef.current,before_message_id:branchQuestion.id});previous=rewound.messages;}
-      setMessages([...previous,{id:'pending-user',role:'user',content:userContent},{id:'pending-assistant',role:'assistant',content:[],response_style:answerStyle}]);
+      run.current={cid:cidRef.current,messages:[...previous,{id:'pending-user',role:'user',content:userContent},{id:'pending-assistant',role:'assistant',content:[],response_style:answerStyle}]};
+      setMessages(run.current.messages);
       await window.chemez.chat({text:text.trim(),images:attached.map(({name,mime,data})=>({name,mime,data})),conversation_id:cidRef.current,response_style:answerStyle,level:level||'undergraduate',command:selected?selected.slice(1):null});
-    }catch(e){setError(errorMessage(e));setBusy(false);setStatus('');submission.current=null;setInput(current=>current||text);setImages(current=>current.length?current:attached);setMessages(items=>items.filter(m=>!m.id.startsWith('pending-')));}
+    }catch(e){run.current=null;setRunCid(null);setError(errorMessage(e));setBusy(false);setStatus('');submission.current=null;setInput(current=>current||text);setImages(current=>current.length?current:attached);setMessages(items=>items.filter(m=>!m.id.startsWith('pending-')));}
   }
-  async function open(id:string){const requested=++activity.current;try{const data=await window.chemez.request('getConversation',id);if(requested!==activity.current)return;const draft=drafts.current.get(id);cidRef.current=id;setCid(id);setArchived(!!conversations.find(chat=>chat.id===id)?.archived);setMessages(data.messages);setInput(draft?.text||'');setImages(draft?.images||[]);setEditing(null);setError('');setChatMenu(null);setSearchOpen(false);setSearch('');follows.current=true;}catch(e){setError(errorMessage(e));}}
+  async function open(id:string){const requested=++activity.current;try{const data=await window.chemez.request('getConversation',id);if(requested!==activity.current)return;const draft=drafts.current.get(id);cidRef.current=id;setCid(id);setArchived(!!conversations.find(chat=>chat.id===id)?.archived);setMessages(run.current?.cid===id?run.current.messages:data.messages);setInput(draft?.text||'');setImages(draft?.images||[]);setEditing(null);setError('');setChatMenu(null);setSearchOpen(false);setSearch('');follows.current=true;}catch(e){setError(errorMessage(e));}}
   async function remove(id:string){setDeleting(null);try{await window.chemez.request('deleteConversation',id);if(cid===id)newChat();await refresh();}catch(e){setError(errorMessage(e));}}
   function newChat(){activity.current++;setSearch('');setArchived(false);setSearchOpen(false);setEditing(null);setChatMenu(null);const draft=drafts.current.get('new');cidRef.current=null;setCid(null);setMessages([]);setError('');setInput(draft?.text||'');setImages(draft?.images||[]);composer.current?.focus();}
   async function pickImage(){
@@ -230,7 +242,7 @@ export default function App(){
     return()=>{current=false;};
   },[liveKey,busy,followupHints]);
   // True when the answer being generated belongs to the chat on screen.
-  const here=busy&&runCid===cid;
+  const here=busy&&(runCid!==null?runCid===cid:activity.current===runActivity.current);
   const suggestion=followupHints&&!busy&&last?.role==='assistant'?(live?.key===liveKey?live.question:composerSuggestion(messages,answerStyle,slash)):undefined;
   const chooseSlash=(name:string)=>{if(!query)return;setSlash(name);setInput(removeCommandQuery(input,query));setMenuDismissed(true);requestAnimationFrame(()=>{composer.current?.focus();composer.current?.setSelectionRange(query.start,query.start);});};
   const slashMatches=query?SLASH_COMMANDS.filter(([name])=>name.slice(1).startsWith(query.query)):[];
@@ -273,7 +285,7 @@ export default function App(){
           </button>
           <div className="window-controls" aria-label="Window controls">
             <button aria-label="Minimize window" title="Minimize" onClick={()=>void window.chemez.windowAction('minimize')}><i className="fas fa-minus" aria-hidden="true"/></button>
-            <button aria-label="Maximize or restore window" title="Maximize or restore" onClick={()=>void window.chemez.windowAction('toggle-maximize')}><i className="far fa-square" aria-hidden="true"/></button>
+            <button aria-label="Maximize or restore window" title="Maximize or restore" onClick={()=>void window.chemez.windowAction(nativeFullscreen?'toggle-fullscreen':'toggle-maximize')}><i className="far fa-square" aria-hidden="true"/></button>
             <button className="window-close" aria-label="Close window" title="Close" onClick={()=>void window.chemez.windowAction('close')}><i className="fas fa-times" aria-hidden="true"/></button>
           </div>
         </header>
@@ -299,7 +311,8 @@ export default function App(){
             <div ref={end}/>
           </div>}
         </div>
-        <div className="composer-area">
+        <div className={'composer-area'+(composerCompact?' composer-compact':'')}>
+          <button type="button" className="composer-size-toggle" aria-label={composerCompact?'Expand composer':'Collapse composer'} aria-expanded={!composerCompact} onClick={()=>setComposerCompact(value=>!value)}><i className={'fas '+(composerCompact?'fa-chevron-up':'fa-chevron-down')} aria-hidden="true"/></button>
           {showJump&&messages.length>0&&<button className="jump" aria-label="Scroll to latest message" title="Latest message" onClick={()=>{follows.current=true;end.current?.scrollIntoView();setShowJump(false);}}><i className="fas fa-arrow-down" aria-hidden="true"/></button>}
           {error&&<div className="notice error" role="alert">{error}</div>}
           <form className="composer" onDragOver={event=>{if(event.dataTransfer.types.includes('Files'))event.preventDefault();}} onDrop={event=>{event.preventDefault();void intakeFiles(Array.from(event.dataTransfer.files));}} onPaste={event=>{const files=Array.from(event.clipboardData.files);if(files.length){event.preventDefault();void intakeFiles(files);}}} onSubmit={event=>{event.preventDefault();void send();}}>
@@ -324,7 +337,7 @@ export default function App(){
         <nav className="settings-tabs" aria-label="Settings sections">{([['general','General','fa-graduation-cap'],['appearance','Appearance','fa-adjust'],['diagrams','Diagrams','fa-project-diagram'],['model','Model & API','fa-key'],['about','About','fa-info-circle']] as const).map(([id,label,icon])=><button type="button" key={id} aria-current={settingsTab===id?'page':undefined} onClick={()=>setSettingsTab(id)}><i className={'fas '+icon} aria-hidden="true"/>{label}</button>)}</nav>
         <div className="settings-pane">
           {settingsTab==='general'&&<section aria-label="General"><div className="setting-row"><div><b>Chemistry level</b><small>Sets vocabulary and depth of every answer.</small></div><button type="button" className="setting-value" onClick={()=>setLevelOpen(true)}>{LEVELS[level||'undergraduate'].short}<i className="fas fa-chevron-right" aria-hidden="true"/></button></div><div className="setting-row"><div><b id="followup-hints-label">Follow Up</b><small>Suggest a likely next question in the message box (Tab to use it).</small></div><button type="button" role="switch" aria-checked={followupHints} aria-labelledby="followup-hints-label" className="toggle-switch" onClick={()=>{const next=!followupHints;setFollowupHints(next);localStorage.setItem('chemez-followup-hints',next?'on':'off');}}><span className="toggle-knob"/><span className="toggle-text">{followupHints?'On':'Off'}</span></button></div></section>}
-          {settingsTab==='appearance'&&<section aria-label="Appearance"><div className="setting-row"><div><b id="glass-effects-label">Glass effects</b><small>Glass edges and highlights on cards and panels.</small></div><button type="button" role="switch" aria-checked={glassMode==='on'} aria-labelledby="glass-effects-label" className="toggle-switch" onClick={()=>setGlassMode(glassMode==='on'?'off':'on')}><span className="toggle-knob"/><span className="toggle-text">{glassMode==='on'?'On':'Off'}</span></button></div><div className="setting-row stacked"><label htmlFor="glass"><b>Background opacity</b><span>{glass}%</span></label><input id="glass" type="range" min="50" max="100" value={glass} onChange={event=>setGlass(Number(event.target.value))}/><small>{reducedTransparency?'System Reduce Transparency is enabled. Translucency works; desktop blur is disabled.':'Desktop blur uses your system’s transparency settings.'}</small></div></section>}
+          {settingsTab==='appearance'&&<section aria-label="Appearance"><div className="setting-row"><div><b id="native-fullscreen-label">Native fullscreen</b><small>Use system fullscreen instead of desktop maximize for the window expand button.</small></div><button type="button" role="switch" aria-checked={nativeFullscreen} aria-labelledby="native-fullscreen-label" className="toggle-switch" onClick={()=>{const next=!nativeFullscreen;setNativeFullscreen(next);localStorage.setItem('chemez-native-fullscreen',next?'on':'off');}}><span className="toggle-knob"/><span className="toggle-text">{nativeFullscreen?'On':'Off'}</span></button></div><div className="setting-row"><div><b id="glass-effects-label">Glass effects</b><small>Glass edges and highlights on cards and panels.</small></div><button type="button" role="switch" aria-checked={glassMode==='on'} aria-labelledby="glass-effects-label" className="toggle-switch" onClick={()=>setGlassMode(glassMode==='on'?'off':'on')}><span className="toggle-knob"/><span className="toggle-text">{glassMode==='on'?'On':'Off'}</span></button></div><div className="setting-row stacked"><label htmlFor="glass"><b>Background opacity</b><span>{glass}%</span></label><input id="glass" type="range" min="50" max="100" value={glass} onChange={event=>setGlass(Number(event.target.value))}/><small>{reducedTransparency?'System Reduce Transparency is enabled. Translucency works; desktop blur is disabled.':'Desktop blur uses your system’s transparency settings.'}</small></div></section>}
           {settingsTab==='diagrams'&&<section aria-label="Diagrams"><DiagramPreferences inline/></section>}
           {settingsTab==='model'&&<section aria-label="Model and API"><div className="setting-row"><div><b>Model</b><small>{config.config?config.config.model:'Not connected'}</small></div><button type="button" className="setting-value" disabled={busy} onClick={()=>{setAppearance(false);setSettings(true);}}>Manage model &amp; API key<i className="fas fa-chevron-right" aria-hidden="true"/></button></div></section>}
           {settingsTab==='about'&&<Suspense fallback={<p role="status">Loading About…</p>}><About/></Suspense>}

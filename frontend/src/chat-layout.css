@@ -511,3 +511,15 @@ main:not(:has(.welcome)) .composer-area::before{content:'';position:absolute;top
 .update-card button { padding:6px 12px!important; border-radius:8px; font-size:12.5px; min-height:0!important; }
 .update-card .update-later { background:transparent!important; border:1px solid #ffffff1f!important; box-shadow:none!important; color:#b9c8bf; }
 .update-card .update-go { background:linear-gradient(145deg,#b8f2c9,#7fcf9b)!important; border:0!important; color:#102719; }
+
+/* Compact composer keeps the text field usable while its tools slide away. */
+.composer-area{position:relative}
+.composer-size-toggle{position:absolute;right:35px;top:-13px;z-index:3;width:28px;height:24px;display:grid;place-items:center;border:1px solid #a2d9b522;border-radius:9px;background:#14241bcc;color:#b9cfc1;cursor:pointer}
+.composer-area .composer{transition:padding .24s ease,border-radius .24s ease}
+.composer-area .composer textarea{transition:height .24s ease,min-height .24s ease;min-height:52px}
+.composer-area .composer-footer{max-height:65px;opacity:1;overflow:hidden;transition:max-height .24s ease,opacity .18s ease,margin .24s ease}
+.composer-area.composer-compact .composer{padding:11px 18px;border-radius:24px}
+.composer-area.composer-compact .composer textarea{height:24px!important;min-height:24px;max-height:24px;overflow:auto;line-height:24px}
+.composer-area.composer-compact .composer-footer{max-height:0;opacity:0;margin-top:0;visibility:hidden}
+.composer-area.composer-compact .composer-caption,.composer-area.composer-compact .suggestions{display:none}
+@media(prefers-reduced-motion:reduce){.composer-area .composer,.composer-area .composer textarea,.composer-area .composer-footer{transition:none}}

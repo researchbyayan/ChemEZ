@@ -231,6 +231,17 @@
       "license": "Reference only",
       "note": "Gateway research reference; not bundled.",
       "licenseFiles": []
+    },
+    {
+      "id": "lexend",
+      "name": "Lexend",
+      "url": "https://github.com/google/fonts/tree/main/ofl/lexend",
+      "group": "software",
+      "license": "OFL-1.1",
+      "note": "Bundled variable typeface for the application interface.",
+      "licenseFiles": [
+        "licenses/lexend-OFL.txt"
+      ]
     }
   ]
 }

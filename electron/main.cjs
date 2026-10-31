@@ -6,6 +6,7 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const { resolveRoute } = require('./protocol.cjs');
 const { watchBackdrop } = require('./backdrop.cjs');
+const {windowStyle} = require('./window-style.cjs');
 let window, child, baseURL, activeRequest, backendReady, stopping = false;
 let recentRestarts = [];
 const token = randomBytes(32).toString('hex');
@@ -176,12 +177,13 @@ ipcMain.handle('chemez:cancel', event => { trusted(event); activeRequest?.abort(
 ipcMain.handle('chemez:appearance', event => {trusted(event);return {reducedTransparency:nativeTheme.prefersReducedTransparency};});
 ipcMain.handle('chemez:window', (event, action) => {
   trusted(event);
-  if (!['minimize','toggle-maximize','close','repaint'].includes(action)) throw new Error('Invalid window action.');
+  if (!['minimize','toggle-maximize','toggle-fullscreen','close','repaint'].includes(action)) throw new Error('Invalid window action.');
   // The transparent window can keep stale pixels where content disappeared (e.g. the welcome
   // screen behind a new chat), especially with GPU compositing off; repaint the whole page.
   if (action === 'repaint') window.webContents.invalidate();
   else if (action === 'minimize') window.minimize();
-  else if (action === 'toggle-maximize') window.isMaximized() ? window.unmaximize() : window.maximize();
+  else if (action === 'toggle-fullscreen') window.setFullScreen(!window.isFullScreen());
+  else if (action === 'toggle-maximize') { if(window.isFullScreen()) window.setFullScreen(false); else window.isMaximized() ? window.unmaximize() : window.maximize(); }
   else window.close();
   return true;
 });
@@ -220,8 +222,8 @@ ipcMain.handle('chemez:save-text', async (event, text) => {
 });
 function createWindow() {
   const area=screen.getPrimaryDisplay().workAreaSize;
-  // On Windows a transparent window loses both the acrylic backdrop and the system's rounded corners.
-  window = new BrowserWindow({width:Math.min(1320,Math.max(840,area.width-40)),height:Math.min(900,Math.max(620,area.height-40)),minWidth:840,minHeight:620,frame:false,backgroundColor:'#00000000',transparent:process.platform!=='win32',...(process.platform==='darwin'?{vibrancy:'under-window',visualEffectState:'active'}:process.platform==='win32'?{backgroundMaterial:'acrylic'}:{}),title:'ChemEZ',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  // Select native acrylic only on supported Windows builds; older builds need alpha.
+  window = new BrowserWindow({width:Math.min(1320,Math.max(840,area.width-40)),height:Math.min(900,Math.max(620,area.height-40)),minWidth:840,minHeight:620,frame:false,backgroundColor:'#00000000',...windowStyle(),title:'ChemEZ',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
   if (process.platform === 'darwin') window.setVibrancy(nativeTheme.prefersReducedTransparency ? null : 'hud');
   window.setBackgroundColor('#00000000');
   window.webContents.setWindowOpenHandler(() => ({action:'deny'}));
