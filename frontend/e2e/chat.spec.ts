@@ -50,10 +50,12 @@ async function mockDesktop(page:import('@playwright/test').Page){
   });
 }
 test('glass canvas, aligned glyphs, drafts and chat management',async({page})=>{
+  test.setTimeout(60000); // This flow includes reload, settings, rename, pin and export.
   await mockDesktop(page);await page.goto('/');
   await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).colorScheme)).toBe('normal');
   await expect.poll(()=>page.locator('html').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
   await expect.poll(()=>page.locator('.ambient').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0.85)');
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   for(const name of ['Attach chemistry image','Collapse sidebar','Minimize window']){
     const button=page.getByRole('button',{name,exact:true});
     const offset=await button.evaluate(el=>{const a=el.getBoundingClientRect(),b=el.querySelector('i')!.getBoundingClientRect();return {x:Math.abs((a.left+a.right-b.left-b.right)/2),y:Math.abs((a.top+a.bottom-b.top-b.bottom)/2)};});
@@ -95,6 +97,7 @@ test('pasted and dropped images are processed locally before sending',async({pag
   }
   const widths=await page.getByLabel('Attached images').locator('img').evaluateAll(images=>images.map(image=>(image as HTMLImageElement).naturalWidth));
   expect(widths).toEqual([1600,1600]);
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('button',{name:'Send question'}).click();
   await expect(page.locator('.message.user img')).toHaveCount(2);
 });
@@ -136,6 +139,7 @@ test('editing and retrying continue the same chat',async({page})=>{
 test('drafts survive navigation and images have accessible zoom previews',async({page})=>{
   await mockDesktop(page);await page.goto('/');
   const input=page.getByRole('textbox',{name:'Chemistry question'});
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('button',{name:'Attach chemistry image'}).click();
   await input.fill('Draw ethanol');await input.press('Enter');
   await expect(page.getByRole('button',{name:'Copy answer',exact:true})).toBeVisible();
@@ -166,6 +170,7 @@ test('generation leaves the next draft editable and failed sends keep the questi
   await expect(page.getByRole('button',{name:'Stop generation'})).toBeVisible();
   await expect(input).toBeEnabled();await input.fill('Next question draft');
   await page.evaluate(()=>(window as unknown as {finishTestChat:()=>Promise<void>}).finishTestChat());
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await expect(page.getByRole('button',{name:'Send question'})).toBeVisible();
   await expect(input).toHaveValue('Next question draft');
   await page.evaluate(()=>{window.chemez.chat=async()=>{throw new Error('Connection unavailable');};});
@@ -177,7 +182,9 @@ test('generation leaves the next draft editable and failed sends keep the questi
 });
 test('structure library stays beside the chat and answer styles reach the provider request',async({page})=>{
   await mockDesktop(page);await page.goto('/');
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await expect(page.getByRole('combobox',{name:'Answer style'}).locator('option[value="tutor"]')).toHaveCount(0);
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('combobox',{name:'Answer style'}).selectOption('concise');
   const input=page.getByRole('textbox',{name:'Chemistry question'});
   await input.fill('Draw ethanol');await input.press('Enter');
@@ -215,6 +222,7 @@ for(const variant of ['default','reduced-motion','reduced-transparency']){
     await page.screenshot({path:`test-results/welcome-${variant}.png`,fullPage:true,omitBackground:true});
     if(variant==='default'){await page.setViewportSize({width:1040,height:740});await page.setViewportSize({width:1320,height:900});}
     await page.getByRole('textbox',{name:'Chemistry question'}).fill('Draw ethanol');
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
     await page.getByRole('button',{name:'Send question'}).click();
     await expect(page.getByRole('img',{name:'Ethanol molecular structure'})).toBeVisible();
     await expect(page.locator('.katex-display')).toBeVisible();
@@ -243,6 +251,7 @@ test('settings and conversation restoration/deletion',async({page})=>{
   await expect(page.getByRole('status')).toContainText('Connected. You’re ready to chat.');
   await page.getByRole('button',{name:'Close settings'}).click();
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Draw ethanol');
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('button',{name:'Send question'}).click();
   await page.locator('.molecule-card .structure-trigger').hover();
   await expect(page.getByRole('button',{name:'Copy molecular formula'})).toBeVisible();
@@ -347,12 +356,15 @@ test('chat supports Shift Enter for multiline input',async({page})=>{
 
 test('image intake previews, removes, sends and restores an attachment',async({page})=>{
   await mockDesktop(page);await page.goto('/');
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('button',{name:'Attach chemistry image'}).click();
   await expect(page.getByLabel('Attached images').getByText('reaction-question.png')).toBeVisible();
   await page.getByRole('button',{name:'Remove reaction-question.png'}).click();
   await expect(page.getByLabel('Attached images')).toHaveCount(0);
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('button',{name:'Attach chemistry image'}).click();
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Read this structure');
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('button',{name:'Send question'}).click();
   await expect(page.locator('.message.user img')).toHaveCount(1);
   await page.getByRole('button',{name:/New conversation/}).click();
@@ -390,6 +402,7 @@ test('history search, compact navigation and recovery keep API settings accessib
   await page.locator('.conversation-scroll').evaluate(el=>{el.scrollTop=el.scrollHeight;});
   const settingsBounds=await page.getByRole('button',{name:'Model settings',exact:true}).boundingBox();
   expect(settingsBounds!.x+settingsBounds!.width).toBeLessThanOrEqual(900);
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   const sendBounds=await page.getByRole('button',{name:'Send question'}).boundingBox();
   expect(sendBounds!.x+sendBounds!.width).toBeLessThanOrEqual(900);
   await page.screenshot({path:'test-results/overall-chat-compact.png',omitBackground:true});
@@ -446,9 +459,11 @@ test('the likeliest follow-up is suggested in the composer and Tab accepts it',a
   await input.press('Enter');
   // Quick answer suggests a quick question about the compound in context.
   await expect(input).toHaveAttribute('placeholder',/What is ethanol used for\?/);
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('combobox',{name:'Answer style'}).selectOption('mechanism');
   await expect(input).toHaveAttribute('placeholder',/mechanism of a typical reaction of ethanol/);
   // Explain keeps the model's own follow-up.
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('combobox',{name:'Answer style'}).selectOption('balanced');
   await expect(input).toHaveAttribute('placeholder',/Why is ethanol polar\?/);
   await input.press('Tab');
@@ -523,8 +538,10 @@ test('structure explorer opens on 2D and switches to 3D on the same tab',async({
 test('mechanism mode is sent and answer level lives in settings',async({page})=>{
   await mockDesktop(page);await page.goto('/');
   await expect(page.locator('.composer-tools').getByLabel('Chemistry level')).toHaveCount(0);
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByLabel('Answer style').selectOption('mechanism');
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Show the SN2 mechanism');
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('button',{name:'Send question',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>(window as unknown as {lastResponseStyle:string}).lastResponseStyle)).toBe('mechanism');
   await page.getByRole('button',{name:'Model settings',exact:true}).click();
@@ -532,6 +549,7 @@ test('mechanism mode is sent and answer level lives in settings',async({page})=>
   await expect(page.getByLabel('Chemistry level')).toHaveValue('graduate');
   await page.getByRole('button',{name:'Close settings',exact:true}).click();
   await page.reload();
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await expect(page.getByLabel('Answer style')).toHaveValue('mechanism');
   await page.getByRole('button',{name:'Model settings',exact:true}).click();
   await expect(page.getByLabel('Chemistry level')).toHaveValue('graduate');
@@ -619,6 +637,7 @@ test('malformed live follow-ups never show answer JSON in the composer',async({p
  await mockDesktop(page);await page.goto('/');
  await page.evaluate(()=>{const request=window.chemez.request;window.chemez.request=((command:string,payload:unknown)=>command==='suggestQuestion'?Promise.resolve({question:'{"blocks":[{"type":"reaction","caption":"Grignard"}]}'}):request(command as any,payload as any)) as typeof request;});
  const input=page.getByRole('textbox',{name:'Chemistry question'});await input.fill('Draw ethanol');await input.press('Enter');
+  await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
  await expect(page.getByRole('button',{name:'Send question',exact:true})).toBeVisible();
  await expect.poll(()=>input.getAttribute('placeholder')).not.toContain('"blocks"');
  await expect.poll(()=>input.getAttribute('placeholder')).not.toContain('{');

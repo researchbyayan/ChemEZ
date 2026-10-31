@@ -58,23 +58,24 @@ export default function App(){
   const follows=useRef(false);
   const answerAnchor=useRef(false);
   const composerArea=useRef<HTMLDivElement>(null);
+  const composerNear=useRef(false);
+  const composerCollapseTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined);
   const [showJump,setShowJump]=useState(false);
   const [search,setSearch]=useState('');
   const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('chemez-sidebar')==='collapsed');
   const [nativeFullscreen,setNativeFullscreen]=useState(()=>localStorage.getItem('chemez-native-fullscreen')==='on');
   const [composerCompact,setComposerCompact]=useState(true);
   useEffect(()=>{
-    let timer:ReturnType<typeof setTimeout>|undefined;
     const proximity=(event:PointerEvent)=>{
       const area=composerArea.current;if(!area)return;
       const r=area.getBoundingClientRect();
       const near=event.clientX>=r.left-30&&event.clientX<=r.right+30&&event.clientY>=r.top-65&&event.clientY<=r.bottom+30;
-      clearTimeout(timer);
+      composerNear.current=near;clearTimeout(composerCollapseTimer.current);
       if(near||area.contains(document.activeElement))setComposerCompact(false);
-      else timer=setTimeout(()=>setComposerCompact(true),220);
+      else composerCollapseTimer.current=setTimeout(()=>setComposerCompact(true),220);
     };
     document.addEventListener('pointermove',proximity);
-    return()=>{clearTimeout(timer);document.removeEventListener('pointermove',proximity);};
+    return()=>{clearTimeout(composerCollapseTimer.current);document.removeEventListener('pointermove',proximity);};
   },[]);
   const [chatMenu,setChatMenu]=useState<string|null>(null);
   const [chatMenuPlace,setChatMenuPlace]=useState<CSSProperties>({});
@@ -325,7 +326,7 @@ export default function App(){
             <div ref={end}/>
           </div>}
         </div>
-        <div ref={composerArea} className={'composer-area'+(composerCompact?' composer-compact':'')} onFocusCapture={()=>setComposerCompact(false)} onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node))setComposerCompact(true);}}>
+        <div ref={composerArea} className={'composer-area'+(composerCompact?' composer-compact':'')} onFocusCapture={()=>{clearTimeout(composerCollapseTimer.current);setComposerCompact(false);}} onBlurCapture={()=>{clearTimeout(composerCollapseTimer.current);composerCollapseTimer.current=setTimeout(()=>{if(!composerNear.current&&!composerArea.current?.contains(document.activeElement))setComposerCompact(true);},250);}}>
           {showJump&&messages.length>0&&<button className="jump" aria-label="Scroll to latest message" title="Latest message" onClick={()=>{follows.current=true;end.current?.scrollIntoView();setShowJump(false);}}><i className="fas fa-arrow-down" aria-hidden="true"/></button>}
           {error&&<div className="notice error" role="alert">{error}</div>}
           <form className="composer" onDragOver={event=>{if(event.dataTransfer.types.includes('Files'))event.preventDefault();}} onDrop={event=>{event.preventDefault();void intakeFiles(Array.from(event.dataTransfer.files));}} onPaste={event=>{const files=Array.from(event.clipboardData.files);if(files.length){event.preventDefault();void intakeFiles(files);}}} onSubmit={event=>{event.preventDefault();void send();}}>

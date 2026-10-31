@@ -60,3 +60,18 @@ Requested scope: composer collapses with a sliding animation into a search-bar-h
 
 - Fullscreen preference UI regression passes: desktop maximize default, native-fullscreen action after enabling, and persisted setting after reload. Native maximize/fullscreen transitions were separately checked by the Mac Electron smoke.
 - Owner approval requested for the running dev preview; rebuilding/pushing remains gated.
+
+### Owner review response
+
+- Owner selected "Needs more changes" for the dev app. Build approval has not been granted.
+- Requested specific design/behavior corrections before making further visual changes.
+- Full dev UI regression run continues independently; existing tests are being adapted to reveal proximity-driven controls before interacting with them.
+
+### Full dev regression findings
+
+- Full run: 40/43 passed. Three failures were retained and investigated, not reported as a clean full run.
+- The long settings/rename/pin/export flow exceeded its 30-second total budget; it passed with a 60-second flow budget (30.3 seconds observed).
+- Fixed immediate composer blur collapse moving controls during an outside click: collapse is now delayed 250 ms and rechecks pointer proximity and keyboard focus. The failed-question edit/recovery flow passed afterward.
+- Settings-to-API transition passed its independent rerun (14.6 seconds). No change to that transition was required.
+- Existing tests now explicitly approach the composer before using controls hidden by the new proximity behavior.
+- Owner requested more changes; details remain pending. All changes remain local and installer builds stay cancelled.
