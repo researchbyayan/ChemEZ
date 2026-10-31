@@ -138,3 +138,21 @@ test('streamed answers do not force the reader to the bottom',async({page})=>{
   await page.screenshot({path:test.info().outputPath('answer-position-retained.png')});
   await finish(page);
 });
+
+test('native fullscreen preference persists and controls the window expand action',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await page.evaluate(()=>{const w=window as unknown as {chemez:{windowAction:(a:string)=>Promise<boolean>};windowActions:string[]};w.windowActions=[];w.chemez.windowAction=async action=>{w.windowActions.push(action);return true;};});
+  await page.getByRole('button',{name:'Maximize or restore window'}).click();
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {windowActions:string[]}).windowActions.includes('toggle-maximize'))).toBe(true);
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  await page.getByRole('switch',{name:'Native fullscreen',exact:true}).click();
+  await expect(page.getByRole('switch',{name:'Native fullscreen',exact:true})).toHaveAttribute('aria-checked','true');
+  await page.getByRole('button',{name:'Close Settings',exact:true}).click();
+  await page.getByRole('button',{name:'Maximize or restore window'}).click();
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {windowActions:string[]}).windowActions.includes('toggle-fullscreen'))).toBe(true);
+  await page.reload();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  await expect(page.getByRole('switch',{name:'Native fullscreen',exact:true})).toHaveAttribute('aria-checked','true');
+});

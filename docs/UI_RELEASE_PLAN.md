@@ -57,3 +57,6 @@ Requested scope: composer collapses with a sliding animation into a search-bar-h
 - Removed repeated scroll-to-bottom effects and image-load scrolling. New answers anchor once at the pending answer's beginning; history opens at the top. Explicit latest-message button remains available.
 - Five composer/history tests pass; a dedicated long streamed-answer regression passes and confirms the viewport is retained as additional paragraphs arrive.
 - Opened npm run dev for owner review. No installer rebuilds or publication are authorized until approval.
+
+- Fullscreen preference UI regression passes: desktop maximize default, native-fullscreen action after enabling, and persisted setting after reload. Native maximize/fullscreen transitions were separately checked by the Mac Electron smoke.
+- Owner approval requested for the running dev preview; rebuilding/pushing remains gated.
