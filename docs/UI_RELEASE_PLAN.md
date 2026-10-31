@@ -39,3 +39,8 @@ Requested scope: composer collapses with a sliding animation into a search-bar-h
 
 - Lexend is restricted to the top-left ChemEZ wordmark. General interface typography is restored to its original stack; the connected EZ artwork and italic hero styling remain.
 - Replaced the floating boxed collapse chevron with a faint composer-edge grab handle.
+
+### CI runner migration
+
+- Corrected checkpoint dcba7ab started native jobs, but GitHub cancelled macos-14 before allocation due its scheduled retirement brownout (check annotation 124622906421).
+- Migrated ARM jobs to macos-15. macOS 14 clean-machine compatibility remains a separate required check; a macOS 15 build alone does not prove it.
