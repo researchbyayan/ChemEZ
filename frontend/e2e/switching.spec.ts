@@ -21,7 +21,7 @@ async function mockChats(page:Page){
         if(command==='searchConversations')return [];
         return {ok:true};
       },
-      onEvent:(fn:(event:unknown)=>void)=>{listener=fn;return()=>{};},
+      onEvent:(fn:(event:unknown)=>void)=>{listener=fn;(window as unknown as {emit:(event:unknown)=>void}).emit=fn;return()=>{};},
       chat:async({text,conversation_id}:{text:string;conversation_id:string|null})=>{
         const id=conversation_id||'chat-'+(next++);
         if(!chats.has(id))chats.set(id,{id,title:text.slice(0,30),pinned:false,archived:false,updated:'2026-10-30T10:00:00Z',messages:[]});
@@ -101,18 +101,40 @@ test('composer collapses to a slim bar, preserves a draft and still sends with E
   await mockChats(page);await page.goto('/');
   await expect(page.locator('.hero-word')).toHaveCSS('font-style','italic');
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Draw ethanol');
-  await page.getByRole('button',{name:'Collapse composer',exact:true}).click();
+  await page.getByRole('heading',{name:'Chemistry, clearer.'}).click();
+  await page.mouse.move(5,5);
   const form=page.locator('form.composer');
   await expect.poll(async()=>await form.evaluate(el=>el.getBoundingClientRect().height)).toBeLessThanOrEqual(58);
   await expect(page.getByRole('textbox',{name:'Chemistry question'})).toHaveValue('Draw ethanol');
   await expect(page.getByRole('button',{name:'Attach chemistry image'})).toBeHidden();
+  await page.screenshot({path:test.info().outputPath('composer-compact.png')});
+  await page.locator('.composer-area').hover();
+  await expect(page.getByRole('button',{name:'Attach chemistry image'})).toBeVisible();
+  await expect.poll(()=>form.evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThan(80);
+  await page.screenshot({path:test.info().outputPath('composer-expanded.png')});
   await page.getByRole('textbox',{name:'Chemistry question'}).press('Enter');
   await expect(page.getByText('First part of the answer.')).toBeVisible();
-  await page.getByRole('button',{name:'Expand composer',exact:true}).click();
+  await page.locator('.composer-area').hover();
   await expect(page.getByRole('button',{name:'Stop generation'})).toBeVisible();
   await finish(page);
   await expect(page.getByText('Second part of the answer.')).toBeVisible();
   await expect(page.locator('body')).not.toHaveCSS('font-family',/Lexend/);
   await expect(page.locator('.sidebar .wordmark')).toHaveCSS('font-family',/Lexend/);
 
+});
+
+
+test('streamed answers do not force the reader to the bottom',async({page})=>{
+  await mockChats(page);await page.goto('/');await ask(page,'Explain a long mechanism');
+  await expect(page.getByText('First part of the answer.')).toBeVisible();
+  const emit=(text:string)=>page.evaluate(text=>(window as unknown as {emit:(e:unknown)=>void}).emit({type:'block',block:{id:String(text.length),type:'markdown',text}}),text);
+  await emit(Array.from({length:90},(_,i)=>`Paragraph ${i}. Electron movement is shown in the mechanism.`).join('\n\n'));
+  const scroller=page.locator('.conversation-scroll');
+  await scroller.evaluate(el=>{el.scrollTop=0;});
+  const before=await scroller.evaluate(el=>el.scrollTop);
+  await emit('A new section arrives.\n\n'.repeat(60));
+  await expect(page.getByText('A new section arrives.',{exact:false}).first()).toBeAttached();
+  await expect.poll(()=>scroller.evaluate(el=>el.scrollTop)).toBeLessThanOrEqual(before+2);
+  await page.screenshot({path:test.info().outputPath('answer-position-retained.png')});
+  await finish(page);
 });

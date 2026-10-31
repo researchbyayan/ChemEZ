@@ -44,3 +44,16 @@ Requested scope: composer collapses with a sliding animation into a search-bar-h
 
 - Corrected checkpoint dcba7ab started native jobs, but GitHub cancelled macos-14 before allocation due its scheduled retirement brownout (check annotation 124622906421).
 - Migrated ARM jobs to macos-15. macOS 14 clean-machine compatibility remains a separate required check; a macOS 15 build alone does not prove it.
+
+### Owner approval gate
+
+- Installer rebuilds and release publication are deferred until the owner approves the Electron development app.
+- Cancelled native build run 41230389727 at owner's request.
+- Next dev iteration: composer expands based on pointer proximity/focus; answers remain anchored at their beginning and do not automatically follow streaming output to the bottom.
+
+### Dev approval iteration: pointer proximity and answer position
+
+- Removed the manual composer toggle. Pointer proximity within 65 px above/30 px beside the composer or keyboard focus expands it; moving away collapses after 220 ms. Focused editing stays expanded.
+- Removed repeated scroll-to-bottom effects and image-load scrolling. New answers anchor once at the pending answer's beginning; history opens at the top. Explicit latest-message button remains available.
+- Five composer/history tests pass; a dedicated long streamed-answer regression passes and confirms the viewport is retained as additional paragraphs arrive.
+- Opened npm run dev for owner review. No installer rebuilds or publication are authorized until approval.

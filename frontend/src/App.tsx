@@ -55,13 +55,27 @@ export default function App(){
   const end=useRef<HTMLDivElement>(null);
   const composer=useRef<HTMLTextAreaElement>(null);
   const scroll=useRef<HTMLDivElement>(null);
-  const follows=useRef(true);
+  const follows=useRef(false);
+  const answerAnchor=useRef(false);
+  const composerArea=useRef<HTMLDivElement>(null);
   const [showJump,setShowJump]=useState(false);
   const [search,setSearch]=useState('');
   const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('chemez-sidebar')==='collapsed');
   const [nativeFullscreen,setNativeFullscreen]=useState(()=>localStorage.getItem('chemez-native-fullscreen')==='on');
-  const [composerCompact,setComposerCompact]=useState(()=>localStorage.getItem('chemez-composer-compact')==='on');
-  useEffect(()=>{localStorage.setItem('chemez-composer-compact',composerCompact?'on':'off');},[composerCompact]);
+  const [composerCompact,setComposerCompact]=useState(true);
+  useEffect(()=>{
+    let timer:ReturnType<typeof setTimeout>|undefined;
+    const proximity=(event:PointerEvent)=>{
+      const area=composerArea.current;if(!area)return;
+      const r=area.getBoundingClientRect();
+      const near=event.clientX>=r.left-30&&event.clientX<=r.right+30&&event.clientY>=r.top-65&&event.clientY<=r.bottom+30;
+      clearTimeout(timer);
+      if(near||area.contains(document.activeElement))setComposerCompact(false);
+      else timer=setTimeout(()=>setComposerCompact(true),220);
+    };
+    document.addEventListener('pointermove',proximity);
+    return()=>{clearTimeout(timer);document.removeEventListener('pointermove',proximity);};
+  },[]);
   const [chatMenu,setChatMenu]=useState<string|null>(null);
   const [chatMenuPlace,setChatMenuPlace]=useState<CSSProperties>({});
   const chatMenuRef=useRef<HTMLDivElement>(null);
@@ -163,8 +177,8 @@ export default function App(){
     });
   },[refresh]);
   useEffect(()=>{if(cid)localStorage.setItem('chemez-active-chat',cid);else localStorage.removeItem('chemez-active-chat');},[cid]);
-  useEffect(()=>{if(follows.current)end.current?.scrollIntoView({behavior:'auto'});},[messages,status]);
-  useEffect(()=>{if(!scroll.current)return;const observer=new ResizeObserver(()=>{if(follows.current)end.current?.scrollIntoView({behavior:'auto'});});observer.observe(scroll.current);return()=>observer.disconnect();},[]);
+  // Anchor once at a new answer's beginning. Streaming never takes over scrolling.
+  useEffect(()=>{if(answerAnchor.current){const pending=scroll.current?.querySelector('[data-pending-answer=true]');if(pending){answerAnchor.current=false;pending.scrollIntoView({block:'start',behavior:'auto'});}}},[messages]);
   useEffect(()=>{const element=composer.current;if(element){element.style.height='0px';element.style.height=Math.min(180,Math.max(44,element.scrollHeight))+'px';}},[input]);
   async function send(text=input,attached=images,branchQuestion=editing){
     if(busy||(!text.trim()&&!attached.length))return;
@@ -179,7 +193,7 @@ export default function App(){
     if(fromComposer&&selected)setSlash('');
     activity.current++;
     runActivity.current=activity.current;setRunCid(cidRef.current);
-    setBusy(true);setError('');setStatus('Preparing your answer…');follows.current=true;
+    setBusy(true);setError('');setStatus('Preparing your answer…');follows.current=false;answerAnchor.current=true;
     const userContent:UserContent={text:text.trim(),images:attached,command:selected?selected.slice(1):null};
     submission.current=userContent;submissionStarted.current=false;
     // A suggested follow-up is sent as-is; only clear the composer when sending its own draft.
@@ -192,7 +206,7 @@ export default function App(){
       await window.chemez.chat({text:text.trim(),images:attached.map(({name,mime,data})=>({name,mime,data})),conversation_id:cidRef.current,response_style:answerStyle,level:level||'undergraduate',command:selected?selected.slice(1):null});
     }catch(e){run.current=null;setRunCid(null);setError(errorMessage(e));setBusy(false);setStatus('');submission.current=null;setInput(current=>current||text);setImages(current=>current.length?current:attached);setMessages(items=>items.filter(m=>!m.id.startsWith('pending-')));}
   }
-  async function open(id:string){const requested=++activity.current;try{const data=await window.chemez.request('getConversation',id);if(requested!==activity.current)return;const draft=drafts.current.get(id);cidRef.current=id;setCid(id);setArchived(!!conversations.find(chat=>chat.id===id)?.archived);setMessages(run.current?.cid===id?run.current.messages:data.messages);setInput(draft?.text||'');setImages(draft?.images||[]);setEditing(null);setError('');setChatMenu(null);setSearchOpen(false);setSearch('');follows.current=true;}catch(e){setError(errorMessage(e));}}
+  async function open(id:string){const requested=++activity.current;try{const data=await window.chemez.request('getConversation',id);if(requested!==activity.current)return;const draft=drafts.current.get(id);cidRef.current=id;setCid(id);setArchived(!!conversations.find(chat=>chat.id===id)?.archived);setMessages(run.current?.cid===id?run.current.messages:data.messages);setInput(draft?.text||'');setImages(draft?.images||[]);setEditing(null);setError('');setChatMenu(null);setSearchOpen(false);setSearch('');follows.current=false;requestAnimationFrame(()=>{if(scroll.current)scroll.current.scrollTop=0;});}catch(e){setError(errorMessage(e));}}
   async function remove(id:string){setDeleting(null);try{await window.chemez.request('deleteConversation',id);if(cid===id)newChat();await refresh();}catch(e){setError(errorMessage(e));}}
   function newChat(){activity.current++;setSearch('');setArchived(false);setSearchOpen(false);setEditing(null);setChatMenu(null);const draft=drafts.current.get('new');cidRef.current=null;setCid(null);setMessages([]);setError('');setInput(draft?.text||'');setImages(draft?.images||[]);composer.current?.focus();}
   async function pickImage(){
@@ -289,13 +303,13 @@ export default function App(){
             <button className="window-close" aria-label="Close window" title="Close" onClick={()=>void window.chemez.windowAction('close')}><i className="fas fa-times" aria-hidden="true"/></button>
           </div>
         </header>
-        <div ref={scroll} className="conversation-scroll" onLoadCapture={()=>{if(follows.current)end.current?.scrollIntoView({behavior:'auto'});}} onScroll={()=>{const element=scroll.current!;follows.current=element.scrollHeight-element.scrollTop-element.clientHeight<100;setShowJump(!follows.current);}}>
+        <div ref={scroll} className="conversation-scroll" onScroll={()=>{const element=scroll.current!;follows.current=element.scrollHeight-element.scrollTop-element.clientHeight<100;setShowJump(!follows.current);}}>
           {messages.length===0?<section className="welcome">
             <div className="hero-mark"><Logo/></div>
             <h1 aria-label="Chemistry, clearer.">Chemistry, <HeroWord/></h1>
             <p>Structures, reactions, and step-by-step explanations.</p>
           </section>:<div className="messages">
-            {messages.map((message,messageIndex)=><article key={message.id} className={'message '+message.role}>
+            {messages.map((message,messageIndex)=><article key={message.id} data-pending-answer={message.id==='pending-assistant'} className={'message '+message.role}>
               <div className="message-body">
                 {message.role==='user'?<UserMessage message={message} busy={busy} onEdit={()=>editQuestion(message)} onPreview={image=>{setPreview(image);setZoom(100);}}/>:<>
                   <RenderBoundary key={message.id}><Suspense fallback={<div className="generating" role="status">Preparing answer…</div>}><div className="answer-flow">
@@ -311,8 +325,7 @@ export default function App(){
             <div ref={end}/>
           </div>}
         </div>
-        <div className={'composer-area'+(composerCompact?' composer-compact':'')}>
-          <button type="button" className="composer-size-toggle" aria-label={composerCompact?'Expand composer':'Collapse composer'} aria-expanded={!composerCompact} onClick={()=>setComposerCompact(value=>!value)}><i className={'fas '+(composerCompact?'fa-chevron-up':'fa-chevron-down')} aria-hidden="true"/></button>
+        <div ref={composerArea} className={'composer-area'+(composerCompact?' composer-compact':'')} onFocusCapture={()=>setComposerCompact(false)} onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node))setComposerCompact(true);}}>
           {showJump&&messages.length>0&&<button className="jump" aria-label="Scroll to latest message" title="Latest message" onClick={()=>{follows.current=true;end.current?.scrollIntoView();setShowJump(false);}}><i className="fas fa-arrow-down" aria-hidden="true"/></button>}
           {error&&<div className="notice error" role="alert">{error}</div>}
           <form className="composer" onDragOver={event=>{if(event.dataTransfer.types.includes('Files'))event.preventDefault();}} onDrop={event=>{event.preventDefault();void intakeFiles(Array.from(event.dataTransfer.files));}} onPaste={event=>{const files=Array.from(event.clipboardData.files);if(files.length){event.preventDefault();void intakeFiles(files);}}} onSubmit={event=>{event.preventDefault();void send();}}>
