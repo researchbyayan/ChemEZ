@@ -34,3 +34,8 @@ Requested scope: composer collapses with a sliding animation into a search-bar-h
 - Windows backdrop adapter now selects native acrylic only on build 22621+; Windows 10/earlier Windows 11 use transparent surfaces. Three adapter tests pass. Native Windows visual checks remain outstanding.
 - macOS explicitly disables zoomToPageWidth so desktop maximize fills screen width rather than using page preferred width. Fullscreen remains a separate saved user preference.
 - npm test passes (Electron suites plus 11 frontend unit tests).
+
+### User correction
+
+- Lexend is restricted to the top-left ChemEZ wordmark. General interface typography is restored to its original stack; the connected EZ artwork and italic hero styling remain.
+- Replaced the floating boxed collapse chevron with a faint composer-edge grab handle.

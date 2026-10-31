@@ -514,7 +514,13 @@ main:not(:has(.welcome)) .composer-area::before{content:'';position:absolute;top
 
 /* Compact composer keeps the text field usable while its tools slide away. */
 .composer-area{position:relative}
-.composer-size-toggle{position:absolute;right:35px;top:-13px;z-index:3;width:28px;height:24px;display:grid;place-items:center;border:1px solid #a2d9b522;border-radius:9px;background:#14241bcc;color:#b9cfc1;cursor:pointer}
+/* A quiet grab-handle on the composer edge, rather than a floating glass button. */
+:root .app-shell .composer-size-toggle{position:absolute;left:50%;right:auto;top:0;transform:translateX(-50%);z-index:3;width:48px;height:16px;min-height:0;padding:0!important;display:grid;place-items:center;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;cursor:pointer;opacity:.55}
+.composer-size-toggle i{display:none}
+.composer-size-toggle::before{content:"";width:26px;height:2px;border-radius:2px;background:#a8b7af;transition:background .16s,width .16s}
+.composer-size-toggle:hover::before,.composer-size-toggle:focus-visible::before{background:#9aefae;width:32px}
+/* Only the sidebar brand uses Lexend. The connected EZ glyph stays unchanged. */
+.sidebar .brand .wordmark{font-family:Lexend,Inter,sans-serif}
 .composer-area .composer{transition:padding .24s ease,border-radius .24s ease}
 .composer-area .composer textarea{transition:height .24s ease,min-height .24s ease;min-height:52px}
 .composer-area .composer-footer{max-height:65px;opacity:1;overflow:hidden;transition:max-height .24s ease,opacity .18s ease,margin .24s ease}

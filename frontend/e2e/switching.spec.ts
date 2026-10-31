@@ -99,6 +99,7 @@ test('a new chat started mid-answer then left shows nothing of the running answe
 
 test('composer collapses to a slim bar, preserves a draft and still sends with Enter',async({page})=>{
   await mockChats(page);await page.goto('/');
+  await expect(page.locator('.hero-word')).toHaveCSS('font-style','italic');
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Draw ethanol');
   await page.getByRole('button',{name:'Collapse composer',exact:true}).click();
   const form=page.locator('form.composer');
@@ -111,5 +112,7 @@ test('composer collapses to a slim bar, preserves a draft and still sends with E
   await expect(page.getByRole('button',{name:'Stop generation'})).toBeVisible();
   await finish(page);
   await expect(page.getByText('Second part of the answer.')).toBeVisible();
-  await expect(page.locator('body')).toHaveCSS('font-family',/Lexend/);
+  await expect(page.locator('body')).not.toHaveCSS('font-family',/Lexend/);
+  await expect(page.locator('.sidebar .wordmark')).toHaveCSS('font-family',/Lexend/);
+
 });
