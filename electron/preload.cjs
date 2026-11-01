@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('chemez', {
+  platform: process.platform,
   appInfo: () => ipcRenderer.invoke('chemez:app-info'),
   credits: () => ipcRenderer.invoke('chemez:credits'),
   license: id => ipcRenderer.invoke('chemez:license',id),

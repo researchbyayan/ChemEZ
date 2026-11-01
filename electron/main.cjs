@@ -223,7 +223,7 @@ ipcMain.handle('chemez:save-text', async (event, text) => {
 function createWindow() {
   const area=screen.getPrimaryDisplay().workAreaSize;
   // Select native acrylic only on supported Windows builds; older builds need alpha.
-  window = new BrowserWindow({width:Math.min(1320,Math.max(840,area.width-40)),height:Math.min(900,Math.max(620,area.height-40)),minWidth:840,minHeight:620,frame:false,backgroundColor:'#00000000',...windowStyle(),title:'ChemEZ',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  window = new BrowserWindow({width:Math.min(1320,Math.max(840,area.width-40)),height:Math.min(900,Math.max(620,area.height-40)),minWidth:840,minHeight:620,frame:process.platform==='darwin',...(process.platform==='darwin'?{titleBarStyle:'hidden',trafficLightPosition:{x:20,y:20}}:{}),backgroundColor:'#00000000',...windowStyle(),title:'ChemEZ',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
   if (process.platform === 'darwin') window.setVibrancy(nativeTheme.prefersReducedTransparency ? null : 'hud');
   window.setBackgroundColor('#00000000');
   window.webContents.setWindowOpenHandler(() => ({action:'deny'}));

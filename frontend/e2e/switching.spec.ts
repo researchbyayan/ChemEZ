@@ -179,7 +179,12 @@ test('floating composer and tools are explicit and preserve default docked mode'
   await page.getByRole('button',{name:'Close Settings',exact:true}).click();
   await page.mouse.move(5,5);
   await expect(page.locator('.composer-area')).toHaveClass(/composer-floating/);
-  await expect(page.locator('.composer-area')).toHaveCSS('opacity','0.15');
+  // A new conversation keeps its chatbox fully visible; inside a chat the resting box fades.
+  await expect(page.locator('.composer-area')).toHaveCSS('opacity','1');
+  await history(page).getByTitle('Ethanol polarity',{exact:true}).click();await page.mouse.move(5,5);
+  // Resting in a chat, the floating chatbox folds into a small pill.
+  await expect(page.locator('form.composer')).toHaveCSS('opacity','0');
+  await expect.poll(()=>page.locator('.composer-area').evaluate(e=>getComputedStyle(e,'::after').width)).toBe('110px');
   await page.locator('.composer-area').hover();
   await expect(page.locator('.composer-area')).toHaveCSS('opacity','1');
 });
@@ -212,7 +217,7 @@ test('floating follow-up anchors the nearby answer and clears on chat navigation
   await expect(page.locator('.composer-area')).toHaveClass(/composer-reply/);
   await page.screenshot({path:test.info().outputPath('floating-contextual-reply.png')});
   await page.getByRole('textbox',{name:'Chemistry question'}).press('Enter');
-  await expect(page.locator('.message.user').last()).toContainText('Replying to the earlier message "Ethanol has an O–H bond."');
+  await expect(page.locator('.message.user').last().locator('.user-reply-quote')).toContainText('Ethanol has an O–H bond.');
   await expect(page.getByText('First part of the answer.')).toBeVisible();await finish(page);
   await history(page).getByTitle('Benzene resonance',{exact:true}).click();
   await expect(page.locator('.reply-anchor')).toHaveCount(0);
@@ -242,37 +247,20 @@ test('explicit replies keep their anchor and new floating chats return to the we
   const close=page.getByRole('button',{name:'Clear reply context'});
   await expect(page.getByRole('button',{name:'Reply to this question'})).toHaveCount(0);
   await expect(page.locator('.reply-anchor')).toContainText('Follow-up on:');
+  await page.waitForTimeout(400); // let the chatbox finish expanding before measuring
   const form=await page.locator('form.composer').boundingBox();
-  const rail=await page.locator('.composer-side-controls').boundingBox();
-  const upper=await close.boundingBox();const lower=await page.getByRole('button',{name:'Scroll to latest message'}).boundingBox();
-  const outlines=await page.locator('form.composer, .side-control-glass').evaluateAll(nodes=>nodes.map(node=>{
-    const edge=getComputedStyle(node),highlight=getComputedStyle(node,'::after');
-    return {widths:[edge.borderTopWidth,edge.borderRightWidth,edge.borderBottomWidth,edge.borderLeftWidth],highlight:highlight.paddingTop};
-  }));
-  expect(outlines).toHaveLength(3);
-  for(const outline of outlines){expect(outline.widths).toEqual(['1px','1px','1px','1px']);expect(outline.highlight).toBe(outlines[0].highlight);}
-  expect(Math.abs(rail!.height-form!.height)).toBeLessThan(3);
-  expect(Math.abs(upper!.height-lower!.height)).toBeLessThan(2);
-  expect(upper!.y).toBeLessThan(lower!.y);
-  expect(rail!.x+rail!.width).toBeLessThan(form!.x);
+  // The follow-up close sits in the chatbox's top-right corner, slightly larger than send.
+  const x=(await close.boundingBox())!,box=(await page.locator('form.composer').boundingBox())!;
+  expect(Math.round(x.width)).toBe(40);
+  expect(box.x+box.width-(x.x+x.width)).toBeLessThan(20);expect(x.y-box.y).toBeLessThan(16);
   await expect(page.locator('form.composer')).toHaveCSS('transform','none');
-  await expect.poll(async()=>Math.round((await page.locator('.composer-side-controls').boundingBox())!.width)).toBe(42);
-  for(let sample=0;sample<5;sample++){
-    const field=await page.locator('form.composer').boundingBox(),controls=await page.locator('.composer-side-controls').boundingBox();
-    expect(Math.abs(field!.x-controls!.x-controls!.width-10)).toBeLessThan(2);
-    await page.waitForTimeout(45);
-  }
+  // The chatbox has no side tab; jumping to the latest message lives on the scrollbar.
+  await expect(page.locator('.composer-side-controls')).toHaveCount(0);
+  expect(form).not.toBeNull();
 
   await page.getByRole('textbox',{name:'Chemistry question'}).blur();await page.mouse.move(5,5);
-  for(let sample=0;sample<9;sample++){
-    const field=await page.locator('form.composer').boundingBox(),arrow=await page.getByRole('button',{name:'Scroll to latest message'}).boundingBox();
-    expect(Math.abs(field!.x-arrow!.x-arrow!.width-10)).toBeLessThan(2);
-    const shaft=await page.locator('.scroll-arrow').boundingBox();expect(shaft!.height).toBeLessThanOrEqual(31);
-    await page.waitForTimeout(55);
-  }
   await page.screenshot({path:test.info().outputPath('follow-up-side-controls.png')});
-  await close.click();await expect(page.locator('.reply-anchor')).toHaveCount(0);
-  await expect(page.getByRole('button',{name:'Scroll to latest message'})).toBeAttached();
+  await page.locator('.composer-area').hover();await close.click();await expect(page.locator('.reply-anchor')).toHaveCount(0);
   await page.getByRole('button',{name:'New conversation',exact:true}).click();
   await expect(page.locator('.composer-floating')).toHaveCSS('position','relative');
   await expect(page.getByRole('heading',{name:'Chemistry, clearer.'})).toBeVisible();
@@ -285,10 +273,63 @@ test('clicking the compact typing area still focuses it during expansion',async(
   await page.getByRole('switch',{name:'Dock chatbox at bottom'}).click();await page.getByRole('button',{name:'Close Settings',exact:true}).click();
   await page.mouse.move(5,5);
   await expect(page.locator('.composer-area')).toHaveClass(/composer-compact/);
-  const field=page.getByRole('textbox',{name:'Chemistry question'}),bounds=await field.boundingBox();
-  await page.mouse.move(bounds!.x+90,bounds!.y+12);
-  await page.waitForTimeout(70); // Deliberately click while the expansion is in progress.
-  await page.mouse.click(bounds!.x+90,bounds!.y+12);
+  // Resting, the chatbox is a pill; clicking the pill opens it and focuses typing straight away.
+  const field=page.getByRole('textbox',{name:'Chemistry question'}),area=(await page.locator('.composer-area').boundingBox())!;
+  const pill={x:area.x+area.width/2,y:area.y+area.height-29};
+  await page.mouse.move(pill.x,pill.y);
+  await page.waitForTimeout(70);
+  await page.mouse.click(pill.x,pill.y);
   await page.keyboard.type('Explain this');
   await expect(field).toBeFocused();await expect(field).toHaveValue('Explain this');
+});
+
+test('a question typed at the bottom of a chat is not treated as a follow-up',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  await page.getByRole('switch',{name:'Dock chatbox at bottom'}).click();await page.getByRole('button',{name:'Close Settings',exact:true}).click();
+  await page.getByRole('textbox',{name:'Chemistry question'}).fill('What is an ester?');
+  await expect(page.locator('.reply-anchor')).toHaveCount(0);
+  await expect(page.locator('.composer-area')).not.toHaveClass(/composer-reply/);
+});
+
+test('a sent follow-up shows a one-line quote and edits back to the plain question',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await page.getByRole('button',{name:'Reply to this answer'}).click();
+  await page.getByRole('textbox',{name:'Chemistry question'}).fill('Is this correct');
+  await page.keyboard.press('Enter');
+  const bubble=page.locator('.message.user').last();
+  await expect(bubble.locator('.user-reply-quote')).toContainText('Ethanol has an O–H bond.');
+  await expect(bubble.locator('.user-text')).toHaveText('Is this correct');
+  await page.evaluate(()=>(window as unknown as {release:()=>void}).release());
+  await bubble.hover();await bubble.getByRole('button',{name:'Edit this question'}).click();
+  await expect(page.getByRole('textbox',{name:'Chemistry question'})).toHaveValue('Is this correct');
+  await expect(page.locator('form.composer .reply-anchor')).toContainText('Ethanol has an O–H bond.');
+  await page.screenshot({path:test.info().outputPath('follow-up.png')});
+});
+
+test('the scrollbar rests hidden, wakes near the pointer, and its cap jumps to the latest message',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await expect(page.locator('.chat-scrollbar')).toHaveCSS('opacity','0');
+  await page.evaluate(()=>{for(let i=0;i<60;i++){const p=document.createElement('p');p.textContent='filler '+i;document.querySelector('.messages')!.append(p);}});
+  await expect(page.locator('.chat-scrollbar')).toHaveClass(/has-more/);
+  const bar=(await page.locator('.chat-scrollbar').boundingBox())!;await page.mouse.move(bar.x+bar.width/2,bar.y+20);
+  await expect(page.locator('.chat-scrollbar')).toHaveCSS('opacity','0.64');
+  await page.getByRole('button',{name:'Scroll to latest message'}).click();
+  await expect.poll(()=>page.locator('.conversation-scroll').evaluate(e=>Math.round(e.scrollHeight-e.scrollTop-e.clientHeight))).toBeLessThan(2);
+  await expect(page.locator('.chat-scrollbar')).not.toHaveClass(/has-more/);
+  await page.mouse.move(400,300);await expect(page.locator('.chat-scrollbar')).toHaveCSS('opacity','0',{timeout:4000});
+});
+
+test('double-clicking the scrollbar thumb snaps to the latest message',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await page.evaluate(()=>{for(let i=0;i<60;i++){const p=document.createElement('p');p.textContent='filler '+i;document.querySelector('.messages')!.append(p);}});
+  await expect(page.locator('.chat-scrollbar')).toHaveClass(/has-more/);
+  const thumb=(await page.locator('.chat-scrollbar-thumb').boundingBox())!;
+  await page.mouse.dblclick(thumb.x+thumb.width/2,thumb.y+8);
+  await expect.poll(()=>page.locator('.conversation-scroll').evaluate(e=>Math.round(e.scrollHeight-e.scrollTop-e.clientHeight))).toBeLessThan(2);
+  await page.screenshot({path:'/private/tmp/claude-501/-Users-mohammedayanmahmood-Documents-ChatGPT-ChemEZ/3e548582-4ba5-4619-9df5-de70dd068cc9/scratchpad/shots/thumb.png',clip:{x:1260,y:60,width:60,height:780}});
 });

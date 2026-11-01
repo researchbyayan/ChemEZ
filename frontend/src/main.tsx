@@ -1,6 +1,8 @@
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App';
+// macOS draws its own traffic-light buttons in the top-left corner; the layout makes room for them.
+if((window as unknown as {chemez?:{platform?:string}}).chemez?.platform==='darwin')document.documentElement.classList.add('mac');
 import {RenderBoundary} from './RenderBoundary';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './icons.css';

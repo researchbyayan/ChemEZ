@@ -20,6 +20,7 @@ export interface Conversation {id:string;title:string;updated:string;pinned?:boo
 export interface ChatEvent {type:'start'|'status'|'draft'|'block'|'done'|'error'|'finished';text?:string;conversation_id?:string;user_id?:string;message?:string;block?:Block;message_id?:string;follow_ups?:string[]}
 export interface SavedDiagram {id:string;conversation_id:string;title:string;block:Block}
 export interface Bridge {
+  platform?:string;
   appInfo?():Promise<import('./About').AppInformation>;
   credits?():Promise<{entries:import('./About').Credit[]}>;
   license?(id:string):Promise<string>;

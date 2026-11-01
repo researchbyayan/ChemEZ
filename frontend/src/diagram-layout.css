@@ -202,3 +202,19 @@ svg.resonance-arrow { width:52px; height:14px; flex:0 0 52px; padding:0; margin:
 .reaction-card>figcaption:has(.card-tools)>strong{grid-column:1 / -1;grid-row:2;min-width:0;overflow-wrap:anywhere}
 .reaction-card>figcaption>.card-tools{position:static;grid-column:2;grid-row:1;display:flex;justify-self:end;align-items:center;gap:6px;transform:none;margin:0}
 .reaction-card>figcaption>.card-tools>.changes-toggle{position:static;transform:none;margin:0;flex-shrink:0}
+
+/* Structure popover actions: two compact buttons side by side instead of full-width rows. */
+.structure-buttons{display:flex;gap:6px;margin-top:6px;padding-top:8px;border-top:1px solid #ffffff15}
+:root .app-shell .structure-buttons .structure-button,.structure-buttons .structure-button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:0!important;height:28px;padding:0 10px!important;border-radius:8px!important;border:1px solid #9aefae33!important;background:#9aefae12!important;box-shadow:inset 0 1px #ffffff12!important;color:#9aefae!important;font-size:12px;white-space:nowrap}
+:root .app-shell .structure-buttons .structure-button:hover{background:#9aefae22!important;border-color:#9aefae55!important}
+.structure-buttons .structure-button i{font-size:11px;width:auto}
+/* Matched to the reference: deep green tiles with a fine green edge and bright green icons. */
+:root .app-shell .structure-buttons .structure-button,.structure-buttons .structure-button{background:linear-gradient(145deg,#103325,#0b2219)!important;border:1px solid #6adc8b40!important;border-radius:9px!important;box-shadow:inset 0 1px #ffffff14,0 2px 6px #0004!important;color:#8ff0a8!important}
+:root .app-shell .structure-buttons .structure-button:hover{background:linear-gradient(145deg,#15402e,#0e2a1f)!important;border-color:#6adc8b77!important}
+/* Neutral at rest like the popover's other rows; they light up green on hover. */
+:root .app-shell .structure-buttons .structure-button,.structure-buttons .structure-button{background:#ffffff08!important;border:1px solid #ffffff1a!important;box-shadow:inset 0 1px #ffffff0f!important;color:#d6dfda!important;transition:background-color .14s ease,border-color .14s ease,color .14s ease}
+:root .app-shell .structure-buttons .structure-button:hover{background:#6adc8b1f!important;border-color:#6adc8b66!important;color:#9aefae!important}
+/* Structure and Save PNG: green text with no box at rest; on hover the same rounded box as the answer actions. */
+:root .app-shell .structure-buttons .structure-button,.structure-buttons .structure-button{background:transparent!important;border:1px solid transparent!important;box-shadow:none!important;border-radius:9px!important;color:#9aefae!important}
+:root .app-shell .structure-buttons .structure-button:hover{background:#ffffff08!important;border-color:transparent!important;color:#c7f8d1!important}
+.structure-buttons{border-top:1px solid #ffffff15}

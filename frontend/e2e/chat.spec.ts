@@ -93,7 +93,7 @@ test('pasted and dropped images are processed locally before sending',async({pag
       const transfer=new DataTransfer();transfer.items.add(new File([blob],method+'.png',{type:'image/png'}));
       document.querySelector('.composer')!.dispatchEvent(method==='paste'?new ClipboardEvent('paste',{clipboardData:transfer,bubbles:true,cancelable:true}):new DragEvent('drop',{dataTransfer:transfer,bubbles:true,cancelable:true}));
     },method);
-    await expect(page.getByLabel('Attached images').getByText(method+'.png')).toBeVisible();
+    await expect(page.getByLabel('Attached images').locator('img')).toHaveCount(method==='paste'?1:2);
   }
   const widths=await page.getByLabel('Attached images').locator('img').evaluateAll(images=>images.map(image=>(image as HTMLImageElement).naturalWidth));
   expect(widths).toEqual([1600,1600]);
@@ -148,8 +148,8 @@ test('drafts survive navigation and images have accessible zoom previews',async(
   await input.fill('New chat draft');
   await page.getByRole('button',{name:'Draw ethanol',exact:true}).click();
   await expect(input).toHaveValue('Keep this follow-up');
-  await page.getByRole('button',{name:'Preview reaction-question.png'}).click();
-  await expect(page.getByRole('dialog',{name:'reaction-question.png'})).toBeVisible();
+  await page.getByRole('button',{name:'Preview image 1'}).click();
+  await expect(page.getByRole('dialog',{name:'Image preview'})).toBeVisible();
   await page.getByRole('slider',{name:'Image zoom'}).fill('150');
   await expect(page.getByText('150%',{exact:true})).toBeVisible();
   await page.screenshot({path:'test-results/ux-image-preview.png',omitBackground:true});
@@ -358,7 +358,7 @@ test('image intake previews, removes, sends and restores an attachment',async({p
   await mockDesktop(page);await page.goto('/');
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.locator('.composer-area').hover();await page.getByRole('button',{name:'Chat tools',exact:true}).click();await page.getByRole('menuitem',{name:/Add image/}).click();
-  await expect(page.getByLabel('Attached images').getByText('reaction-question.png')).toBeVisible();
+  await expect(page.getByLabel('Attached images').locator('img')).toHaveCount(1);
   await page.getByRole('button',{name:'Remove image 1'}).click();
   await expect(page.getByLabel('Attached images')).toHaveCount(0);
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
@@ -509,7 +509,7 @@ test('structure explorer opens on 2D and switches to 3D on the same tab',async({
  await page.getByRole('textbox',{name:'Chemistry question'}).fill('Draw ethanol');
  await page.getByRole('textbox',{name:'Chemistry question'}).press('Enter');
  await page.getByRole('button',{name:'Details for Ethanol molecular structure'}).hover();
- await page.getByRole('button',{name:'Explore structure'}).click();
+ await page.getByRole('button',{name:'Structure',exact:true}).click();
  await expect(page.getByRole('tab',{name:'Structure'})).toHaveAttribute('aria-selected','true');
  // The Structure tab opens on 2D; 3D is one click away on the same tab.
  await expect(page.getByRole('radio',{name:'2D'})).toHaveAttribute('aria-checked','true');
