@@ -95,3 +95,13 @@ Outstanding: docked/floating layout and persistent position, explicit contextual
 - Owner rejected the first plus-menu styling. It now reuses `.slash-menu` and `.slash-command` directly, with Add image last/nearest the trigger for the upward-opening menu. Screenshot and menu regression passed.
 - Removed the visible drag tab; floating composer remains draggable from its top edge.
 - Contextual floating reply test passed after settling layout; confirms movement, explicit question binding, submitted reply context, and context clearing on chat navigation. Original-arrow/disabled-circle test passed after waiting for its opacity transition.
+
+### Owner layout/reply corrections
+
+- New floating chats use the centered welcome layout, with floating drag offset reset. Verified in browser UI.
+- Floating chat history reserves 230 px of trailing reading space and scroll padding so the final answer can be moved above the overlay.
+- Reply dismissal is inside the composer at the right edge with circular blue-gradient treatment; reply hue also reaches send and mode controls.
+- Floating jump-to-latest stays available at the left, with effective idle opacity coordinated with its parent surface.
+- Compact floating surface has an inverse light/dark treatment at low opacity.
+- General reply actions are available on both questions and answers. Explicit reply anchors survive initial typing instead of being overwritten by automatic nearby-question selection.
+- Contextual drag/reply and explicit-reply/new-chat regressions both passed. Additional full-suite and reading-space checks remain before release readiness. Installer builds still gated on owner approval.

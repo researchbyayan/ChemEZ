@@ -166,6 +166,10 @@ test('floating composer and tools are explicit and preserve default docked mode'
   await expect(page.getByRole('menuitem',{name:/Add image/})).toBeVisible();
   await expect(page.getByRole('menu',{name:'Chat tools'}).getByRole('menuitem').last()).toContainText('Add image');
   await page.screenshot({path:test.info().outputPath('chat-tools-menu.png')});
+  await page.locator('.topbar').click({position:{x:500,y:12}});
+  await expect(page.getByRole('menu',{name:'Chat tools'})).toHaveCount(0);
+  await page.locator('.composer-area').hover();
+  await page.getByRole('button',{name:'Chat tools',exact:true}).click();
   await page.getByRole('menuitem',{name:'/synthesis',exact:false}).click();
   await expect(page.locator('.slash-chip')).toContainText('Synthesis');
   await page.getByRole('button',{name:'Settings',exact:true}).click();
@@ -192,12 +196,20 @@ test('floating reply anchors the nearby question and clears on chat navigation',
   await page.mouse.move(initial!.x+initial!.width/2,initial!.y+initial!.height/2);
   await page.mouse.down();await page.mouse.move(initial!.x+initial!.width/2,160,{steps:12});await page.mouse.up();
   await expect.poll(async()=>((await handle.boundingBox())?.y||0)).toBeLessThan(initial!.y-100);
+  await page.locator('.composer-area').hover();
+  await page.getByRole('button',{name:'Chat tools',exact:true}).click();
+  const tools=page.getByRole('menu',{name:'Chat tools'});
+  await expect(tools).toHaveClass(/tools-below/);
+  await expect(tools.getByRole('menuitem').first()).toContainText('Add image');
+  const menuBounds=await tools.boundingBox();expect(menuBounds!.y).toBeGreaterThanOrEqual(0);
+  await page.keyboard.press('Escape');await expect(tools).toHaveCount(0);
+
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Why is that?');
   await expect(page.locator('.reply-anchor')).toContainText('Why is ethanol polar?');
   await expect(page.locator('.composer-area')).toHaveClass(/composer-reply/);
   await page.screenshot({path:test.info().outputPath('floating-contextual-reply.png')});
   await page.getByRole('textbox',{name:'Chemistry question'}).press('Enter');
-  await expect(page.locator('.message.user').last()).toContainText('Replying to the earlier question "Why is ethanol polar?"');
+  await expect(page.locator('.message.user').last()).toContainText('Replying to the earlier message "Why is ethanol polar?"');
   await expect(page.getByText('First part of the answer.')).toBeVisible();await finish(page);
   await history(page).getByTitle('Benzene resonance',{exact:true}).click();
   await expect(page.locator('.reply-anchor')).toHaveCount(0);
@@ -212,4 +224,22 @@ test('disabled send keeps the original arrow while only its circle dims',async({
   await expect.poll(()=>send.evaluate(el=>getComputedStyle(el,'::before').opacity)).toBe('1');
   const ready=await send.evaluate(el=>({arrow:getComputedStyle(el.querySelector('i')!).color,opacity:getComputedStyle(el).opacity,circle:getComputedStyle(el,'::before').opacity}));
   expect(idle.arrow).toBe(ready.arrow);expect(idle.opacity).toBe('1');expect(ready.opacity).toBe('1');expect(Number(idle.circle)).toBeLessThan(Number(ready.circle));
+});
+
+
+test('explicit replies keep their anchor and new floating chats return to the welcome layout',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  await page.getByRole('switch',{name:'Dock chatbox at bottom'}).click();await page.getByRole('button',{name:'Close Settings',exact:true}).click();
+  await page.getByRole('button',{name:'Reply to this answer'}).click();
+  await expect(page.locator('form.composer .reply-anchor')).toContainText('Ethanol has an O–H bond.');
+  await page.getByRole('textbox',{name:'Chemistry question'}).fill('Tell me more');
+  await expect(page.locator('.reply-anchor')).toContainText('Ethanol has an O–H bond.');
+  const close=page.getByRole('button',{name:'Clear reply context'});await expect(close).toHaveCSS('border-radius','50%');
+  await close.click();await expect(page.locator('.reply-anchor')).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Scroll to latest message'})).toBeAttached();
+  await page.getByRole('button',{name:'New conversation',exact:true}).click();
+  await expect(page.locator('.composer-floating')).toHaveCSS('position','relative');
+  await expect(page.getByRole('heading',{name:'Chemistry, clearer.'})).toBeVisible();
 });

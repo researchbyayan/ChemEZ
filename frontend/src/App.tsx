@@ -64,6 +64,14 @@ export default function App(){
   const [search,setSearch]=useState('');
   const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('chemez-sidebar')==='collapsed');
   const [composerMenu,setComposerMenu]=useState(false);
+  const [toolsPlacement,setToolsPlacement]=useState({below:false,room:380});
+  useEffect(()=>{
+    if(!composerMenu)return;
+    const outside=(event:PointerEvent)=>{if(!composerArea.current?.contains(event.target as Node))setComposerMenu(false);};
+    const escape=(event:KeyboardEvent)=>{if(event.key==='Escape'){setComposerMenu(false);composer.current?.focus();}};
+    document.addEventListener('pointerdown',outside);document.addEventListener('keydown',escape);
+    return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape);};
+  },[composerMenu]);
   const [composerDocked,setComposerDocked]=useState(()=>localStorage.getItem('chemez-composer-docked')!=='off');
   const [floatingY,setFloatingY]=useState(0);
   const [replyTarget,setReplyTarget]=useState<{id:string;text:string}|null>(null);
@@ -74,16 +82,18 @@ export default function App(){
   const [nativeFullscreen,setNativeFullscreen]=useState(()=>localStorage.getItem('chemez-native-fullscreen')==='on');
   const [composerCompact,setComposerCompact]=useState(true);
   useEffect(()=>{
-    const proximity=(event:PointerEvent)=>{
-      const area=composerArea.current;if(!area)return;
+    let frame=0;let pointer={x:0,y:0};
+    const check=()=>{
+      frame=0;const area=composerArea.current;if(!area)return;
       const r=area.getBoundingClientRect();
-      const near=event.clientX>=r.left-30&&event.clientX<=r.right+30&&event.clientY>=r.top-65&&event.clientY<=r.bottom+30;
+      const near=pointer.x>=r.left-30&&pointer.x<=r.right+30&&pointer.y>=r.top-65&&pointer.y<=r.bottom+30;
       composerNear.current=near;clearTimeout(composerCollapseTimer.current);
       if(near||area.contains(document.activeElement))setComposerCompact(false);
       else composerCollapseTimer.current=setTimeout(()=>setComposerCompact(true),220);
     };
-    document.addEventListener('pointermove',proximity);
-    return()=>{clearTimeout(composerCollapseTimer.current);document.removeEventListener('pointermove',proximity);};
+    const proximity=(event:PointerEvent)=>{pointer={x:event.clientX,y:event.clientY};if(!frame)frame=requestAnimationFrame(check);};
+    document.addEventListener('pointermove',proximity,{passive:true});
+    return()=>{cancelAnimationFrame(frame);clearTimeout(composerCollapseTimer.current);document.removeEventListener('pointermove',proximity);};
   },[]);
   const [chatMenu,setChatMenu]=useState<string|null>(null);
   const [chatMenuPlace,setChatMenuPlace]=useState<CSSProperties>({});
@@ -203,7 +213,7 @@ export default function App(){
     activity.current++;
     runActivity.current=activity.current;setRunCid(cidRef.current);
     setBusy(true);setError('');setStatus('Preparing your answer…');follows.current=false;answerAnchor.current=true;
-    if(replyTarget&&fromComposer)text='Replying to the earlier question "'+replyTarget.text+'":\n'+text;
+    if(replyTarget&&fromComposer)text='Replying to the earlier message "'+replyTarget.text+'":\n'+text;
     const userContent:UserContent={text:text.trim(),images:attached,command:selected?selected.slice(1):null};
     setReplyTarget(null);
     submission.current=userContent;submissionStarted.current=false;
@@ -219,7 +229,7 @@ export default function App(){
   }
   async function open(id:string){const requested=++activity.current;try{const data=await window.chemez.request('getConversation',id);if(requested!==activity.current)return;const draft=drafts.current.get(id);cidRef.current=id;setCid(id);setArchived(!!conversations.find(chat=>chat.id===id)?.archived);setMessages(run.current?.cid===id?run.current.messages:data.messages);setInput(draft?.text||'');setImages(draft?.images||[]);setEditing(null);setError('');setChatMenu(null);setSearchOpen(false);setSearch('');follows.current=false;requestAnimationFrame(()=>{if(scroll.current)scroll.current.scrollTop=0;});}catch(e){setError(errorMessage(e));}}
   async function remove(id:string){setDeleting(null);try{await window.chemez.request('deleteConversation',id);if(cid===id)newChat();await refresh();}catch(e){setError(errorMessage(e));}}
-  function newChat(){activity.current++;setSearch('');setArchived(false);setSearchOpen(false);setEditing(null);setChatMenu(null);const draft=drafts.current.get('new');cidRef.current=null;setCid(null);setMessages([]);setError('');setInput(draft?.text||'');setImages(draft?.images||[]);composer.current?.focus();}
+  function newChat(){setFloatingY(0);setReplyTarget(null);activity.current++;setSearch('');setArchived(false);setSearchOpen(false);setEditing(null);setChatMenu(null);const draft=drafts.current.get('new');cidRef.current=null;setCid(null);setMessages([]);setError('');setInput(draft?.text||'');setImages(draft?.images||[]);composer.current?.focus();}
   async function pickImage(){
     if(images.length>=4){setError('You can attach up to four images.');return;}
     try{const image=await window.chemez.pickImage();if(image){setImages(items=>[...items,image]);setError('');composer.current?.focus();}}catch(e){setError(errorMessage(e));}
@@ -272,6 +282,8 @@ export default function App(){
   const chooseSlash=(name:string)=>{if(!query)return;setSlash(name);setInput(removeCommandQuery(input,query));setMenuDismissed(true);requestAnimationFrame(()=>{composer.current?.focus();composer.current?.setSelectionRange(query.start,query.start);});};
   const slashMatches=query?SLASH_COMMANDS.filter(([name])=>name.slice(1).startsWith(query.query)):[];
   const choose=(text:string)=>{setInput(text);composer.current?.focus();};
+  const replyTo=(message:Message)=>{const text=message.role==='user'?userContent(message).text:answerText(message.content as Block[]);setReplyTarget({id:message.id,text:text.slice(0,1200)});setComposerCompact(false);composer.current?.focus();};
+  const imageToolsAction=<button type="button" role="menuitem" className="slash-command image-menu-action" onMouseDown={event=>event.preventDefault()} onClick={()=>{setComposerMenu(false);void pickImage();}}><b><i className="far fa-image" aria-hidden="true"/> Add image</b><span>PNG, JPEG, WebP</span></button>;
   return <>
     <div className="ambient" aria-hidden="true"/>
     <GlassEdges mode={glassMode}/>
@@ -322,13 +334,13 @@ export default function App(){
           </section>:<div className="messages">
             {messages.map((message,messageIndex)=><article key={message.id} data-message-id={message.id} data-pending-answer={message.id==='pending-assistant'} className={'message '+message.role}>
               <div className="message-body">
-                {message.role==='user'?<UserMessage message={message} busy={busy} onEdit={()=>editQuestion(message)} onPreview={image=>{setPreview(image);setZoom(100);}}/>:<>
+                {message.role==='user'?<><UserMessage message={message} busy={busy} onEdit={()=>editQuestion(message)} onPreview={image=>{setPreview(image);setZoom(100);}}/><button type="button" className="message-reply" aria-label="Reply to this question" onClick={()=>replyTo(message)}><i className="fas fa-reply" aria-hidden="true"/></button></>:<>
                   <RenderBoundary key={message.id}><Suspense fallback={<div className="generating" role="status">Preparing answer…</div>}><div className="answer-flow">
                     {message.draft&&!(message.content as Block[]).length&&<TypedText text={message.draft}/>}
                     <AnswerBlocks blocks={(message.content as Block[]).map(block=>block.type==='error'?{...block,text:errorMessage(block.text)}:block)} onChoice={choose}/>
                   </div></Suspense></RenderBoundary>
                   {!busy&&(message.content as Block[]).length>0&&(message.content as Block[]).every(block=>block.type==='error')&&<div className="error-actions"><button onClick={()=>setSettings(true)}>Model settings</button><button onClick={()=>{const previous=messages.slice(0,messageIndex).reverse().find(m=>m.role==='user');if(previous)editQuestion(previous);}}>Edit question</button><button onClick={()=>retryAnswer(messageIndex)}><i className="fas fa-redo" aria-hidden="true"/>Retry answer</button></div>}
-                  {(message.content as Block[]).some(block=>block.type!=='error')&&<div className="answer-actions"><button className="copy-answer" aria-label="Copy answer" title={copied===message.id?'Copied':'Copy answer'} onClick={()=>void copy(message)}><i className={'far '+(copied===message.id?'fas fa-check':'fa-copy')} aria-hidden="true"/></button>{!busy&&<button aria-label="Retry answer" title="Generate another answer" onClick={()=>retryAnswer(messageIndex)}><i className="fas fa-redo" aria-hidden="true"/></button>}{message.response_style&&<span className="answer-mode" title="Answer style for this reply">{{balanced:'Explain',concise:'Quick answer',tutor:'Step-by-step',mechanism:'Mechanism'}[message.response_style]}</span>}<References blocks={message.content as Block[]}/></div>}
+                  {(message.content as Block[]).some(block=>block.type!=='error')&&<div className="answer-actions"><button type="button" aria-label="Reply to this answer" title="Reply" onClick={()=>replyTo(message)}><i className="fas fa-reply" aria-hidden="true"/></button><button className="copy-answer" aria-label="Copy answer" title={copied===message.id?'Copied':'Copy answer'} onClick={()=>void copy(message)}><i className={'far '+(copied===message.id?'fas fa-check':'fa-copy')} aria-hidden="true"/></button>{!busy&&<button aria-label="Retry answer" title="Generate another answer" onClick={()=>retryAnswer(messageIndex)}><i className="fas fa-redo" aria-hidden="true"/></button>}{message.response_style&&<span className="answer-mode" title="Answer style for this reply">{{balanced:'Explain',concise:'Quick answer',tutor:'Step-by-step',mechanism:'Mechanism'}[message.response_style]}</span>}<References blocks={message.content as Block[]}/></div>}
                 </>}
                 {message.id==='pending-assistant'&&busy&&<p className="answer-status" role="status">{status||'Working…'}</p>}
               </div>
@@ -338,11 +350,12 @@ export default function App(){
         </div>
         <div ref={composerArea} style={!composerDocked?{'--floating-y':floatingY+'px'} as CSSProperties:undefined} className={'composer-area'+(composerCompact?' composer-compact':'')+(!composerDocked?' composer-floating':'')+(replyTarget?' composer-reply':'')} onFocusCapture={()=>{clearTimeout(composerCollapseTimer.current);setComposerCompact(false);}} onBlurCapture={()=>{clearTimeout(composerCollapseTimer.current);composerCollapseTimer.current=setTimeout(()=>{if(!composerNear.current&&!composerArea.current?.contains(document.activeElement))setComposerCompact(true);},250);}}>
           {!composerDocked&&<button type="button" className="composer-drag" aria-label="Move floating chatbox" title="Drag to move chatbox" onPointerDown={event=>{event.currentTarget.setPointerCapture(event.pointerId);floatDrag.current={start:event.clientY,y:floatingY,limit:Math.max(0,(composerArea.current?.parentElement?.clientHeight||600)-(composerArea.current?.clientHeight||130)-90)};}} onPointerMove={event=>{const drag=floatDrag.current;if(drag)setFloatingY(Math.max(-drag.limit,Math.min(0,drag.y+event.clientY-drag.start)));}} onPointerUp={()=>{floatDrag.current=null;}} onPointerCancel={()=>{floatDrag.current=null;}}><span/></button>}
-          {replyTarget&&<div className="reply-anchor"><span>Replying to: {replyTarget.text}</span><button type="button" aria-label="Clear reply context" onClick={()=>setReplyTarget(null)}>×</button></div>}
-          {showJump&&messages.length>0&&<button className="jump" aria-label="Scroll to latest message" title="Latest message" onClick={()=>{follows.current=true;end.current?.scrollIntoView();setShowJump(false);}}><i className="fas fa-arrow-down" aria-hidden="true"/></button>}
+
+          {(showJump||!composerDocked)&&messages.length>0&&<button className="jump" aria-label="Scroll to latest message" title="Latest message" onClick={()=>{follows.current=true;end.current?.scrollIntoView();setShowJump(false);}}><i className="fas fa-arrow-down" aria-hidden="true"/></button>}
           {error&&<div className="notice error" role="alert">{error}</div>}
           <form className="composer" onDragOver={event=>{if(event.dataTransfer.types.includes('Files'))event.preventDefault();}} onDrop={event=>{event.preventDefault();void intakeFiles(Array.from(event.dataTransfer.files));}} onPaste={event=>{const files=Array.from(event.clipboardData.files);if(files.length){event.preventDefault();void intakeFiles(files);}}} onSubmit={event=>{event.preventDefault();void send();}}>
-            {composerMenu&&<div className="slash-menu composer-mini-menu" role="menu" aria-label="Chat tools">{SLASH_COMMANDS.map(([name,about])=><button type="button" role="menuitem" className="slash-command" key={name} onMouseDown={event=>event.preventDefault()} onClick={()=>{setSlash(name);setComposerMenu(false);composer.current?.focus();}}><b>{name}</b><span>{about}</span></button>)}<button type="button" role="menuitem" className="slash-command image-menu-action" onMouseDown={event=>event.preventDefault()} onClick={()=>{setComposerMenu(false);void pickImage();}}><b><i className="far fa-image" aria-hidden="true"/> Add image</b><span>PNG, JPEG, WebP</span></button></div>}
+            {composerMenu&&<div className={'slash-menu composer-mini-menu'+(toolsPlacement.below?' tools-below':'')} style={{...(toolsPlacement.below?{top:'calc(100% + 6px)',bottom:'auto'}:{}),maxHeight:toolsPlacement.room}} role="menu" aria-label="Chat tools">{toolsPlacement.below&&imageToolsAction}{SLASH_COMMANDS.map(([name,about])=><button type="button" role="menuitem" className="slash-command" key={name} onMouseDown={event=>event.preventDefault()} onClick={()=>{setSlash(name);setComposerMenu(false);composer.current?.focus();}}><b>{name}</b><span>{about}</span></button>)}{!toolsPlacement.below&&imageToolsAction}</div>}
+            {replyTarget&&<div className="reply-anchor"><span>Replying to: {replyTarget.text}</span><button className="reply-dismiss" type="button" aria-label="Clear reply context" onClick={()=>setReplyTarget(null)}><i className="fas fa-times" aria-hidden="true"/></button></div>}
             <label className="sr-only" htmlFor="question">Chemistry question</label>
             {editing&&<div className="branch-banner"><i className="fas fa-pen" aria-hidden="true"/><span>Editing an earlier question. Sending replaces it and the answers after it.</span><button type="button" aria-label="Cancel editing" onClick={()=>{setEditing(null);setInput('');setImages([]);}}><i className="fas fa-times" aria-hidden="true"/></button></div>}
             {images.length>0&&<div className="attachment-strip" aria-label="Attached images">{images.map((image,index)=><div className="attachment" key={`${image.name}-${index}`}><img src={image.dataUrl||`data:${image.mime};base64,${image.data}`} alt=""/><span>{image.name}</span><button type="button" aria-label={`Remove ${image.name}`} onClick={()=>setImages(items=>items.filter((_,itemIndex)=>itemIndex!==index))}><i className="fas fa-times" aria-hidden="true"/></button></div>)}</div>}
@@ -350,7 +363,7 @@ export default function App(){
             {slashMatches.length>0&&<div className="slash-menu" role="listbox" aria-label="Commands">{slashMatches.map(([name,about])=><button type="button" key={name} className="slash-command" onMouseDown={event=>event.preventDefault()} onClick={()=>chooseSlash(name)}><b>{name}</b><span>{about}</span></button>)}</div>}
             {slash&&<span className="slash-chip">{COMMAND_NAMES[slash]}<button type="button" aria-label={`Remove ${COMMAND_NAMES[slash]}`} onClick={()=>{setSlash('');composer.current?.focus();}}><i className="fas fa-times" aria-hidden="true"/></button></span>}
             <textarea ref={composer} id="question" value={input} maxLength={12000} onChange={event=>{const next=event.target.value;
-              if(!composerDocked&&!input.trim()&&next.trim()){
+              if(!replyTarget&&!composerDocked&&!input.trim()&&next.trim()){
                 const box=composerArea.current?.getBoundingClientRect();
                 if(box){let best:{id:string;text:string}|null=null;let distance=280;
                   for(const message of messages.filter(m=>m.role==='user')){const node=Array.from(scroll.current?.querySelectorAll<HTMLElement>('.message.user')||[]).find(el=>el.dataset.messageId===message.id);if(!node)continue;const r=node.getBoundingClientRect();const d=Math.abs(r.top+r.height/2-(box.top+box.height/2));if(d<distance){distance=d;best={id:message.id,text:userContent(message).text};}}
@@ -359,7 +372,7 @@ export default function App(){
               }
               if(!next.trim())setReplyTarget(null);setInput(next);setCaret(event.target.selectionStart);setMenuDismissed(false);}} onSelect={event=>{const next=event.currentTarget.selectionStart;if(next!==caret){setCaret(next);setMenuDismissed(false);}}} onKeyDown={event=>{if(event.key==='Enter'&&!event.nativeEvent.isComposing&&(event.metaKey||event.ctrlKey||!event.shiftKey)){event.preventDefault();void send();}if(event.key==='ArrowUp'&&!input&&!busy){const previous=messages.slice().reverse().find(message=>message.role==='user');if(previous){event.preventDefault();editQuestion(previous);}}if(event.key==='Escape'&&slashMatches.length){event.preventDefault();setMenuDismissed(true);}if(event.key==='Backspace'&&!input&&slash){event.preventDefault();setSlash('');}if((event.key==='Tab'||event.key==='ArrowRight')&&!input&&suggestion){event.preventDefault();setInput(suggestion);}}} placeholder={busy?'Draft your next question while the answer finishes…':suggestion?suggestion+'   ⇥ Tab':slash?(COMMAND_PLACEHOLDERS[slash]||'Enter your chemistry question…'):'Ask anything chemistry…'} aria-description={suggestion?'Suggested next question: '+suggestion+'. Press Tab to use it.':undefined} rows={2}/>
             <div className="composer-footer">
-              <div className="composer-tools"><button className="attach-button" type="button" disabled={busy||images.length>=4} onClick={()=>setComposerMenu(value=>!value)} aria-label="Chat tools" aria-expanded={composerMenu} title="Commands and images"><i className="fas fa-plus" aria-hidden="true"/></button><select className="answer-style" aria-label="Answer style" title="Choose how the next answer is explained" disabled={busy} value={answerStyle} onChange={event=>setAnswerStyle(event.target.value as typeof answerStyle)}><option value="concise">Quick answer</option><option value="balanced">Explain</option><option value="mechanism">Mechanism</option></select></div>
+              <div className="composer-tools"><button className="attach-button" type="button" disabled={busy||images.length>=4} onClick={()=>{const r=composerArea.current?.getBoundingClientRect();if(r){const above=r.top-16,below=window.innerHeight-r.bottom-16;const down=above<360&&below>above;setToolsPlacement({below:down,room:Math.max(80,Math.min(380,down?below:above))});}setComposerMenu(value=>!value);}} aria-label="Chat tools" aria-expanded={composerMenu} title="Commands and images"><i className="fas fa-plus" aria-hidden="true"/></button><select className="answer-style" aria-label="Answer style" title="Choose how the next answer is explained" disabled={busy} value={answerStyle} onChange={event=>setAnswerStyle(event.target.value as typeof answerStyle)}><option value="concise">Quick answer</option><option value="balanced">Explain</option><option value="mechanism">Mechanism</option></select></div>
               {busy&&!here?<button className="send-button" type="button" disabled title="Another chat is still answering. You can send when it finishes." aria-label="Send question (waiting for the other chat)"><i className="fas fa-arrow-up" aria-hidden="true"/></button>:busy?<button className="send-button stop" type="button" onClick={()=>void window.chemez.cancel()} aria-label="Stop generation"><i className="fas fa-stop" aria-hidden="true"/></button>:<button className="send-button" type="submit" disabled={!input.trim()&&!images.length} aria-label="Send question"><i className="fas fa-arrow-up" aria-hidden="true"/></button>}
             </div>
           </form>
