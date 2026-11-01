@@ -179,12 +179,12 @@ test('floating composer and tools are explicit and preserve default docked mode'
   await page.getByRole('button',{name:'Close Settings',exact:true}).click();
   await page.mouse.move(5,5);
   await expect(page.locator('.composer-area')).toHaveClass(/composer-floating/);
-  await expect(page.locator('.composer-area')).toHaveCSS('opacity','0.25');
+  await expect(page.locator('.composer-area')).toHaveCSS('opacity','0.15');
   await page.locator('.composer-area').hover();
   await expect(page.locator('.composer-area')).toHaveCSS('opacity','1');
 });
 
-test('floating reply anchors the nearby question and clears on chat navigation',async({page})=>{
+test('floating follow-up anchors the nearby answer and clears on chat navigation',async({page})=>{
   await mockChats(page);await page.goto('/');
   await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
   await page.getByRole('button',{name:'Settings',exact:true}).click();
@@ -199,17 +199,20 @@ test('floating reply anchors the nearby question and clears on chat navigation',
   await page.locator('.composer-area').hover();
   await page.getByRole('button',{name:'Chat tools',exact:true}).click();
   const tools=page.getByRole('menu',{name:'Chat tools'});
-  await expect(tools).toHaveClass(/tools-below/);
-  await expect(tools.getByRole('menuitem').first()).toContainText('Add image');
+  await expect(tools.getByRole('menuitem',{name:/Add image/})).toBeVisible();
   const menuBounds=await tools.boundingBox();expect(menuBounds!.y).toBeGreaterThanOrEqual(0);
   await page.keyboard.press('Escape');await expect(tools).toHaveCount(0);
+  const answerBounds=await page.locator('.message.assistant').boundingBox();
+  const dragBounds=await handle.boundingBox();
+  await page.mouse.move(dragBounds!.x+40,dragBounds!.y+6);await page.mouse.down();
+  await page.mouse.move(dragBounds!.x+40,answerBounds!.y,{steps:8});await page.mouse.up();
 
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Why is that?');
-  await expect(page.locator('.reply-anchor')).toContainText('Why is ethanol polar?');
+  await expect(page.locator('.reply-anchor')).toContainText('Ethanol has an O–H bond.');
   await expect(page.locator('.composer-area')).toHaveClass(/composer-reply/);
   await page.screenshot({path:test.info().outputPath('floating-contextual-reply.png')});
   await page.getByRole('textbox',{name:'Chemistry question'}).press('Enter');
-  await expect(page.locator('.message.user').last()).toContainText('Replying to the earlier message "Why is ethanol polar?"');
+  await expect(page.locator('.message.user').last()).toContainText('Replying to the earlier message "Ethanol has an O–H bond."');
   await expect(page.getByText('First part of the answer.')).toBeVisible();await finish(page);
   await history(page).getByTitle('Benzene resonance',{exact:true}).click();
   await expect(page.locator('.reply-anchor')).toHaveCount(0);
@@ -236,10 +239,56 @@ test('explicit replies keep their anchor and new floating chats return to the we
   await expect(page.locator('form.composer .reply-anchor')).toContainText('Ethanol has an O–H bond.');
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Tell me more');
   await expect(page.locator('.reply-anchor')).toContainText('Ethanol has an O–H bond.');
-  const close=page.getByRole('button',{name:'Clear reply context'});await expect(close).toHaveCSS('border-radius','50%');
+  const close=page.getByRole('button',{name:'Clear reply context'});
+  await expect(page.getByRole('button',{name:'Reply to this question'})).toHaveCount(0);
+  await expect(page.locator('.reply-anchor')).toContainText('Follow-up on:');
+  const form=await page.locator('form.composer').boundingBox();
+  const rail=await page.locator('.composer-side-controls').boundingBox();
+  const upper=await close.boundingBox();const lower=await page.getByRole('button',{name:'Scroll to latest message'}).boundingBox();
+  const outlines=await page.locator('form.composer, .side-control-glass').evaluateAll(nodes=>nodes.map(node=>{
+    const edge=getComputedStyle(node),highlight=getComputedStyle(node,'::after');
+    return {widths:[edge.borderTopWidth,edge.borderRightWidth,edge.borderBottomWidth,edge.borderLeftWidth],highlight:highlight.paddingTop};
+  }));
+  expect(outlines).toHaveLength(3);
+  for(const outline of outlines){expect(outline.widths).toEqual(['1px','1px','1px','1px']);expect(outline.highlight).toBe(outlines[0].highlight);}
+  expect(Math.abs(rail!.height-form!.height)).toBeLessThan(3);
+  expect(Math.abs(upper!.height-lower!.height)).toBeLessThan(2);
+  expect(upper!.y).toBeLessThan(lower!.y);
+  expect(rail!.x+rail!.width).toBeLessThan(form!.x);
+  await expect(page.locator('form.composer')).toHaveCSS('transform','none');
+  await expect.poll(async()=>Math.round((await page.locator('.composer-side-controls').boundingBox())!.width)).toBe(42);
+  for(let sample=0;sample<5;sample++){
+    const field=await page.locator('form.composer').boundingBox(),controls=await page.locator('.composer-side-controls').boundingBox();
+    expect(Math.abs(field!.x-controls!.x-controls!.width-10)).toBeLessThan(2);
+    await page.waitForTimeout(45);
+  }
+
+  await page.getByRole('textbox',{name:'Chemistry question'}).blur();await page.mouse.move(5,5);
+  for(let sample=0;sample<9;sample++){
+    const field=await page.locator('form.composer').boundingBox(),arrow=await page.getByRole('button',{name:'Scroll to latest message'}).boundingBox();
+    expect(Math.abs(field!.x-arrow!.x-arrow!.width-10)).toBeLessThan(2);
+    const shaft=await page.locator('.scroll-arrow').boundingBox();expect(shaft!.height).toBeLessThanOrEqual(31);
+    await page.waitForTimeout(55);
+  }
+  await page.screenshot({path:test.info().outputPath('follow-up-side-controls.png')});
   await close.click();await expect(page.locator('.reply-anchor')).toHaveCount(0);
   await expect(page.getByRole('button',{name:'Scroll to latest message'})).toBeAttached();
   await page.getByRole('button',{name:'New conversation',exact:true}).click();
   await expect(page.locator('.composer-floating')).toHaveCSS('position','relative');
   await expect(page.getByRole('heading',{name:'Chemistry, clearer.'})).toBeVisible();
+});
+
+test('clicking the compact typing area still focuses it during expansion',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  await page.getByRole('switch',{name:'Dock chatbox at bottom'}).click();await page.getByRole('button',{name:'Close Settings',exact:true}).click();
+  await page.mouse.move(5,5);
+  await expect(page.locator('.composer-area')).toHaveClass(/composer-compact/);
+  const field=page.getByRole('textbox',{name:'Chemistry question'}),bounds=await field.boundingBox();
+  await page.mouse.move(bounds!.x+90,bounds!.y+12);
+  await page.waitForTimeout(70); // Deliberately click while the expansion is in progress.
+  await page.mouse.click(bounds!.x+90,bounds!.y+12);
+  await page.keyboard.type('Explain this');
+  await expect(field).toBeFocused();await expect(field).toHaveValue('Explain this');
 });

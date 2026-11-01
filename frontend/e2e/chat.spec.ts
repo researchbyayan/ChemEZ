@@ -359,7 +359,7 @@ test('image intake previews, removes, sends and restores an attachment',async({p
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.locator('.composer-area').hover();await page.getByRole('button',{name:'Chat tools',exact:true}).click();await page.getByRole('menuitem',{name:/Add image/}).click();
   await expect(page.getByLabel('Attached images').getByText('reaction-question.png')).toBeVisible();
-  await page.getByRole('button',{name:'Remove reaction-question.png'}).click();
+  await page.getByRole('button',{name:'Remove image 1'}).click();
   await expect(page.getByLabel('Attached images')).toHaveCount(0);
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.locator('.composer-area').hover();await page.getByRole('button',{name:'Chat tools',exact:true}).click();await page.getByRole('menuitem',{name:/Add image/}).click();

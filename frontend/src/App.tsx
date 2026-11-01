@@ -59,6 +59,7 @@ export default function App(){
   const answerAnchor=useRef(false);
   const composerArea=useRef<HTMLDivElement>(null);
   const composerNear=useRef(false);
+  const compactClickBounds=useRef<DOMRect|null>(null);
   const composerCollapseTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined);
   const [showJump,setShowJump]=useState(false);
   const [search,setSearch]=useState('');
@@ -82,18 +83,43 @@ export default function App(){
   const [nativeFullscreen,setNativeFullscreen]=useState(()=>localStorage.getItem('chemez-native-fullscreen')==='on');
   const [composerCompact,setComposerCompact]=useState(true);
   useEffect(()=>{
-    let frame=0;let pointer={x:0,y:0};
+    const area=composerArea.current,main=area?.parentElement;
+    if(!area||!main)return;
+    let compactHeight=0;
+    const measure=()=>{
+      const height=area.getBoundingClientRect().height;
+      if(area.classList.contains('composer-compact'))compactHeight=height;
+      const lift=Math.max(0,-parseFloat(area.style.getPropertyValue('--floating-y')||'0'));
+      area.style.setProperty('--expansion-offset',`${Math.min(Math.max(0,height-(compactHeight||height)),lift)}px`);
+      main.style.setProperty('--composer-clearance',`${Math.ceil(height)+30}px`);
+    };
+    const observer=new ResizeObserver(measure);observer.observe(area);measure();
+    return()=>{observer.disconnect();main.style.removeProperty('--composer-clearance');};
+  },[]);
+
+  useEffect(()=>{
+    let frame=0;let pointer={x:0,y:0,onControls:false};
     const check=()=>{
       frame=0;const area=composerArea.current;if(!area)return;
       const r=area.getBoundingClientRect();
+      if(area.classList.contains('composer-compact'))compactClickBounds.current=r;
       const near=pointer.x>=r.left-30&&pointer.x<=r.right+30&&pointer.y>=r.top-65&&pointer.y<=r.bottom+30;
       composerNear.current=near;clearTimeout(composerCollapseTimer.current);
+      if(pointer.onControls)return;
       if(near||area.contains(document.activeElement))setComposerCompact(false);
       else composerCollapseTimer.current=setTimeout(()=>setComposerCompact(true),220);
     };
-    const proximity=(event:PointerEvent)=>{pointer={x:event.clientX,y:event.clientY};if(!frame)frame=requestAnimationFrame(check);};
+    const retainTypingTarget=(event:PointerEvent)=>{
+      const r=compactClickBounds.current,target=event.target as HTMLElement;
+      if(!r||!composerNear.current||target.closest('button,select,input,a,textarea,[role="menu"]'))return;
+      if(event.clientX>=r.left+45&&event.clientX<=r.right&&event.clientY>=r.top&&event.clientY<=r.bottom){
+        event.preventDefault();composer.current?.focus({preventScroll:true});setComposerCompact(false);
+      }
+    };
+    document.addEventListener('pointerdown',retainTypingTarget,true);
+    const proximity=(event:PointerEvent)=>{pointer={x:event.clientX,y:event.clientY,onControls:!!(event.target as HTMLElement).closest('.composer-side-controls')};if(!frame)frame=requestAnimationFrame(check);};
     document.addEventListener('pointermove',proximity,{passive:true});
-    return()=>{cancelAnimationFrame(frame);clearTimeout(composerCollapseTimer.current);document.removeEventListener('pointermove',proximity);};
+    return()=>{cancelAnimationFrame(frame);clearTimeout(composerCollapseTimer.current);document.removeEventListener('pointermove',proximity);document.removeEventListener('pointerdown',retainTypingTarget,true);};
   },[]);
   const [chatMenu,setChatMenu]=useState<string|null>(null);
   const [chatMenuPlace,setChatMenuPlace]=useState<CSSProperties>({});
@@ -334,7 +360,7 @@ export default function App(){
           </section>:<div className="messages">
             {messages.map((message,messageIndex)=><article key={message.id} data-message-id={message.id} data-pending-answer={message.id==='pending-assistant'} className={'message '+message.role}>
               <div className="message-body">
-                {message.role==='user'?<><UserMessage message={message} busy={busy} onEdit={()=>editQuestion(message)} onPreview={image=>{setPreview(image);setZoom(100);}}/><button type="button" className="message-reply" aria-label="Reply to this question" onClick={()=>replyTo(message)}><i className="fas fa-reply" aria-hidden="true"/></button></>:<>
+                {message.role==='user'?<><UserMessage message={message} busy={busy} onEdit={()=>editQuestion(message)} onPreview={image=>{setPreview(image);setZoom(100);}}/></>:<>
                   <RenderBoundary key={message.id}><Suspense fallback={<div className="generating" role="status">Preparing answer…</div>}><div className="answer-flow">
                     {message.draft&&!(message.content as Block[]).length&&<TypedText text={message.draft}/>}
                     <AnswerBlocks blocks={(message.content as Block[]).map(block=>block.type==='error'?{...block,text:errorMessage(block.text)}:block)} onChoice={choose}/>
@@ -351,14 +377,18 @@ export default function App(){
         <div ref={composerArea} style={!composerDocked?{'--floating-y':floatingY+'px'} as CSSProperties:undefined} className={'composer-area'+(composerCompact?' composer-compact':'')+(!composerDocked?' composer-floating':'')+(replyTarget?' composer-reply':'')} onFocusCapture={()=>{clearTimeout(composerCollapseTimer.current);setComposerCompact(false);}} onBlurCapture={()=>{clearTimeout(composerCollapseTimer.current);composerCollapseTimer.current=setTimeout(()=>{if(!composerNear.current&&!composerArea.current?.contains(document.activeElement))setComposerCompact(true);},250);}}>
           {!composerDocked&&<button type="button" className="composer-drag" aria-label="Move floating chatbox" title="Drag to move chatbox" onPointerDown={event=>{event.currentTarget.setPointerCapture(event.pointerId);floatDrag.current={start:event.clientY,y:floatingY,limit:Math.max(0,(composerArea.current?.parentElement?.clientHeight||600)-(composerArea.current?.clientHeight||130)-90)};}} onPointerMove={event=>{const drag=floatDrag.current;if(drag)setFloatingY(Math.max(-drag.limit,Math.min(0,drag.y+event.clientY-drag.start)));}} onPointerUp={()=>{floatDrag.current=null;}} onPointerCancel={()=>{floatDrag.current=null;}}><span/></button>}
 
-          {(showJump||!composerDocked)&&messages.length>0&&<button className="jump" aria-label="Scroll to latest message" title="Latest message" onClick={()=>{follows.current=true;end.current?.scrollIntoView();setShowJump(false);}}><i className="fas fa-arrow-down" aria-hidden="true"/></button>}
+
           {error&&<div className="notice error" role="alert">{error}</div>}
           <form className="composer" onDragOver={event=>{if(event.dataTransfer.types.includes('Files'))event.preventDefault();}} onDrop={event=>{event.preventDefault();void intakeFiles(Array.from(event.dataTransfer.files));}} onPaste={event=>{const files=Array.from(event.clipboardData.files);if(files.length){event.preventDefault();void intakeFiles(files);}}} onSubmit={event=>{event.preventDefault();void send();}}>
+            {messages.length>0&&(showJump||!composerDocked||replyTarget)&&<div className="composer-side-controls">
+              {replyTarget&&<button className="reply-dismiss" type="button" aria-label="Clear reply context" title="Exit follow-up" onPointerDown={event=>{event.preventDefault();setReplyTarget(null);}} onClick={()=>setReplyTarget(null)}><span className="composer side-control-glass" aria-hidden="true"/><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>}
+              <button className="jump" type="button" aria-label="Scroll to latest message"  onClick={()=>{follows.current=true;end.current?.scrollIntoView();setShowJump(false);}}><span className="composer side-control-glass" aria-hidden="true"/><span className="scroll-arrow" aria-hidden="true"/></button>
+            </div>}
             {composerMenu&&<div className={'slash-menu composer-mini-menu'+(toolsPlacement.below?' tools-below':'')} style={{...(toolsPlacement.below?{top:'calc(100% + 6px)',bottom:'auto'}:{}),maxHeight:toolsPlacement.room}} role="menu" aria-label="Chat tools">{toolsPlacement.below&&imageToolsAction}{SLASH_COMMANDS.map(([name,about])=><button type="button" role="menuitem" className="slash-command" key={name} onMouseDown={event=>event.preventDefault()} onClick={()=>{setSlash(name);setComposerMenu(false);composer.current?.focus();}}><b>{name}</b><span>{about}</span></button>)}{!toolsPlacement.below&&imageToolsAction}</div>}
-            {replyTarget&&<div className="reply-anchor"><span>Replying to: {replyTarget.text}</span><button className="reply-dismiss" type="button" aria-label="Clear reply context" onClick={()=>setReplyTarget(null)}><i className="fas fa-times" aria-hidden="true"/></button></div>}
+            {replyTarget&&<div className="reply-anchor"><span>Follow-up on: {replyTarget.text}</span></div>}
             <label className="sr-only" htmlFor="question">Chemistry question</label>
             {editing&&<div className="branch-banner"><i className="fas fa-pen" aria-hidden="true"/><span>Editing an earlier question. Sending replaces it and the answers after it.</span><button type="button" aria-label="Cancel editing" onClick={()=>{setEditing(null);setInput('');setImages([]);}}><i className="fas fa-times" aria-hidden="true"/></button></div>}
-            {images.length>0&&<div className="attachment-strip" aria-label="Attached images">{images.map((image,index)=><div className="attachment" key={`${image.name}-${index}`}><img src={image.dataUrl||`data:${image.mime};base64,${image.data}`} alt=""/><span>{image.name}</span><button type="button" aria-label={`Remove ${image.name}`} onClick={()=>setImages(items=>items.filter((_,itemIndex)=>itemIndex!==index))}><i className="fas fa-times" aria-hidden="true"/></button></div>)}</div>}
+            {images.length>0&&<div className="attachment-strip" aria-label="Attached images">{images.map((image,index)=><div className="attachment" key={`${image.name}-${index}`}><img src={image.dataUrl||`data:${image.mime};base64,${image.data}`} alt=""/><button type="button" aria-label={`Remove image ${index+1}`} onClick={()=>setImages(items=>items.filter((_,itemIndex)=>itemIndex!==index))}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button></div>)}</div>}
             {images.length>0&&config.image_support==='unsupported'&&<p className="image-capability-note">This model is text-only. <button type="button" onClick={()=>setSettings(true)}>Set up image reading</button> to use these images.</p>}
             {slashMatches.length>0&&<div className="slash-menu" role="listbox" aria-label="Commands">{slashMatches.map(([name,about])=><button type="button" key={name} className="slash-command" onMouseDown={event=>event.preventDefault()} onClick={()=>chooseSlash(name)}><b>{name}</b><span>{about}</span></button>)}</div>}
             {slash&&<span className="slash-chip">{COMMAND_NAMES[slash]}<button type="button" aria-label={`Remove ${COMMAND_NAMES[slash]}`} onClick={()=>{setSlash('');composer.current?.focus();}}><i className="fas fa-times" aria-hidden="true"/></button></span>}
@@ -366,7 +396,7 @@ export default function App(){
               if(!replyTarget&&!composerDocked&&!input.trim()&&next.trim()){
                 const box=composerArea.current?.getBoundingClientRect();
                 if(box){let best:{id:string;text:string}|null=null;let distance=280;
-                  for(const message of messages.filter(m=>m.role==='user')){const node=Array.from(scroll.current?.querySelectorAll<HTMLElement>('.message.user')||[]).find(el=>el.dataset.messageId===message.id);if(!node)continue;const r=node.getBoundingClientRect();const d=Math.abs(r.top+r.height/2-(box.top+box.height/2));if(d<distance){distance=d;best={id:message.id,text:userContent(message).text};}}
+                  for(const message of messages.filter(m=>m.role==='assistant')){const node=Array.from(scroll.current?.querySelectorAll<HTMLElement>('.message.assistant')||[]).find(el=>el.dataset.messageId===message.id);if(!node)continue;const r=node.getBoundingClientRect();const center=box.top+box.height/2;const d=Math.max(r.top-center,center-r.bottom,0);if(d<distance){distance=d;best={id:message.id,text:answerText(message.content as Block[]).slice(0,1200)};}}
                   setReplyTarget(best);
                 }
               }
@@ -397,7 +427,7 @@ export default function App(){
       {searchOpen&&<Dialog title="Search chats" className="search-dialog" onClose={()=>{setSearchOpen(false);setSearch('');}}><label className="search-field"><i className="fas fa-search" aria-hidden="true"/><input autoFocus aria-label="Search messages and structures" maxLength={200} placeholder="Find explanations, molecules, or SMILES…" value={search} onChange={event=>setSearch(event.target.value)}/></label><p className="muted">Search includes messages, structures and archived conversations.</p><div className="search-results" aria-busy={searching}>{searchError?<p role="alert">{searchError}</p>:searching?<p role="status">Searching…</p>:search.trim()&&results.length===0?<p>No matching messages.</p>:(search.trim()?results:conversations.slice(0,12)).map(chat=><button key={chat.id} disabled={busy} onClick={()=>void open(chat.id)}><i className={'fas '+(chat.archived?'fa-archive':'fa-comment-alt')} aria-hidden="true"/><span><strong>{chat.title}</strong><small>{chat.snippet||new Date(chat.updated).toLocaleDateString()}</small></span>{chat.archived&&<em>Archived</em>}</button>)}</div></Dialog>}
       {levelOpen&&<LevelChooser current={level} onChoose={chooseLevel} onClose={()=>{if(!level)chooseLevel('undergraduate');else setLevelOpen(false);}}/>}
       {help&&<Dialog title="Keyboard shortcuts" onClose={()=>setHelp(false)}><dl className="shortcut-list">{[['Search all chats','⌘ / Ctrl + K'],['New conversation','⌘ / Ctrl + Shift + O'],['Keyboard shortcuts','⌘ / Ctrl + /'],['Send question','Enter'],['New line','Shift + Enter'],['Edit last question','↑ in an empty composer'],['Close a dialog or menu','Esc']].map(([action,key])=><div key={action}><dt>{action}</dt><dd><kbd>{key}</kbd></dd></div>)}</dl><p className="muted">Paste or drop PNG, JPEG and WebP images into the composer.</p></Dialog>}
-      {preview&&<Dialog title={preview.name} className="image-dialog" onClose={()=>setPreview(null)}><div className="image-viewer"><img style={{width:`${zoom}%`}} src={preview.dataUrl||`data:${preview.mime};base64,${preview.data}`} alt={preview.name}/></div><label className="zoom-control">Zoom <input type="range" aria-label="Image zoom" min="50" max="200" step="10" value={zoom} onChange={event=>setZoom(Number(event.target.value))}/><span>{zoom}%</span></label></Dialog>}
+      {preview&&<Dialog title="Image preview" className="image-dialog" onClose={()=>setPreview(null)}><div className="image-viewer"><img style={{width:`${zoom}%`}} src={preview.dataUrl||`data:${preview.mime};base64,${preview.data}`} alt="Attached image"/></div><label className="zoom-control">Zoom <input type="range" aria-label="Image zoom" min="50" max="200" step="10" value={zoom} onChange={event=>setZoom(Number(event.target.value))}/><span>{zoom}%</span></label></Dialog>}
       {toast&&<div className="toast" role="status"><span>{toast.text}</span>{toast.undo&&<button onClick={()=>{toast.undo?.();setToast(null);}}>Undo</button>}<button aria-label="Dismiss notification" onClick={()=>setToast(null)}><i className="fas fa-times" aria-hidden="true"/></button></div>}
     </div>
   </>;
