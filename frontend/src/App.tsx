@@ -83,11 +83,10 @@ export default function App(){
     return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape);};
   },[composerMenu]);
   const [composerDocked,setComposerDocked]=useState(()=>localStorage.getItem('chemez-composer-docked')!=='off');
-  const [floatingY,setFloatingY]=useState(0);
   const [replyTarget,setReplyTarget]=useState<{id:string;text:string}|null>(null);
   useEffect(()=>{setReplyTarget(null);setComposerMenu(false);},[cid]);
   const floatDrag=useRef<{start:number;y:number;limit:number}|null>(null);
-  useEffect(()=>{localStorage.setItem('chemez-composer-docked',composerDocked?'on':'off');if(composerDocked){setFloatingY(0);setReplyTarget(null);}},[composerDocked]);
+  useEffect(()=>{localStorage.setItem('chemez-composer-docked',composerDocked?'on':'off');if(composerDocked)setReplyTarget(null);},[composerDocked]);
 
   const [nativeFullscreen,setNativeFullscreen]=useState(()=>localStorage.getItem('chemez-native-fullscreen')==='on');
   const [composerCompact,setComposerCompact]=useState(true);
@@ -115,9 +114,9 @@ export default function App(){
       frame=0;const area=composerArea.current;if(!area)return;
       const r=area.getBoundingClientRect();
       if(area.classList.contains('composer-compact'))compactClickBounds.current=r;
-      // Around the resting pill the trigger zone is about half the size (two 30% reductions), so passing by doesn't start opening it.
+      // Around the resting pill the trigger zone is about a quarter of the chatbox area, so passing by doesn't start opening it.
       const resting=area.classList.contains('composer-floating')&&area.classList.contains('composer-compact');
-      const shrinkX=resting?r.width*.255:0,shrinkY=resting?r.height*.255:0,pad=resting?.49:1;
+      const shrinkX=resting?r.width*.3775:0,shrinkY=resting?r.height*.3775:0,pad=resting?.245:1;
       // Below the chatbox (the disclaimer line and the window edge) never opens it; only the box and the space above it do.
       const formBottom=area.querySelector('form')?.getBoundingClientRect().bottom??r.bottom;
       const near=pointer.x>=r.left+shrinkX-30*pad&&pointer.x<=r.right-shrinkX+30*pad&&pointer.y>=r.top+shrinkY-65*pad&&pointer.y<=Math.min(r.bottom-shrinkY+30*pad,formBottom);
@@ -275,7 +274,7 @@ export default function App(){
   }
   async function open(id:string){const requested=++activity.current;try{const data=await window.chemez.request('getConversation',id);if(requested!==activity.current)return;const draft=drafts.current.get(id);cidRef.current=id;setCid(id);setArchived(!!conversations.find(chat=>chat.id===id)?.archived);setMessages(run.current?.cid===id?run.current.messages:data.messages);setInput(draft?.text||'');setImages(draft?.images||[]);setEditing(null);setError('');setChatMenu(null);setSearchOpen(false);setSearch('');follows.current=false;requestAnimationFrame(()=>{if(scroll.current)scroll.current.scrollTop=0;});}catch(e){setError(errorMessage(e));}}
   async function remove(id:string){setDeleting(null);try{await window.chemez.request('deleteConversation',id);if(cid===id)newChat();await refresh();}catch(e){setError(errorMessage(e));}}
-  function newChat(){setFloatingY(0);setReplyTarget(null);activity.current++;setSearch('');setArchived(false);setSearchOpen(false);setEditing(null);setChatMenu(null);const draft=drafts.current.get('new');cidRef.current=null;setCid(null);setMessages([]);setError('');setInput(draft?.text||'');setImages(draft?.images||[]);composer.current?.focus();}
+  function newChat(){setReplyTarget(null);activity.current++;setSearch('');setArchived(false);setSearchOpen(false);setEditing(null);setChatMenu(null);const draft=drafts.current.get('new');cidRef.current=null;setCid(null);setMessages([]);setError('');setInput(draft?.text||'');setImages(draft?.images||[]);composer.current?.focus();}
   async function pickImage(){
     if(images.length>=4){setError('You can attach up to four images.');return;}
     try{const image=await window.chemez.pickImage();if(image){setImages(items=>[...items,image]);setError('');composer.current?.focus();}}catch(e){setError(errorMessage(e));}
@@ -395,8 +394,7 @@ export default function App(){
           </div>}
         </div>
         {messages.length>0&&<ChatScrollbar target={scroll} onLatest={()=>{follows.current=true;scroll.current?.scrollTo({top:scroll.current.scrollHeight,behavior:'smooth'});setShowJump(false);}}/>}
-        <div ref={composerArea} style={!composerDocked?{'--floating-y':floatingY+'px'} as CSSProperties:undefined} className={'composer-area'+(composerCompact?' composer-compact':'')+(!composerDocked?' composer-floating':'')+(replyTarget?' composer-reply':'')} onFocusCapture={()=>{clearTimeout(composerCollapseTimer.current);setComposerCompact(false);}} onBlurCapture={()=>{clearTimeout(composerCollapseTimer.current);composerCollapseTimer.current=setTimeout(()=>{if(!composerNear.current&&!composerArea.current?.contains(document.activeElement))setComposerCompact(true);},250);}}>
-          {!composerDocked&&<button type="button" className="composer-drag" aria-label="Move floating chatbox" title="Drag to move chatbox" onPointerDown={event=>{event.currentTarget.setPointerCapture(event.pointerId);floatDrag.current={start:event.clientY,y:floatingY,limit:Math.max(0,(composerArea.current?.parentElement?.clientHeight||600)-(composerArea.current?.clientHeight||130)-90)};}} onPointerMove={event=>{const drag=floatDrag.current;if(drag)setFloatingY(Math.max(-drag.limit,Math.min(0,drag.y+event.clientY-drag.start)));}} onPointerUp={()=>{floatDrag.current=null;}} onPointerCancel={()=>{floatDrag.current=null;}}><span/></button>}
+        <div ref={composerArea} className={'composer-area'+(composerCompact?' composer-compact':'')+(!composerDocked?' composer-floating':'')+(replyTarget?' composer-reply':'')} onFocusCapture={()=>{clearTimeout(composerCollapseTimer.current);setComposerCompact(false);}} onBlurCapture={()=>{clearTimeout(composerCollapseTimer.current);composerCollapseTimer.current=setTimeout(()=>{if(!composerNear.current&&!composerArea.current?.contains(document.activeElement))setComposerCompact(true);},250);}}>
 
 
           {error&&<div className="notice error" role="alert">{error}</div>}
@@ -411,7 +409,7 @@ export default function App(){
             {slash&&<span className="slash-chip">{COMMAND_NAMES[slash]}<button type="button" aria-label={`Remove ${COMMAND_NAMES[slash]}`} onClick={()=>{setSlash('');composer.current?.focus();}}><i className="fas fa-times" aria-hidden="true"/></button></span>}
             <textarea ref={composer} id="question" value={input} maxLength={12000} onChange={event=>{const next=event.target.value;
               // A question typed at the bottom of the chat, with the chatbox in place, is a new question, not a follow-up.
-              if(!replyTarget&&!composerDocked&&!input.trim()&&next.trim()&&(showJump||floatingY!==0)){
+              if(!replyTarget&&!composerDocked&&!input.trim()&&next.trim()&&showJump){
                 const box=composerArea.current?.getBoundingClientRect();
                 if(box){let best:{id:string;text:string}|null=null;let distance=280;
                   for(const message of messages.filter(m=>m.role==='assistant')){const node=Array.from(scroll.current?.querySelectorAll<HTMLElement>('.message.assistant')||[]).find(el=>el.dataset.messageId===message.id);if(!node)continue;const r=node.getBoundingClientRect();const center=box.top+box.height/2;const d=Math.max(r.top-center,center-r.bottom,0);if(d<distance){distance=d;best={id:message.id,text:answerText(message.content as Block[]).slice(0,1200)};}}
@@ -421,7 +419,7 @@ export default function App(){
               if(!next.trim())setReplyTarget(null);setInput(next);setCaret(event.target.selectionStart);setMenuDismissed(false);}} onSelect={event=>{const next=event.currentTarget.selectionStart;if(next!==caret){setCaret(next);setMenuDismissed(false);}}} onKeyDown={event=>{if(event.key==='Enter'&&!event.nativeEvent.isComposing&&(event.metaKey||event.ctrlKey||!event.shiftKey)){event.preventDefault();void send();}if(event.key==='ArrowUp'&&!input&&!busy){const previous=messages.slice().reverse().find(message=>message.role==='user');if(previous){event.preventDefault();editQuestion(previous);}}if(event.key==='Escape'&&slashMatches.length){event.preventDefault();setMenuDismissed(true);}if(event.key==='Backspace'&&!input&&slash){event.preventDefault();setSlash('');}if((event.key==='Tab'||event.key==='ArrowRight')&&!input&&suggestion){event.preventDefault();setInput(suggestion);}}} placeholder={busy?'Draft your next question while the answer finishes…':suggestion?suggestion+'   ⇥ Tab':slash?(COMMAND_PLACEHOLDERS[slash]||'Enter your chemistry question…'):'Ask anything chemistry…'} aria-description={suggestion?'Suggested next question: '+suggestion+'. Press Tab to use it.':undefined} rows={2}/>
             <div className="composer-footer">
               <div className="composer-tools"><button className="attach-button" type="button" disabled={busy||images.length>=4} onClick={()=>{const r=composerArea.current?.getBoundingClientRect();if(r){const above=r.top-16,below=window.innerHeight-r.bottom-16;const down=above<360&&below>above;setToolsPlacement({below:down,room:Math.max(80,Math.min(380,down?below:above))});}setComposerMenu(value=>!value);}} aria-label="Chat tools" aria-expanded={composerMenu} title="Commands and images"><i className="fas fa-plus" aria-hidden="true"/></button><select className="answer-style" aria-label="Answer style" title="Choose how the next answer is explained" disabled={busy} value={answerStyle} onChange={event=>setAnswerStyle(event.target.value as typeof answerStyle)}><option value="concise">Quick answer</option><option value="balanced">Explain</option><option value="mechanism">Mechanism</option></select></div>
-              <span className="send-stack">{replyTarget&&<button className="reply-close" type="button" aria-label="Clear reply context" title="Exit follow-up" onPointerDown={event=>{event.preventDefault();setReplyTarget(null);}} onClick={()=>setReplyTarget(null)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button>}{busy&&!here?<button className="send-button" type="button" disabled title="Another chat is still answering. You can send when it finishes." aria-label="Send question (waiting for the other chat)"><i className="fas fa-arrow-up" aria-hidden="true"/></button>:busy?<button className="send-button stop" type="button" onClick={()=>void window.chemez.cancel()} aria-label="Stop generation"><i className="fas fa-stop" aria-hidden="true"/></button>:<button className="send-button" type="submit" disabled={!input.trim()&&!images.length} aria-label="Send question"><i className="fas fa-arrow-up" aria-hidden="true"/></button>}</span>
+              <span className="send-stack">{replyTarget&&<button className="reply-close" type="button" aria-label="Clear reply context" title="Exit follow-up" onPointerDown={event=>{event.preventDefault();setReplyTarget(null);}} onClick={()=>setReplyTarget(null)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button>}{busy&&!here?<button className="send-button" type="button" disabled title="Another chat is still answering. You can send when it finishes." aria-label="Send question (waiting for the other chat)"><i className="fas fa-arrow-up" aria-hidden="true"/></button>:busy?<button className="send-button stop" type="button" onClick={()=>void window.chemez.cancel()} aria-label="Stop generation"><i className="fas fa-stop" aria-hidden="true"/></button>:<button className="send-button" type="submit" disabled={!input.trim()&&!images.length} aria-label="Send question"><i className="fas fa-arrow-up" aria-hidden="true"/></button>}</span>
             </div>
           </form>
           <div className="composer-caption"><span title={config.config?.model}>{config.config?.model||'Choose a model to begin'}</span><span>AI chemistry can be wrong. Check important details.</span></div>

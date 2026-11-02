@@ -137,3 +137,9 @@ async def test_partial_recovery_keeps_complete_blocks_and_discloses_missing_part
     blocks=await process_chemistry('partial',[raw])
     assert [b['type'] for b in blocks]==['markdown','molecule','error']
     assert blocks[1]['formula']=='C2H6O' and 'Only complete' in blocks[-1]['text']
+
+
+def test_every_nvidia_nemotron_model_answers_without_hidden_reasoning():
+    provider=Provider({'provider':'compatible','model':'nvidia/nemotron-3-ultra-550b-a55b','endpoint':'https://integrate.api.nvidia.com/v1'},'NOT-A-REAL-KEY')
+    _,_,body=provider.request([{'role':'user','content':'Hi'}],answer_system(SYSTEM,'balanced'))
+    assert body['chat_template_kwargs']=={'enable_thinking':False}

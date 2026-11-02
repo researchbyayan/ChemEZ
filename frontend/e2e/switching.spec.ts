@@ -189,28 +189,22 @@ test('floating composer and tools are explicit and preserve default docked mode'
   await expect(page.locator('.composer-area')).toHaveCSS('opacity','1');
 });
 
-test('floating follow-up anchors the nearby answer and clears on chat navigation',async({page})=>{
+test('floating chatbox stays put, follows up on an answer and clears on chat navigation',async({page})=>{
   await mockChats(page);await page.goto('/');
   await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
   await page.getByRole('button',{name:'Settings',exact:true}).click();
   await page.getByRole('button',{name:'Appearance',exact:true}).click();
   await page.getByRole('switch',{name:'Dock chatbox at bottom'}).click();
   await page.getByRole('button',{name:'Close Settings',exact:true}).click();
-  const handle=page.getByRole('button',{name:'Move floating chatbox'});
-  const initial=await handle.boundingBox();expect(initial).not.toBeNull();
-  await page.mouse.move(initial!.x+initial!.width/2,initial!.y+initial!.height/2);
-  await page.mouse.down();await page.mouse.move(initial!.x+initial!.width/2,160,{steps:12});await page.mouse.up();
-  await expect.poll(async()=>((await handle.boundingBox())?.y||0)).toBeLessThan(initial!.y-100);
+  // The floating chatbox stays in place: there is no drag handle.
+  await expect(page.getByRole('button',{name:'Move floating chatbox'})).toHaveCount(0);
   await page.locator('.composer-area').hover();
   await page.getByRole('button',{name:'Chat tools',exact:true}).click();
   const tools=page.getByRole('menu',{name:'Chat tools'});
   await expect(tools.getByRole('menuitem',{name:/Add image/})).toBeVisible();
   const menuBounds=await tools.boundingBox();expect(menuBounds!.y).toBeGreaterThanOrEqual(0);
   await page.keyboard.press('Escape');await expect(tools).toHaveCount(0);
-  const answerBounds=await page.locator('.message.assistant').boundingBox();
-  const dragBounds=await handle.boundingBox();
-  await page.mouse.move(dragBounds!.x+40,dragBounds!.y+6);await page.mouse.down();
-  await page.mouse.move(dragBounds!.x+40,answerBounds!.y,{steps:8});await page.mouse.up();
+  await page.getByRole('button',{name:'Reply to this answer'}).click();
 
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Why is that?');
   await expect(page.locator('.reply-anchor')).toContainText('Ethanol has an O–H bond.');

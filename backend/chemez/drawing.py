@@ -56,3 +56,25 @@ def apply(blocks, drawn):
     text = [b for b in blocks if b.get('type') not in DIAGRAMS and b.get('type') != 'error']
     return text[:1] + drawn + text[1:]
 
+
+
+# A chemical formula or charged species in the text: Cl2, H2O, NaCl, CO2, Fe3+, SO4^2-.
+FORMULA = re.compile(r'\b(?:[A-Z][a-z]?\d*){2,}\b|\b[A-Z][a-z]?\d+\b|\\ce\{|[A-Z][a-z]?\d*\s?\^?\d?[+-](?!\w)')
+
+
+def needed(raw, blocks):
+    """Whether choosing a drawing is worth a model call for this answer.
+
+    The answer decides: the model's own "visual" flag when it gave one; otherwise the answer must
+    already hold a diagram or name a specific species (a formula or \\ce{} expression) in its text.
+    """
+    if any(b.get('type') in DIAGRAMS for b in blocks):
+        return True
+    try:
+        flag = json.loads(raw).get('visual') if isinstance(raw, str) else None
+    except (ValueError, AttributeError):
+        flag = None
+    if isinstance(flag, bool):
+        return flag
+    prose = ' '.join(b.get('text', '') for b in blocks if b.get('type') == 'markdown')
+    return bool(FORMULA.search(prose))

@@ -79,6 +79,10 @@ class Store:
         """Set a generated title unless the learner has renamed the chat."""
         self.db.execute('UPDATE conversations SET title=? WHERE id=? AND named=0', (title[:80], cid))
         self.db.commit()
+    def renamed(self, cid):
+        """True once the learner has given the chat their own name."""
+        row=self.db.execute('SELECT named FROM conversations WHERE id=?', (cid,)).fetchone()
+        return bool(row and row[0])
     def questions(self, cid):
         return self.db.execute('SELECT COUNT(*) FROM messages WHERE conversation_id=? AND role=?', (cid,'user')).fetchone()[0]
     def search(self, query):

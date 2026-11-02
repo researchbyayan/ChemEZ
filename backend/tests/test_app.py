@@ -756,6 +756,30 @@ async def test_chat_gets_a_short_title_unless_renamed(tmp_path,monkeypatch):
         assert (await client.get('/conversations')).json()[0]['title']=='My water notes'
 
 
+
+async def test_generic_chat_names_are_retried_until_the_chat_has_a_topic(tmp_path,monkeypatch):
+    monkeypatch.setenv('CHEMEZ_MODEL_DECISIONS','1')
+    class Provider:
+        def __init__(self,*args):pass
+        async def stream(self,messages,system=None):
+            text=messages[-1]['content']['text']
+            if text.startswith('Name this chemistry chat'):
+                yield 'Chloroform Oxidation' if 'chloroform' in text.lower() else 'Chemistry Chat'
+            elif text.startswith('A chemistry tutor answered'):
+                yield '{"draw":"none"}'
+            else:
+                yield json.dumps({'blocks':[{'type':'markdown','text':'Hello!'}]})
+    app=create_app(tmp_path,'t',MemoryVault(),Provider)
+    async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test',headers={'Authorization':'Bearer t'}) as client:
+        await configure(client)
+        lines=[json.loads(l) for l in (await client.post('/chat',json={'text':'Hi bro'})).text.splitlines()]
+        cid=lines[0]['conversation_id']
+        # "Chemistry Chat" says nothing, so the chat keeps its first question for now.
+        assert (await client.get('/conversations')).json()[0]['title']=='Hi bro'
+        await client.post('/chat',json={'text':'How does chloroform oxidise in air?','conversation_id':cid})
+        assert (await client.get('/conversations')).json()[0]['title']=='Chloroform Oxidation'
+
+
 async def test_suggestion_follows_mode_and_command(tmp_path):
     seen=[]
     class Provider:

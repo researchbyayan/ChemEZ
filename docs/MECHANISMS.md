@@ -8,9 +8,13 @@
 - Atom → atom donation forms a bond. Atom → bond donation increases bond order. Bond → atom flow cleaves or decreases a bond. Bond → bond flow shifts bond order. The donor must have the required lone pair. Explicit hydrogen atoms are required for proton-transfer arrow anchors.
 - Lone pairs appear directly on mechanism and resonance diagrams, alongside formal charges. Formed/broken bonds and changed bond orders are displayed under the relevant panel. Lone-pair dot counts use ordinary main-group Lewis electron counting.
 - Resonance additionally requires identical atom order/connectivity, formula and total charge. Its arrows must reach the next contributor's exact bond orders and charges; the hybrid is a separate representation.
-- Fishhook/radical transitions are not verified by the new electron-pair checker. Unsupported transitions show a limitation rather than an asserted valid arrow diagram. A terminal panel carrying arrows has an explicit unverified-destination note.
+- Fishhook (single-electron) arrows are counted one electron at a time; homolysis and radical coupling need paired fishhooks. Unsupported transitions show a limitation rather than an asserted valid arrow diagram. A terminal panel carrying arrows has an explicit unverified-destination note.
 
 These checks establish graph consistency, not experimental truth, kinetics, solvent effects, transition states or the preferred pathway. Ambiguous stereochemical mappings can be rejected rather than inferred.
+
+## Built-in mechanism families
+
+A model may name a mechanism and give reactant SMILES (`{"type":"mechanism","name":"…","reactants":[…]}`); `backend/chemez/mechanisms.py` then builds every panel itself and the normal electron-flow check verifies it. Families: SN1, SN2, E1, E2, Fischer esterification, HX addition (Markovnikov), halogen addition (halonium, anti), acid-catalysed hydration, nucleophilic addition to C=O, hydride reduction (NaBH4/LiAlH4), nucleophilic acyl substitution, saponification, electrophilic aromatic substitution (arenium ion), SNAr (Meisenheimer complex), Diels–Alder, aldol, E1cB, Michael addition, carbocation rearrangements (1,2-hydride and 1,2-methyl shifts), pinacol, Beckmann, radical halogenation (fishhook arrows: initiation, both propagation steps, termination) and the Suzuki coupling cycle (oxidative addition, transmetalation, reductive elimination; phosphine ligands omitted). When a model names one of these but draws it wrongly, ChemEZ rebuilds it from the answer's own structures.
 
 ## The requested repositories
 

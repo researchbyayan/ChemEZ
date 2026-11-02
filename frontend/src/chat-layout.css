@@ -539,9 +539,6 @@ main .composer-area.composer-floating:hover,main .composer-area.composer-floatin
 .composer-mini-menu{z-index:12;max-width:calc(100vw - 100px);max-height:min(380px,60vh);overflow:auto}
 :root .app-shell .composer-mini-menu .image-menu-action{border-top:1px solid #ffffff14!important;border-radius:0!important;margin-top:4px!important;padding-top:10px}
 .image-menu-action i{margin-right:5px}
-/* Drag from the top edge; no visible tab or extra badge. */
-:root .app-shell .composer-drag{position:absolute;top:0;left:calc(50% - 40px);width:80px;height:12px;min-height:0;padding:0!important;z-index:4;cursor:grab;touch-action:none;background:transparent!important;border:0!important;box-shadow:none!important}
-.composer-drag span{display:none}
 :root .app-shell .composer-mini-menu.tools-below .image-menu-action{border-top:0!important;border-bottom:1px solid #ffffff14!important;margin-top:0!important;margin-bottom:4px!important;padding-top:7px}
 
 /* New chats keep the centered welcome layout, including floating-mode users. */
@@ -804,3 +801,47 @@ main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.compo
 /* References hover box: the same height, corner radius and fill as the reply/copy/retry buttons, no edge. */
 :root .app-shell .answer-actions .answer-references{height:32px;min-height:32px;padding:0 10px!important;border:0!important;border-radius:9px!important;display:inline-flex;align-items:center}
 :root .app-shell .answer-actions .answer-references:hover{background:#ffffff08!important;color:#c3e3ce}
+
+/* The pill rests dimmed and brightens over the half-second hover before opening; leaving fades it back. */
+main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{opacity:.55;transition:opacity .5s ease,border-color .5s ease,box-shadow .5s ease;animation:pill-in-dim 1s ease both}
+@keyframes pill-in-dim{from{opacity:0}to{opacity:.55}}
+main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.composer-charging::after{opacity:1;animation:none;background:#0b1410f2;border-color:#ffffff;box-shadow:0 0 14px #9aefae55,0 2px 10px #0008}
+@media(prefers-reduced-motion:reduce){main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transition:none}}
+main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after,main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.composer-charging::after{animation:pill-in-dim 1s ease backwards}
+main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transition:opacity .5s linear,border-color .5s linear,box-shadow .5s linear}
+main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transition:opacity 2s linear,border-color 2s linear,box-shadow 2s linear}
+main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transition:opacity 1.25s linear,border-color 1.25s linear,box-shadow 1.25s linear}
+
+/* Smoother pill: it brightens and swells slightly on an ease-in-out curve, then hands over to the chatbox with a short fade. */
+main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transform:translateX(-50%) scale(1);transition:opacity 1s cubic-bezier(.45,0,.25,1),transform 1s cubic-bezier(.45,0,.25,1),border-color 1s ease,box-shadow 1s ease;will-change:opacity,transform}
+main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.composer-charging::after{transform:translateX(-50%) scale(1.12)}
+main:not(:has(.welcome)) .composer-area.composer-floating .composer{transition:opacity .22s ease,transform .22s cubic-bezier(.2,.7,.25,1),padding .12s ease,border-radius .12s ease}
+main:not(:has(.welcome)) .composer-area.composer-floating:not(.composer-compact) .composer{animation:composer-rise .22s cubic-bezier(.2,.7,.25,1)}
+@keyframes composer-rise{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after,main:not(:has(.welcome)) .composer-area.composer-floating .composer{transition:none;animation:none}}
+
+/* The chatbox is special: docked, it keeps its glass (blur and rim) even with glass effects turned off. */
+:root[data-glass=off] .composer-area:not(.composer-floating) .composer{-webkit-backdrop-filter:blur(var(--glass-blur,20px)) saturate(1.25)!important;backdrop-filter:blur(var(--glass-blur,20px)) saturate(1.25)!important}
+:root[data-glass=off] .composer-area:not(.composer-floating) .composer::after{display:block}
+/* With glass off the green backdrop scene is hidden, so the docked chatbox carries its own green tint. */
+:root[data-glass=off] .composer-area:not(.composer-floating) .composer{background:linear-gradient(125deg,#0a1f16e6,#0f3a26d9 60%,#145b3acc)!important}
+:root[data-glass=off] .composer-area.composer-reply:not(.composer-floating) .composer{background:linear-gradient(125deg,#071222e6,#103c68d9)!important}
+/* The chatbox always carries its own green, whatever sits behind it; with glass on it stays a little see-through. */
+:root .app-shell .composer-area:not(.composer-floating):not(.composer-reply) .composer{background:linear-gradient(125deg,#0a1f16c7,#0f3a26bf 60%,#145b3ab3)!important}
+:root[data-glass=off] .app-shell .composer-area:not(.composer-floating):not(.composer-reply) .composer{background:linear-gradient(125deg,#0a1f16e6,#0f3a26d9 60%,#145b3acc)!important}
+
+/* Keyboard focus ring: a thin, soft green line that eases in, instead of a thick hard outline. */
+:root .app-shell :is(button,select,a,summary,[tabindex]):focus-visible,.structure-popover :is(button,a):focus-visible{outline:1.5px solid #9aefae8c!important;outline-offset:2px!important;animation:focus-ease .18s ease-out}
+@keyframes focus-ease{from{outline-offset:5px;outline-color:#9aefae00}}
+@media(prefers-reduced-motion:reduce){:root .app-shell :is(button,select,a,summary,[tabindex]):focus-visible{animation:none}}
+/* Softer green: mostly dark glass that warms into green toward the right, plus a faint top sheen. */
+:root .app-shell .composer-area:not(.composer-floating):not(.composer-reply) .composer{background:linear-gradient(180deg,#ffffff08,#ffffff00 40%),linear-gradient(100deg,#0b1210bf 0%,#0d1c16b8 45%,#103224b0 75%,#164a33a8 100%)!important}
+:root[data-glass=off] .app-shell .composer-area:not(.composer-floating):not(.composer-reply) .composer{background:linear-gradient(180deg,#ffffff08,#ffffff00 40%),linear-gradient(100deg,#0b1210f0 0%,#0d1c16ed 45%,#103224e8 75%,#164a33e0 100%)!important}
+/* Inside the chatbox the footer clips anything outside it, so the ring sits just inside each control. */
+:root .app-shell .composer :is(button,select):focus-visible{outline-offset:-1px!important;animation:focus-ease-in .18s ease-out}
+@keyframes focus-ease-in{from{outline-offset:2px;outline-color:#9aefae00}}
+/* Mist around the chatbox, 25% fainter. */
+:root .app-shell .composer-area .composer,:root[data-glass] .app-shell .composer-area .composer{box-shadow:inset 0 1px 0 #ffffff33,inset 0 -1px 0 #00000059,0 0 0 1px #00000026,0 0 34px 10px #0b2a1c69,0 0 80px 26px #0d3a2630,0 18px 50px #00000059!important}
+/* The green gathers in the top-right corner and fades to dark glass across the box. */
+:root .app-shell .composer-area:not(.composer-floating):not(.composer-reply) .composer{background:radial-gradient(130% 160% at 100% 0%,#1a5539b0 0%,#123a29a8 28%,#0d1c16b8 62%,#0b1210c2 100%)!important}
+:root[data-glass=off] .app-shell .composer-area:not(.composer-floating):not(.composer-reply) .composer{background:radial-gradient(130% 160% at 100% 0%,#1a5539e6 0%,#123a29e6 28%,#0d1c16ed 62%,#0b1210f2 100%)!important}

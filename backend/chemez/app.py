@@ -16,7 +16,7 @@ from .storage import Store, Credentials
 from .providers import Provider, ProviderError, SYSTEM
 from .answer_format import decode_answer, readable_fallback,chemistry_markdown
 from .chemistry import render_block, expand_resonance, formula_only_question, enrich_names, structure_3d, analyse
-from .processing import process_chemistry, ProcessingError
+from .processing import process_chemistry, ProcessingError, prewarm
 from . import mechanisms, routes, nmr, autopick, drawing
 from .vision import interpret_images, VISION_SYSTEM
 from .styles import answer_system, style_issue, diagram_issue, split_command, COMMANDS, command_issue
@@ -212,6 +212,7 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
     app.state.store, app.state.vault, app.state.busy = store, vault, False
     key_reads={}
     chemistry_slots=asyncio.Semaphore(2)
+    prewarm()
 
     async def native_work(operation,payload,timeout=25,wait=5):
         try:
@@ -517,6 +518,11 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
         words=re.sub(r'[^\w\s()+-]','',line).split()[:3]
         return ' '.join(w if any(c.isupper() or c.isdigit() for c in w) else w[:1].upper()+w[1:] for w in words) if len(words)>=2 else ''
 
+    GENERIC=re.compile(r'^(none|n/?a|(general |basic |intro(ductory)? )?(chemistry|chem)( (chat|help|question|questions|tutor|tutoring|session|conversation|basics|discussion))?|(chemistry )?(chat|greeting|greetings|hello|hi|conversation|new chat|untitled)( chat)?)$',re.I)
+    def generic_title(title):
+        """Names that say nothing about the chat's topic."""
+        return not title or bool(GENERIC.match(title.strip()))
+
     def decisions():
         return os.environ.get('CHEMEZ_MODEL_DECISIONS')!='0'
 
@@ -777,6 +783,19 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
                             prose = readable_fallback(raw)
                             blocks = ([{'id':str(uuid4()),'type':'markdown','text':prose}] if prose else [])+[error_block(str(exc))]
                             failed = True
+                        if payload.response_style=='mechanism' and not command and not any(b['type'] in ('resonance','clarification') for b in blocks) and (failed or not any(b['type']=='mechanism' for b in blocks)):
+                            # The model explained a pathway without drawing it, or drew it wrongly: when it is a
+                            # family ChemEZ builds, draw it from the answer's own structures instead of asking again.
+                            rebuilt=mechanisms.recognise({'steps':[]},blocks+[{'type':'markdown','text':question}])
+                            if rebuilt:
+                                try:
+                                    drawn,broken=await native_work('answer',json.dumps({'blocks':[rebuilt]}),timeout=60,wait=60)
+                                except ProcessingError:
+                                    drawn,broken=[],True
+                                if drawn and not broken:
+                                    prose=[b for b in blocks if b['type']=='markdown']
+                                    raw=json.dumps({'blocks':prose+[rebuilt]})
+                                    blocks=prose[:1]+drawn+prose[1:];failed=False
                         issue = command_issue(command,blocks) if command else style_issue(blocks,payload.response_style,question)
                         coverage=diagram_issue(blocks,question,payload.response_style)
                         if coverage:
@@ -818,7 +837,8 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
                         drawn,_=await native_work('answer',json.dumps({'blocks':routes.blocks(route)}),timeout=60,wait=60)
                         blocks=drawn+[block for block in blocks if block['type']=='markdown']
                         failed=False
-                    if not command and decisions():
+                    # Mechanism mode keeps its verified panels; the drawing step is for ordinary answers.
+                    if not command and payload.response_style!='mechanism' and decisions() and drawing.needed(raw,blocks):
                         # The drawing follows the answer: the model reads what it wrote and picks
                         # the diagram; ChemEZ draws that choice and keeps the old one if it fails.
                         # The text is ready: it types out while the drawing is chosen and drawn.
@@ -882,17 +902,20 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
                     yield event('block',block=block)
                 yield event('done',message_id=mid,response_style=payload.response_style,follow_ups=follow_ups)
                 asked=store.questions(cid)
-                if decisions() and (asked==1 or asked%5==0) and any(block['type']!='error' for block in blocks):
-                    # A short name for the sidebar after the first question, then refreshed every 5 questions.
+                chat=next((c for c in store.conversations() if c['id']==cid),{})
+                old_title=chat.get('title','')
+                asked_texts=[(m['content'].get('text','') if isinstance(m['content'],dict) else str(m['content']))[:160] for m in store.messages(cid) if m['role']=='user']
+                # Until the chat has a real topic name (it still shows the first question, or a generic
+                # name such as "Chemistry Chat"), try again after every question; then every 5 questions.
+                unnamed=not store.renamed(cid) and (old_title.strip()==(asked_texts[0].strip()[:80] if asked_texts else '') or generic_title(old_title))
+                if decisions() and (asked==1 or unnamed or asked%5==0) and any(block['type']!='error' for block in blocks):
                     try:
-                        asked_texts=[(m['content'].get('text','') if isinstance(m['content'],dict) else str(m['content']))[:160] for m in store.messages(cid) if m['role']=='user']
-                        old_title=next((c['title'] for c in store.conversations() if c['id']==cid),'')
-                        prompt=('Name this chemistry chat in 2 or 3 words, Title Case, no quotes or punctuation. Cover the whole chat but lean toward the latest questions'
+                        prompt=('Name this chemistry chat in 2 or 3 words, Title Case, no quotes or punctuation, naming its chemistry topic (a compound, reaction or concept). If there is no chemistry topic yet, reply NONE. Cover the whole chat but lean toward the latest questions'
                                 +(f'; the current name is "{old_title}", so give a clearly different name that shows where the chat has moved' if asked>1 else '')+'.\n'
                                 +(f'Earlier questions:\n'+'\n'.join(asked_texts[:-5])[-1200:]+'\n' if len(asked_texts)>5 else '')
                                 +'Latest questions:\n'+'\n'.join(asked_texts[-5:]))
                         title=chat_title(await ask_plain(config,key,prompt))
-                        if title:
+                        if title and not generic_title(title):
                             store.auto_title(cid,title)
                     except Exception:
                         pass
