@@ -392,3 +392,126 @@ test('brand has no Tab outline and settings focus rings stay inset',async({page}
   await expect(general).toHaveCSS('animation-name','none');
   expect(await general.evaluate(node=>parseFloat(getComputedStyle(node).borderTopLeftRadius))).toBeGreaterThan(0);
 });
+
+test('one loading status, one submission and one active stream listener under dev StrictMode',async({page})=>{
+  await mockChats(page);
+  await page.addInitScript(()=>{
+    const w=window as unknown as {audit:{reads:Record<string,number>;listeners:number;submissions:number;duplicateStatuses:number};beginAnswer:()=>void;chemez:{request:(command:string,payload?:unknown)=>Promise<unknown>;onEvent:(callback:(event:unknown)=>void)=>()=>void;chat:(payload:unknown)=>Promise<void>}};
+    w.audit={reads:{},listeners:0,submissions:0,duplicateStatuses:0};
+    const request=w.chemez.request,subscribe=w.chemez.onEvent,chat=w.chemez.chat;
+    w.chemez.request=async(command,payload)=>{w.audit.reads[command]=(w.audit.reads[command]||0)+1;return request(command,payload);};
+    w.chemez.onEvent=callback=>{w.audit.listeners++;const stop=subscribe(callback);return()=>{w.audit.listeners--;stop();};};
+    w.chemez.chat=async payload=>{w.audit.submissions++;await new Promise<void>(resolve=>{w.beginAnswer=resolve;});await chat(payload);};
+    const observer=new MutationObserver(()=>{if(document.querySelectorAll('[data-pending-answer=true] [role=status]').length>1)w.audit.duplicateStatuses++;});
+    observer.observe(document,{childList:true,subtree:true});
+  });
+  await page.goto('/');
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {audit:{reads:Record<string,number>}}).audit.reads.getConfig)).toBe(1);
+  expect(await page.evaluate(()=>(window as unknown as {audit:{listeners:number}}).audit.listeners)).toBe(1);
+  expect(await page.evaluate(()=>(window as unknown as {audit:{reads:Record<string,number>}}).audit.reads.listConversations)).toBe(1);
+  await page.getByRole('textbox',{name:'Chemistry question'}).fill('Explain ethanol');
+  await page.evaluate(()=>{const form=document.querySelector('form.composer') as HTMLFormElement;form.requestSubmit();form.requestSubmit();});
+  await expect(page.getByText('Preparing your answer…',{exact:true})).toHaveCount(1);
+  await expect(page.locator('[data-pending-answer=true] [role=status]')).toHaveCount(1);
+  expect(await page.evaluate(()=>(window as unknown as {audit:{submissions:number}}).audit.submissions)).toBe(1);
+  await page.evaluate(()=>(window as unknown as {beginAnswer:()=>void}).beginAnswer());
+  await expect(page.getByText('First part of the answer.')).toBeVisible();
+  await finish(page);await expect(page.getByText('Second part of the answer.')).toBeVisible();
+  expect(await page.evaluate(()=>(window as unknown as {audit:{duplicateStatuses:number}}).audit.duplicateStatuses)).toBe(0);
+});
+
+test('existing follow-up hints do not trigger another model request',async({page})=>{
+  await mockChats(page);await page.addInitScript(()=>{
+    const w=window as unknown as {hintCalls:number;chemez:{request:(command:string,payload?:unknown)=>Promise<any>}};
+    const request=w.chemez.request;w.hintCalls=0;
+    w.chemez.request=async(command,payload)=>{
+      if(command==='suggestQuestion'){w.hintCalls++;return {question:'A new hint for another mode?'};}
+      const result=await request(command,payload);
+      if(command==='getConversation')for(const message of result.messages)if(message.role==='assistant'){message.response_style='concise';message.follow_ups=['Why does ethanol dissolve in water?'];}
+      return result;
+    };
+  });await page.goto('/');
+  await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await expect(page.getByRole('textbox',{name:'Chemistry question'})).toHaveAttribute('placeholder',/Why does ethanol dissolve in water/);
+  expect(await page.evaluate(()=>(window as unknown as {hintCalls:number}).hintCalls)).toBe(0);
+});
+
+test('saved chats open at their latest message',async({page})=>{
+  await mockChats(page);
+  await page.addInitScript(()=>{
+    const bridge=window.chemez,original=bridge.request.bind(bridge);
+    bridge.request=(async(command:string,payload:unknown)=>{
+      if(command==='getConversation')return {messages:Array.from({length:30},(_,i)=>({id:'saved-'+i,role:i%2?'assistant':'user',content:i%2?[{id:'b'+i,type:'markdown',text:'Saved answer '+i}]:{text:'Saved question '+i,images:[]}}))};
+      return original(command as 'getConversation',payload as string);
+    }) as typeof bridge.request;
+  });
+  await page.goto('/');await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await expect(page.getByText('Saved answer 29',{exact:true})).toBeVisible();
+  await expect.poll(()=>page.locator('.conversation-scroll').evaluate(el=>el.scrollHeight-el.scrollTop-el.clientHeight)).toBeLessThan(3);
+});
+
+test('retry preserves the selected question and original command and mode',async({page})=>{
+  await mockChats(page);
+  await page.addInitScript(()=>{
+    const bridge=window.chemez,original=bridge.request.bind(bridge);
+    const messages=[{id:'q1',role:'user',content:{text:'Why is iodine unreactive?',images:[]}},{id:'a1',role:'assistant',content:[{id:'b1',type:'markdown',text:'An earlier chemistry answer.'}]},{id:'q2',role:'user',content:{text:'Does fruit juice help?',command:null,images:[]}},{id:'a2',role:'assistant',response_style:'concise',content:[{id:'b2',type:'markdown',text:'The nutrition answer.'}]}];
+    bridge.request=(async(command:string,payload:unknown)=>{
+      if(command==='getConversation')return {messages};
+      if(command==='rewindConversation'){(window as unknown as {rewind:unknown}).rewind=payload;return {messages:messages.slice(0,2)};}
+      return original(command as 'getConversation',payload as string);
+    }) as typeof bridge.request;
+    bridge.chat=async payload=>{(window as unknown as {retry:unknown}).retry=payload;};
+  });
+  await page.goto('/');await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await page.getByRole('button',{name:'Reply to this answer',exact:true}).first().click();
+  await page.getByRole('button',{name:'Retry answer',exact:true}).last().click();
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {retry:unknown}).retry)).toMatchObject({text:'Does fruit juice help?',command:null,response_style:'concise'});
+  expect(await page.evaluate(()=>(window as unknown as {rewind:unknown}).rewind)).toEqual({id:'chat-1',before_message_id:'q2'});
+});
+
+test('inline HTTPS sources open through the desktop bridge',async({page})=>{
+  await mockChats(page);
+  await page.addInitScript(()=>{
+    const bridge=window.chemez,original=bridge.request.bind(bridge);
+    bridge.request=(async(command:string,payload:unknown)=>command==='getConversation'?{messages:[{id:'linked',role:'assistant',content:[{id:'link',type:'markdown',text:'Read the [source](https://example.org/paper).'}]}]}:original(command as 'getConversation',payload as string)) as typeof bridge.request;
+    bridge.openReference=async url=>{(window as unknown as {opened:string}).opened=url;return true;};
+  });
+  await page.goto('/');await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await expect(page.getByRole('button',{name:'References (1)',exact:true})).toBeVisible();
+  await page.getByRole('link',{name:'Click Here',exact:true}).click();
+  expect(await page.evaluate(()=>(window as unknown as {opened:string}).opened)).toBe('https://example.org/paper');
+});
+
+test('editing and follow-up share a tall divided composer and round close button',async({page})=>{
+  await mockChats(page);await page.goto('/');await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await page.getByRole('button',{name:'Reply to this answer',exact:true}).click();
+  const context=page.locator('.composer-context');
+  await expect(context).toBeVisible();
+  await expect(page.locator('.composer-context-header .fa-reply')).toBeVisible();
+  const reply=await context.evaluate(el=>({height:el.getBoundingClientRect().height,border:getComputedStyle(el.querySelector('.composer-context-header')!).borderBottomWidth,radius:getComputedStyle(el.querySelector('.context-close')!).borderRadius}));
+  const controls=await context.evaluate(el=>{const close=el.querySelector('.context-close')!.getBoundingClientRect(),send=el.querySelector('.send-button')!.getBoundingClientRect();return {closeX:close.x+close.width/2,sendX:send.x+send.width/2,closeWidth:close.width,sendWidth:send.width};});
+  expect(controls.closeX).toBeCloseTo(controls.sendX,0);expect(controls.closeWidth).toBe(controls.sendWidth);
+  expect(reply.height).toBeGreaterThanOrEqual(180);expect(reply.border).toBe('1px');expect(reply.radius).toBe('50%');
+  await page.getByRole('button',{name:'Clear reply context',exact:true}).click();
+  await page.getByRole('button',{name:'Edit this question',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Cancel editing',exact:true})).toBeVisible();
+  await expect(page.locator('.composer-context-header .fa-pen')).toBeVisible();
+  expect(await context.evaluate(el=>el.getBoundingClientRect().height)).toBeCloseTo(reply.height,0);
+});
+
+test('floating reply pill opens when hovering its visible position',async({page})=>{
+  await mockChats(page);await page.addInitScript(()=>localStorage.setItem('chemez-composer-docked','off'));
+  await page.goto('/');await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
+  await page.getByRole('button',{name:'Reply to this answer',exact:true}).click();
+  await page.mouse.click(280,100);await page.mouse.move(280,90);
+  const area=page.locator('.composer-area');
+  await expect(area).toHaveClass(/composer-compact/);
+  await expect(area).toHaveClass(/composer-reply/);
+  const trigger=page.getByRole('button',{name:'Open message box',exact:true});
+  const before=await trigger.boundingBox();
+  await trigger.hover();
+  const during=await trigger.boundingBox();
+  expect(during!.x+during!.width/2).toBeCloseTo(before!.x+before!.width/2,0);
+  await expect(area).not.toHaveClass(/composer-compact/,{timeout:3000});
+  await expect(page.getByRole('button',{name:'Clear reply context',exact:true})).toBeVisible();
+});

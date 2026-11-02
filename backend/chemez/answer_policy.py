@@ -21,7 +21,7 @@ def prose(value, key=''):
         return [prose(v,key) for v in value]
     if isinstance(value,str) and key not in ('smiles','svg','svg_changes','url','molblock','inchi','inchikey'):
         # A model that double-escapes JSON leaves "\\u00b7"-style text behind; show the character.
-        return re.sub(r'\\u([0-9a-fA-F]{4})',lambda m:chr(int(m.group(1),16)),value).replace('\u2014', ', ')
+        return re.sub(r'&(?:mdash|#0*8212|#x0*2014);', ', ', re.sub(r'\\u([0-9a-fA-F]{4})',lambda m:chr(int(m.group(1),16)),value).replace('\u2014', ', '), flags=re.I)
     return value
 
 def references(items):

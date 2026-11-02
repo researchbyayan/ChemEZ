@@ -2,6 +2,8 @@ import {useState,useRef,useEffect,lazy,Suspense,Children,type ReactNode,type CSS
 import {createPortal} from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import {chemScripts} from './scripts';
+import {sourceURL} from './sourceLinks';
+import {prosePunctuation} from './prosePunctuation';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -22,7 +24,13 @@ export function Markdown({text}:{text:string}) {
   return <MarkdownBase text={text}/>;
 }
 function MarkdownBase({text}:{text:string}) {
-  return <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm,remarkMath]} rehypePlugins={[[rehypeKatex,{trust:false,strict:'ignore',throwOnError:false,maxExpand:1000,maxSize:20}],rehypeHighlight]} skipHtml components={{a:({children})=><span className="reference-link">{children}</span>,table:({children})=><div className="markdown-table-scroll"><table>{children}</table></div>,td:({children,style})=><td style={style}>{Children.toArray(children).every(child=>typeof child==='string'&&/^[,;，\s]*$/.test(child))?'–':children}</td>}}>{chemScripts(text)}</ReactMarkdown></div>;
+  return <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm,remarkMath]} rehypePlugins={[[rehypeKatex,{trust:false,strict:'ignore',throwOnError:false,maxExpand:1000,maxSize:20}],rehypeHighlight]} skipHtml components={{a:({children,href})=>sourceURL(href||'')?<AnswerLink url={href!}/>:<span>{children}</span>,table:({children})=><div className="markdown-table-scroll"><table>{children}</table></div>,td:({children,style})=><td style={style}>{Children.toArray(children).every(child=>typeof child==='string'&&/^[,;，\s]*$/.test(child))?'–':children}</td>}}>{chemScripts(prosePunctuation(text))}</ReactMarkdown></div>;
+}
+function AnswerLink({url}:{url:string}){
+  const [error,setError]=useState('');
+  return <><a className="reference-link" href={url} target="_blank" rel="noopener noreferrer" aria-label="Click Here" onClick={event=>{
+    if(window.chemez?.openReference){event.preventDefault();void window.chemez.openReference(url).then(ok=>{if(ok===false)setError('Could not open this link.');}).catch(()=>setError('Could not open this link.'));}
+  }}>Click Here</a>{error&&<span role="status"> {error}</span>}</>;
 }
 const svgURL=(svg:string)=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 // New drawings share one bond length, so their intrinsic size is their true relative scale.

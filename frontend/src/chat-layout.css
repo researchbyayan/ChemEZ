@@ -529,10 +529,7 @@ main:not(:has(.welcome)) .composer-area::before{content:'';position:absolute;top
 main .composer-area.composer-floating{position:absolute;z-index:6;bottom:18px;left:16px;right:16px;margin:0 auto;transform:translateY(var(--floating-y,0px));opacity:.25;transition:opacity .12s ease;pointer-events:auto}
 main .composer-area.composer-floating:hover,main .composer-area.composer-floating:focus-within{opacity:1}
 .composer-floating .composer{background:linear-gradient(125deg,#07110dc9,#092a1dc2)!important}
-.composer-floating.composer-reply .composer{background:linear-gradient(125deg,#071222c9,#103c68c2)!important;border-color:#91c9f088;transform:translateX(8px);transition:transform .16s ease,background .16s ease}
-.reply-anchor{display:flex;align-items:center;gap:8px;padding:5px 15px;color:#b6d9fa;font-size:11px}
-.reply-anchor span{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.reply-anchor button{padding:2px 6px;font-size:16px}
+.composer-floating.composer-reply .composer{background:linear-gradient(125deg,#071222c9,#103c68c2)!important;border-color:#91c9f088;transition:background .16s ease}
 @media(prefers-reduced-motion:reduce){.composer-floating.composer-reply .composer{transition:none}}
 
 /* The plus menu reuses the existing slash menu rather than separate glass cards. */
@@ -550,7 +547,6 @@ main:not(:has(.welcome)):has(.composer-floating) .conversation-scroll{scroll-pad
 main:not(:has(.welcome)) .composer-area{padding-left:52px}
 .composer-reply{--reply-color:#a9d8fb}
 .composer-reply .composer{padding-top:12px}
-.reply-anchor{padding:0 40px 7px 0;min-height:22px;font-size:10px}
 .composer-reply .send-button::before{background:linear-gradient(145deg,#c2e5ff,#87bee9)!important}
 :root .app-shell .composer-reply select.answer-style{background-color:#6aa9e11a!important;border-color:#91c9f04d!important}
 .message-reply{opacity:.35;padding:3px 7px;font-size:11px}
@@ -563,8 +559,6 @@ main .composer-area.composer-floating::before{display:none!important}
 /* The side rail shares the actual form height, including compact transitions. */
 main .composer-area.composer-floating{opacity:.15}
 main .composer-area.composer-floating:hover,main .composer-area.composer-floating:focus-within{opacity:1}
-.composer-floating.composer-reply .composer{transform:translateX(8px)}
-.composer-reply .reply-anchor{padding-right:0}
 :root .app-shell .composer-reply .answer-style:focus-visible{outline-color:#a9d8fb}
 
 /* Share the composer glass surface with its outline-only side controls. */
@@ -591,7 +585,6 @@ main:not(:has(.welcome)) .composer-area{transition:padding-left .22s cubic-bezie
 .composer-floating.composer-reply .composer{transform:none!important}
 @media(prefers-reduced-motion:reduce){main:not(:has(.welcome)) .composer-area{transition:none}}
 /* The reply label is read, not glanced at: one size up, a little brighter. */
-.composer-reply .reply-anchor{font-size:11px;color:#c6e3fb}
 
 /* Quicker composer motion: expand, collapse, reply shift and side rail all settle in about a tenth of a second. */
 .composer-area .composer,.composer-floating.composer-reply .composer,.composer-area .composer textarea,.composer-area .composer-footer{transition-duration:.12s}
@@ -650,10 +643,6 @@ main:has(.welcome) .composer-area.composer-floating{opacity:1}
 /* Follow-up close: a circle the size of send, stacked directly above it. */
 .composer-area .composer{position:relative}
 .send-stack{position:relative;display:inline-flex}
-:root .app-shell .composer .reply-close{position:absolute;right:0;bottom:calc(100% + 8px);width:36px;height:36px;min-height:36px;padding:0!important;border-radius:50%!important;display:grid;place-items:center;background:transparent!important;border:1px solid #91c9f088!important;box-shadow:none!important;color:#c2e5ff!important;font-size:15px;z-index:2}
-:root .app-shell .composer .reply-close:hover{background:#91c9f01f!important}
-.composer-reply .reply-anchor{padding-right:52px}
-.composer-area:not(.composer-compact) .composer-footer:has(.reply-close){overflow:visible}
 
 /* Chat scrollbar: always visible; when newer content is below, the track ends in a chevron cap that jumps down. */
 .conversation-scroll{scrollbar-width:none}
@@ -739,8 +728,6 @@ main .composer-area.composer-floating.composer-reply{--composer-surface:linear-g
 .chat-scrollbar.awake,.chat-scrollbar:hover,.chat-scrollbar:has(:focus-visible){opacity:.64}
 
 /* Follow-up close, matched to send: the same filled gradient circle (blue in reply mode), sitting higher. */
-:root .app-shell .composer .reply-close{bottom:calc(100% + 16px);border:0!important;background:linear-gradient(145deg,#c2e5ff,#87bee9)!important;box-shadow:inset 0 1px #ffffff38!important;color:#102b43!important;font-size:16px}
-:root .app-shell .composer .reply-close:hover{background:linear-gradient(145deg,#d4edff,#9accf0)!important}
 
 /* Top bar: the chat title is the headline; the model name is the quieter detail. */
 :root .app-shell .settings-trigger{font-size:12px;font-weight:400;letter-spacing:0;color:#9aa8a0}
@@ -775,23 +762,11 @@ main .composer-area.composer-floating.composer-reply{--composer-surface:linear-g
    Docked mode and the new-conversation page keep the slim search-bar look. */
 main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact{opacity:1}
 main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact .composer{opacity:0;pointer-events:none;box-shadow:none!important}
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{content:'';position:absolute;left:50%;bottom:22px;width:110px;height:14px;transform:translateX(-50%);border-radius:999px;border:1.5px solid #e6efe9cc;background:#0b1410e6;box-shadow:0 2px 10px #0008;pointer-events:none;animation:pill-in 1s ease both}
-@keyframes pill-in{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{animation:none}}
 /* Collapsed: Archived chats, Keyboard shortcuts and Settings sit at the bottom, as when expanded. */
 .sidebar-collapsed .history+.navigation-action{margin-top:auto!important}
 
-/* While the pointer rests on the pill, it fills up over one second, then the chatbox opens. */
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.composer-charging::after{background:linear-gradient(90deg,#9aefae99 0 0) no-repeat left/0% 100%,#0b1410e6;animation:pill-charge 1s linear forwards;border-color:#ffffff}
-@keyframes pill-charge{to{background-size:100% 100%,auto}}
-@media(prefers-reduced-motion:reduce){main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.composer-charging::after{animation:none}}
 
-/* Follow-up close: top-right corner of the chatbox, a little larger, with rounded-square corners. */
 .send-stack{position:static}
-:root .app-shell .composer .reply-close{top:10px;right:12px;bottom:auto;width:40px;height:40px;min-height:40px;border-radius:12px!important;font-size:17px}
-.composer-reply .reply-anchor{padding-right:56px}
-/* The X is a circle centred on the same vertical line as send; its strokes have rounded ends. */
-:root .app-shell .composer .reply-close{border-radius:50%!important;right:16px;top:12px}
 
 /* Glass scrollbar thumb: blurred backdrop, light rim and a soft top sheen, like the app's other glass. */
 .chat-scrollbar-thumb{background:linear-gradient(180deg,#ffffff2e,#b8f2c914 45%,#b8f2c90a)!important;-webkit-backdrop-filter:blur(8px) saturate(1.4);backdrop-filter:blur(8px) saturate(1.4);border:1px solid #e6fff066;box-shadow:inset 0 1px 0 #ffffff59,inset 0 -1px 0 #0000004d,0 2px 8px #0006}
@@ -802,23 +777,12 @@ main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.compo
 :root .app-shell .answer-actions .answer-references{height:32px;min-height:32px;padding:0 10px!important;border:0!important;border-radius:9px!important;display:inline-flex;align-items:center}
 :root .app-shell .answer-actions .answer-references:hover{background:#ffffff08!important;color:#c3e3ce}
 
-/* The pill rests dimmed and brightens over the half-second hover before opening; leaving fades it back. */
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{opacity:.55;transition:opacity .5s ease,border-color .5s ease,box-shadow .5s ease;animation:pill-in-dim 1s ease both}
-@keyframes pill-in-dim{from{opacity:0}to{opacity:.55}}
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.composer-charging::after{opacity:1;animation:none;background:#0b1410f2;border-color:#ffffff;box-shadow:0 0 14px #9aefae55,0 2px 10px #0008}
-@media(prefers-reduced-motion:reduce){main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transition:none}}
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after,main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.composer-charging::after{animation:pill-in-dim 1s ease backwards}
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transition:opacity .5s linear,border-color .5s linear,box-shadow .5s linear}
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transition:opacity 2s linear,border-color 2s linear,box-shadow 2s linear}
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transition:opacity 1.25s linear,border-color 1.25s linear,box-shadow 1.25s linear}
 
 /* Smoother pill: it brightens and swells slightly on an ease-in-out curve, then hands over to the chatbox with a short fade. */
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after{transform:translateX(-50%) scale(1);transition:opacity 1s cubic-bezier(.45,0,.25,1),transform 1s cubic-bezier(.45,0,.25,1),border-color 1s ease,box-shadow 1s ease;will-change:opacity,transform}
-main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact.composer-charging::after{transform:translateX(-50%) scale(1.12)}
 main:not(:has(.welcome)) .composer-area.composer-floating .composer{transition:opacity .22s ease,transform .22s cubic-bezier(.2,.7,.25,1),padding .12s ease,border-radius .12s ease}
 main:not(:has(.welcome)) .composer-area.composer-floating:not(.composer-compact) .composer{animation:composer-rise .22s cubic-bezier(.2,.7,.25,1)}
 @keyframes composer-rise{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){main:not(:has(.welcome)) .composer-area.composer-floating.composer-compact::after,main:not(:has(.welcome)) .composer-area.composer-floating .composer{transition:none;animation:none}}
+@media(prefers-reduced-motion:reduce){main:not(:has(.welcome)) .composer-area.composer-floating .composer{transition:none;animation:none}}
 
 /* The chatbox is special: docked, it keeps its glass (blur and rim) even with glass effects turned off. */
 :root[data-glass=off] .composer-area:not(.composer-floating) .composer{-webkit-backdrop-filter:blur(var(--glass-blur,20px)) saturate(1.25)!important;backdrop-filter:blur(var(--glass-blur,20px)) saturate(1.25)!important}
@@ -905,3 +869,19 @@ textarea::selection,input::selection{background:#2f8f5cb3;color:#ffffff}
 :root .app-shell .settings-tabs button:focus-visible,
 .structure-popover :is(button,a):focus-visible{outline:1.5px solid #9aefae8c!important;outline-offset:-2px!important;animation:none!important}
 :root .app-shell .sidebar .brand:focus-visible{outline:none!important;animation:none!important}
+
+/* Editing and follow-ups share a stable header, divider and writing area. */
+:root .app-shell .composer.composer-context{min-height:192px;padding:16px 18px 13px!important}
+.composer-context-header{display:flex;align-items:center;gap:9px;min-height:48px;padding:0 50px 12px 0;margin-bottom:12px;border-bottom:1px solid #ffffff12;color:#b6d8c1;font-size:12px;line-height:1.6}
+.composer-context-header>span{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.composer-reply .composer-context-header{color:#c6e3fb}
+:root .app-shell .composer .context-close{position:absolute;top:16px;right:18px;width:36px;height:36px;min-height:36px;padding:0!important;border:0!important;border-radius:50%!important;display:grid;place-items:center;background:linear-gradient(145deg,#b9f3cf,#86cfaa)!important;color:#133c29!important;box-shadow:inset 0 1px #ffffff38!important}
+:root .app-shell .composer-reply .composer .context-close{background:linear-gradient(145deg,#c2e5ff,#87bee9)!important;color:#102b43!important}
+:root .app-shell .composer .context-close:hover{filter:brightness(1.08)}
+:root .app-shell .composer-context textarea{padding-right:0;min-height:44px}
+.composer-context-header .context-close svg{width:18px;height:18px}
+/* A real hit target replaces the decorative pseudo-element for reliable hover/click. */
+:root .app-shell .composer-resting-trigger{position:absolute;z-index:3;left:calc(50% - 55px);bottom:22px;transform:scale(1)!important;width:110px;height:14px;min-height:14px;padding:0!important;border-radius:999px!important;border:1.5px solid #e6efe98c!important;background:#0b1410e6!important;box-shadow:0 2px 10px #0008!important;transition:transform .2s ease,border-color .2s ease;pointer-events:auto}
+.composer-resting-trigger::before{content:'';position:absolute;inset:-12px -18px;border-radius:999px}
+:root .app-shell .composer-charging .composer-resting-trigger{transform:scale(1.08)!important;border-color:#fff!important}
+@media(prefers-reduced-motion:reduce){:root .app-shell .composer-resting-trigger{transition:none}}

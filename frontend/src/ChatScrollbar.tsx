@@ -30,10 +30,11 @@ export function ChatScrollbar({target,onLatest}:{target:RefObject<HTMLDivElement
       // The thumb is drawn at 80% of its proportional length, so it reads as a handle rather than a slab.
       const height=scrollable?Math.max(16,0.8*room*clientHeight/scrollHeight-12):room;
       const top=scrollable?(room-height)*scrollTop/(scrollHeight-clientHeight):0;
-      setThumb({top,height,scrollable});
+      setThumb(previous=>previous.top===top&&previous.height===height&&previous.scrollable===scrollable?previous:{top,height,scrollable});
       setAtLatest(scrollHeight-scrollTop-clientHeight<100);
       // The bar spans exactly the scrolling area, whatever sits below it.
-      setBox({top:element.offsetTop+10,height:Math.max(0,clientHeight-20)});
+      const nextBox={top:element.offsetTop+10,height:Math.max(0,clientHeight-20)};
+      setBox(previous=>previous.top===nextBox.top&&previous.height===nextBox.height?previous:nextBox);
     });};
     measure();
     element.addEventListener('scroll',measure,{passive:true});

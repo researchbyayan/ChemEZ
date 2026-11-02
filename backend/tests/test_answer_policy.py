@@ -68,3 +68,6 @@ def test_title_only_and_linked_references_can_coexist():
     result=references([{'title':'Book without URL'},{'title':'Linked article','url':'https://example.org/article'}])
     assert len(result)==2 and 'url' not in result[0]
     assert result[1]['url']=='https://example.org/article'
+
+def test_html_entities_cannot_bypass_em_dash_prose_rule():
+    assert prose('A&mdash;B &#8212; C &#x2014; D') == 'A, B ,  C ,  D'

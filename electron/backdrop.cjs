@@ -45,12 +45,18 @@ async function backdrop(window) {
 // Sends 'light' or 'dark' to the page when it changes: on load, move, resize, focus, and
 // every 30 s (the wallpaper may rotate).
 function watchBackdrop(window, send) {
-  let last, timer;
-  const check = () => backdrop(window).then(value => {if (value !== last) {last = value; send(value);}}).catch(() => {});
+  let last, timer, checking=false, closed=false;
+  const check = async () => {
+    if(checking||closed)return;
+    checking=true;
+    try{const value=await backdrop(window);if(!closed&&value!==last){last=value;send(value);}}
+    catch{/* Keep the previous theme if the wallpaper cannot be read. */}
+    finally{checking=false;}
+  };
   const soon = () => {clearTimeout(timer); timer = setTimeout(check, 250);};
   window.on('moved', soon); window.on('resize', soon); window.on('focus', soon);
   window.webContents.on('did-finish-load', () => {last = undefined; check();});
   const interval = setInterval(check, 30000);
-  window.on('closed', () => {clearInterval(interval); clearTimeout(timer);});
+  window.on('closed', () => {closed=true;clearInterval(interval);clearTimeout(timer);});
 }
 module.exports = {watchBackdrop};

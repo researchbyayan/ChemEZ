@@ -1,5 +1,7 @@
 import {useState,useEffect,useMemo,useRef} from 'react';
 import {Dialog} from './Dialog';
+import {sharedRead} from './sharedRead';
+import {proseLinks} from './sourceLinks';
 import type {Block} from './types';
 
 // Recover explicit bibliographic citations in saved prose without inventing a URL.
@@ -17,7 +19,13 @@ export function collectReferences(value:unknown):Source[]{
     if(Array.isArray(v)){v.forEach(visit);return;}
     const item=v as Record<string,unknown>;
     if(item.type==='markdown'&&typeof item.text==='string'){
-      for(const citation of inlineCitations(item.text)){
+      for(const link of proseLinks(item.text)){
+        if(!found.has(link.url))found.set(link.url,{...link,provenance:'Link in the answer, not retrieved or verified by ChemEZ'});
+      }
+      const bibliographic=item.text.split(/\n\s*\n/).map(part=>part.replace(/[*_]/g,'').trim()).filter(part=>/^[A-Z][a-z]+,?\s+(?:[A-Z]\.\s*){1,3}\(?\d{4}\)?/.test(part));
+      for(const citation of [...inlineCitations(item.text),...bibliographic]){
+        const doi=[...found.values()].find(source=>source.url?.startsWith('https://doi.org/'));
+        if(doi&&bibliographic.includes(citation)){doi.title=citation;continue;}
         if(![...found.values()].some(source=>source.title===citation))found.set('title:'+citation,{title:citation,provenance:'Citation in the answer, not retrieved or verified by ChemEZ'});
       }
     }
@@ -42,7 +50,7 @@ export function References({blocks}:{blocks:Block[]}){
       const cached=resolvedCache.get(source.title);
       if(cached){setMatches(previous=>({...previous,[source.title]:cached}));continue;}
       setMatches(previous=>({...previous,[source.title]:{status:'loading'}}));
-      void window.chemez.request('resolveCitation',{citation:source.title.slice(0,600)}).then(match=>{
+      void sharedRead('citation:'+source.title,()=>window.chemez.request('resolveCitation',{citation:source.title.slice(0,600)})).then(match=>{
         if(match.status==='matched'){resolvedCache.set(source.title,match);while(resolvedCache.size>128)resolvedCache.delete(resolvedCache.keys().next().value!);}
         if(active)setMatches(previous=>({...previous,[source.title]:match}));
       }).catch(()=>{if(active)setMatches(previous=>({...previous,[source.title]:{status:'unavailable'}}));});

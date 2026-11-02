@@ -824,7 +824,7 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
                         if (not failed and not issue) or (not best[1] and attempt) or attempt==MAX_REPAIRS:
                             break
                         # Repair with this round's specific problems.
-                        messages = [*messages,{'role':'assistant','content':raw},{'role':'user','content':'Repair the answer JSON, chemistry, and selected answer mode. Return the complete answer with valid blocks. Answer the original chemistry question directly; do not mention validation, previous answers, internal retries, or the repair request. Validation issues: '+json.dumps([b['text'] for b in blocks if b['type']=='error']+([issue] if issue else []))}]
+                        messages = [*messages,{'role':'assistant','content':raw},{'role':'user','content':'Repair the answer JSON, chemistry, and selected answer mode. Return the complete answer with valid blocks. Answer only this current learner question (earlier turns are context, not the task): '+json.dumps(question)+'. Do not switch back to an earlier topic. Do not mention validation, previous answers, internal retries, or the repair request. Validation issues: '+json.dumps([b['text'] for b in blocks if b['type']=='error']+([issue] if issue else []))}]
                     blocks,failed,raw=best
                     if command in ('spectra','nomenclature') and not any(block['type']=='molecule' for block in blocks):
                         # ChemEZ draws the compound the question names or types when the model did not.

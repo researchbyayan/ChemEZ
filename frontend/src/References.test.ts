@@ -19,3 +19,12 @@ it('recovers a bibliographic citation from saved prose without fabricating a lin
 it('does not treat ordinary quotations or code as references',()=>{
  expect(collectReferences([{type:'markdown',text:'She said (“a sufficiently long ordinary quote”).\n`(Davis et al., “A quoted article title long enough,” Journal 175: 77)`'}])).toEqual([]);
 });
+
+it('recovers DOI and database links from the reported answer and deduplicates attached sources',()=>{
+ const sources=collectReferences([{type:'markdown',text:'A review:\n\n**Slavin, J. L. (2012). Fruit and vegetable consumption and health: a review.**\n\nURL: https://doi.org/10.3945/an.112.002154\n\nUSDA: https://fdc.nal.usda.gov/',references:[{title:'USDA FoodData Central',url:'https://fdc.nal.usda.gov/',provenance:'model'}]}]);
+ expect(sources).toHaveLength(2);expect(sources[0].title).toContain('Slavin');expect(sources.every(source=>source.url)).toBe(true);
+});
+it('recovers Markdown source links and excludes code, unsafe and private addresses',()=>{
+ const sources=collectReferences([{type:'markdown',text:'[Paper](https://example.org/paper). https://example.org/paper. `https://example.net/code` [bad](javascript:alert(1)) https://127.0.0.1/private'}]);
+ expect(sources).toHaveLength(1);expect(sources[0].url).toBe('https://example.org/paper');
+});

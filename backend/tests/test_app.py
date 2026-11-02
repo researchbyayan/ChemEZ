@@ -845,3 +845,36 @@ async def test_general_question_reaches_provider_with_inclusive_policy(client):
     assert FakeProvider.calls>=1
     assert 'never refuse merely because a question is not chemistry' in FakeProvider.last_system
     assert 'Never use an em dash' in FakeProvider.last_system
+
+async def test_retry_keeps_latest_question_after_topic_change(tmp_path):
+    class Capture:
+        calls=[]
+        def __init__(self,*args):pass
+        async def stream(self,messages,system=None):
+            self.calls.append(json.loads(json.dumps(messages)))
+            # First response forces one style repair, which must retain the current question.
+            prose=' '.join(['Long']*150) if len(self.calls)==1 else 'Fruit juice is not equivalent to whole fruit.'
+            yield json.dumps({'visual':False,'blocks':[{'type':'markdown','text':prose}]})
+    app=create_app(tmp_path,'test-token',MemoryVault(),Capture)
+    store=app.state.store
+    cid=store.create('Iodine alkane reactivity')
+    store.add(cid,'user',{'text':'Why does iodine react slowly with alkanes?','images':[]})
+    store.add(cid,'assistant',[{'type':'markdown','text':'Hydrogen abstraction is endothermic.'}])
+    question='Does fruit juice show the same association with reduced doctor visits? Reference please.'
+    uid=store.add(cid,'user',{'text':question,'images':[]})
+    store.add(cid,'assistant',[{'type':'markdown','text':'Old answer.'}])
+    async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test',headers={'Authorization':'Bearer test-token'}) as client:
+        await configure(client)
+        assert (await client.post('/conversations/'+cid+'/rewind',json={'before_message_id':uid})).status_code==200
+        response=await client.post('/chat',json={'conversation_id':cid,'text':question,'response_style':'concise'})
+        assert response.status_code==200
+    assert len(Capture.calls)==2
+    assert Capture.calls[0][-1]['content']['text']==question
+    assert question in Capture.calls[1][-1]['content']
+    assert 'Do not switch back to an earlier topic' in Capture.calls[1][-1]['content']
+
+
+def test_reduced_doctor_visits_does_not_require_mechanism():
+    from chemez.styles import style_issue
+    assert style_issue([{'type':'markdown','text':'Evidence is limited.'}],'mechanism','Does fruit juice show the same association with reduced doctor visits?') is None
+    assert style_issue([{'type':'markdown','text':'Hydride attacks.'}],'mechanism','Show reduction of acetone with sodium borohydride')
