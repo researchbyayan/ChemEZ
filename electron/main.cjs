@@ -88,7 +88,7 @@ function trusted(event) {
 ipcMain.handle('chemez:request', async (event, command, payload) => {
   trusted(event);
   const [method, route] = resolveRoute(command,payload);
-  const body = command === 'rewindConversation' ? {before_message_id:payload.before_message_id} : command === 'suggestQuestion' ? {mode:payload.mode,command:payload.command||''} : command === 'updateConversation' ? {title:payload.title,pinned:payload.pinned,...(typeof payload.archived==='boolean'?{archived:payload.archived}:{})} : ['structure3d','analyseStructure'].includes(command) ? {smiles:payload.smiles} : ['saveConfig','saveVisionConfig','loadModels'].includes(command) ? payload : undefined;
+  const body = command === 'resolveCitation' ? {citation:payload.citation} : command === 'rewindConversation' ? {before_message_id:payload.before_message_id} : command === 'suggestQuestion' ? {mode:payload.mode,command:payload.command||''} : command === 'updateConversation' ? {title:payload.title,pinned:payload.pinned,...(typeof payload.archived==='boolean'?{archived:payload.archived}:{})} : ['structure3d','analyseStructure'].includes(command) ? {smiles:payload.smiles} : ['saveConfig','saveVisionConfig','loadModels'].includes(command) ? payload : undefined;
   return (await callBackend(method, route, body)).json();
 });
 ipcMain.handle('chemez:chat', async (event,payload) => {

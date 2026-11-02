@@ -283,6 +283,14 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
             raise HTTPException(400,'Enter an API key in Settings first.')
         return config,key
 
+    class CitationRequest(BaseModel):
+        citation: str = Field(min_length=15,max_length=600)
+
+    @app.post('/references/resolve')
+    async def resolve_citation(payload: CitationRequest):
+        from .citations import resolve
+        return await resolve(payload.citation)
+
     @app.get('/config')
     async def config_get():
         config = store.config()
@@ -651,6 +659,10 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
                     smiles,name=interpretation
                     quick=render_block(block_adapter.validate_python({'type':'molecule','smiles':smiles,'label':name,'iupac_name':name}))
                     quick['interpreted']='Interpreted '+shorthand+' as '+name+'.'
+                if not quick and not payload.images and command in (None,'calc'):
+                    from .local_tools import answer as local_answer
+                    local=await asyncio.to_thread(local_answer,question)
+                    if local:quick={'id':str(uuid4()),'type':'markdown','text':local}
                 routed = None
                 if not quick and not command and not payload.images and router.match(payload.text):
                     yield event('status',message='Looking up the compound…')
@@ -834,6 +846,13 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
                                 tables[0]['text']=nmr.replace_carbon_section(tables[0]['text'],section)
                             else:
                                 blocks.append({'id':str(uuid4()),'type':'markdown','text':section})
+                    if command=='spectra' and drawn:
+                        from .local_tools import isotope_table
+                        try:
+                            envelope=await asyncio.to_thread(isotope_table,drawn.get('formula') or computed(drawn['smiles'])['formula'])
+                        except (ValueError,TypeError,KeyError):
+                            envelope=None
+                        if envelope:blocks.append({'id':str(uuid4()),'type':'markdown','text':envelope})
                     if route and not any(block['type']=='reaction' for block in blocks):
                         # The model explained the route without drawing it: ChemEZ draws the verified steps.
                         drawn,_=await native_work('answer',json.dumps({'blocks':routes.blocks(route)}),timeout=60,wait=60)

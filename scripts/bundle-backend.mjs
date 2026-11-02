@@ -1,8 +1,8 @@
 import {spawnSync} from 'node:child_process';
 import {python,root,runtimePython} from './python-path.mjs';
-const args=['-m','PyInstaller','--noconfirm','--onedir','--name','chemez-backend','--distpath','backend-dist','--workpath','build/python','--specpath','build','--paths','backend','--paths','backend/vendor','--collect-data','rdkit','--collect-binaries','rdkit','--hidden-import','seq_encode.smiles','--hidden-import','uvicorn.logging','--hidden-import','uvicorn.loops.auto','--hidden-import','uvicorn.protocols.http.auto','--hidden-import','uvicorn.protocols.http.h11_impl','--hidden-import','uvicorn.lifespan.on'];
+const args=['-m','PyInstaller','--noconfirm','--onedir','--name','chemez-backend','--distpath','backend-dist','--workpath','build/python','--specpath','build','--paths','backend','--paths','backend/vendor','--collect-data','pint','--collect-data','rdkit','--collect-binaries','rdkit','--hidden-import','seq_encode.smiles','--hidden-import','uvicorn.logging','--hidden-import','uvicorn.loops.auto','--hidden-import','uvicorn.protocols.http.auto','--hidden-import','uvicorn.protocols.http.h11_impl','--hidden-import','uvicorn.lifespan.on'];
 if(process.env.CHEMEZ_CLEAN_BUILD==='1')args.push('--clean');
-for(const dependency of ['fastapi','uvicorn','httpx','pydantic','rdkit','numpy','tqdm']) args.push('--recursive-copy-metadata',dependency);
+for(const dependency of ['fastapi','uvicorn','httpx','pydantic','rdkit','numpy','tqdm','pint','molmass','flexcache','flexparser','platformdirs']) args.push('--recursive-copy-metadata',dependency);
 // The question map is read at run time, so it ships beside the chemez package.
 args.push('--add-data',root+'/backend/chemez/question_map.json:chemez');
 args.push('--add-data',root+'/backend/chemez/data/c13_shifts.json.gz:chemez/data');

@@ -34,7 +34,7 @@ _NAMES = {Chem.MolToSmiles(Chem.MolFromSmiles(smiles),isomericSmiles=True):name 
     ('c1ccccc1','benzene'),('Oc1ccccc1','phenol'),('O=S(=O)(O)c1ccccc1','benzenesulfonic acid'),
     ('[Na+].O=S(=O)([O-])c1ccccc1','sodium benzenesulfonate'),('[Na+].[O-]c1ccccc1','sodium phenolate'),
     ('CCO','ethanol'),('CC=O','ethanal'),('CC(=O)O','ethanoic acid'),('CCOC(C)=O','ethyl ethanoate'),
-    ('O','water'),('O=C=O','carbon dioxide'),('N','ammonia'),('C','methane'),('[Na+].[OH-]','sodium hydroxide')
+    ('ClCl','molecular chlorine'),('O','water'),('O=C=O','carbon dioxide'),('N','ammonia'),('C','methane'),('[Na+].[OH-]','sodium hydroxide')
 ]}
 
 def structure_name(smiles, proposed=''):

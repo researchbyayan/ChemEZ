@@ -61,3 +61,10 @@ def test_step_by_step_splits_the_series_it_is_given_into_one_move_per_step():
     assert texts[1]=='**Step 1.** The bonding electrons of the C1–C2 bond move onto C2, so C2 becomes negative and C1 positive. Each curved arrow is one electron pair.'
     assert 'model wording' not in ' '.join(texts) and texts[-1]=='**Answer:** see the steps.'
     assert stepwise.wanted(None,'show the moving electrons') and not stepwise.wanted(None,'what is benzene')
+
+
+def test_title_only_and_linked_references_can_coexist():
+    from chemez.answer_policy import references
+    result=references([{'title':'Book without URL'},{'title':'Linked article','url':'https://example.org/article'}])
+    assert len(result)==2 and 'url' not in result[0]
+    assert result[1]['url']=='https://example.org/article'

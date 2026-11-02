@@ -16,3 +16,10 @@ test('3D structure requests carry only a bounded SMILES string',()=>{
   assert.throws(()=>resolveRoute('structure3d',{smiles:'C'.repeat(2001)}));
   assert.throws(()=>resolveRoute('structure3d','CCO'));
 });
+
+test('publication resolution accepts bounded citation text only',()=>{
+  assert.deepEqual(resolveRoute('resolveCitation',{citation:'An explicit article title'}),['POST','/references/resolve']);
+  assert.throws(()=>resolveRoute('resolveCitation',{citation:'short'}));
+  assert.throws(()=>resolveRoute('resolveCitation',{citation:'x'.repeat(601)}));
+  assert.throws(()=>resolveRoute('resolveCitation',{url:'https://example.org'}));
+});

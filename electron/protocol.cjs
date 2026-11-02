@@ -2,6 +2,7 @@
 // Shared by the isolated preload and main process. There is no arbitrary fetch IPC.
 const routes = Object.freeze({
   saveVisionConfig: ['PUT','/config/vision'], deleteVisionConfig: ['DELETE','/config/vision'], testVisionConnection: ['POST','/config/vision/test'],
+  resolveCitation: ['POST','/references/resolve'],
   loadModels: ['POST','/config/models'], getConfig: ['GET','/config'], saveConfig: ['PUT','/config'],
   deleteKey: ['DELETE','/credentials'], testConnection: ['POST','/config/test'],
   listConversations: ['GET','/conversations'],
@@ -26,6 +27,7 @@ function resolveRoute(command, payload) {
     return ['PATCH','/conversations/' + payload.id];
   }
   if ((command === 'structure3d' || command === 'analyseStructure') && (!payload || typeof payload.smiles !== 'string' || !payload.smiles || payload.smiles.length > 2000)) throw new Error('Invalid structure request.');
+  if(command==='resolveCitation'&&(!payload||typeof payload.citation!=='string'||payload.citation.length<15||payload.citation.length>600))throw new Error('Invalid citation request.');
   const route = routes[command];
   if (!route) throw new Error('Unsupported desktop command.');
   if (command === 'getConversation' || command === 'deleteConversation') {

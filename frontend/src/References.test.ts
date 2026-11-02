@@ -10,3 +10,12 @@ describe('answer references',()=>{
   it('lists a named book without a link',()=>expect(collectReferences([{references:[{title:'Guyton & Hall, Chapter 64',provenance:'model'}]}])).toEqual([{title:'Guyton & Hall, Chapter 64',provenance:'Suggested by model, not retrieved by ChemEZ'}]));
   it('does not invent sources for an answer without references',()=>expect(collectReferences([{type:'markdown',text:'Hello'}])).toEqual([]));
 });
+
+it('recovers a bibliographic citation from saved prose without fabricating a link',()=>{
+ const citation='Davis et al., “Association Between Apple Consumption and Physician Visits,” JAMA Intern Med 175: 1347–1349';
+ const sources=collectReferences([{type:'markdown',text:`An analysis found no difference (${citation}).`}]);
+ expect(sources).toHaveLength(1);expect(sources[0].title).toBe(citation);expect(sources[0].url).toBeUndefined();expect(sources[0].provenance).toContain('not retrieved or verified');
+});
+it('does not treat ordinary quotations or code as references',()=>{
+ expect(collectReferences([{type:'markdown',text:'She said (“a sufficiently long ordinary quote”).\n`(Davis et al., “A quoted article title long enough,” Journal 175: 77)`'}])).toEqual([]);
+});

@@ -1,4 +1,4 @@
-import {useState,useRef,useEffect,lazy,Suspense,type ReactNode,type CSSProperties} from 'react';
+import {useState,useRef,useEffect,lazy,Suspense,Children,type ReactNode,type CSSProperties} from 'react';
 import {createPortal} from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import {chemScripts} from './scripts';
@@ -10,14 +10,19 @@ import 'katex/contrib/mhchem';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github.css';
 import type {Block,Molecule} from './types';
-import {displayName,plainChem,chemArrows} from './chemText';
+import {displayName,plainChem,chemArrows,moleculeCaption} from './chemText';
 import {academic} from './italics';
 import {titleCase} from './titleCase';
 import {RenderBoundary} from './RenderBoundary';
 const SmilesExplorer=lazy(()=>import('./SmilesExplorer').then(module=>({default:module.SmilesExplorer})));
 
+const SpectralMarkdown=lazy(()=>import('./SpectralMarkdown'));
 export function Markdown({text}:{text:string}) {
-  return <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm,remarkMath]} rehypePlugins={[[rehypeKatex,{trust:false,strict:'ignore',throwOnError:false,maxExpand:1000,maxSize:20}],rehypeHighlight]} skipHtml components={{a:({children})=><span className="reference-link">{children}</span>}}>{chemScripts(text)}</ReactMarkdown></div>;
+  if(/(?:NMR|\bIR\b|\bMS\b|mass spectr|infrared)/i.test(text)&&text.includes('|'))return <Suspense fallback={<MarkdownBase text={text}/>}><SpectralMarkdown text={text} renderText={part=><MarkdownBase text={part}/>}/></Suspense>;
+  return <MarkdownBase text={text}/>;
+}
+function MarkdownBase({text}:{text:string}) {
+  return <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm,remarkMath]} rehypePlugins={[[rehypeKatex,{trust:false,strict:'ignore',throwOnError:false,maxExpand:1000,maxSize:20}],rehypeHighlight]} skipHtml components={{a:({children})=><span className="reference-link">{children}</span>,table:({children})=><div className="markdown-table-scroll"><table>{children}</table></div>,td:({children,style})=><td style={style}>{Children.toArray(children).every(child=>typeof child==='string'&&/^[,;，\s]*$/.test(child))?'–':children}</td>}}>{chemScripts(text)}</ReactMarkdown></div>;
 }
 const svgURL=(svg:string)=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 // New drawings share one bond length, so their intrinsic size is their true relative scale.
@@ -92,7 +97,7 @@ export function Diagram({svg,label,children,menu=true}:{svg:string;label:string;
 }
 function StructureFigure({molecule:m,className,changes=false}:{molecule:Molecule;className:string;changes?:boolean}){
   const [exploring,setExploring]=useState(false);
-  const name=m.label||m.iupac_name;
+  const name=moleculeCaption(m.smiles,m.label||m.iupac_name||'',m.formula);
   return <div className={'structure '+className}>
     <StructureMenu svg={changes&&m.svg_changes?m.svg_changes:m.svg} label={`${name||m.formula||'Molecule'} molecular structure`} name={m.iupac_name} formula={m.formula} onExplore={()=>setExploring(true)} imageStyle={structureStyle(m.svg)}/>
     <div className="structure-caption">{name&&<span className="structure-name">{academic(displayName(name))}</span>}{m.formula&&<span className="structure-formula"><Formula value={m.formula}/></span>}</div>
@@ -141,6 +146,14 @@ export function AnswerBlocks({blocks,onChoice}:{blocks:Block[];onChoice:(text:st
   const result:ReactNode[]=[];
   for(let index=0;index<blocks.length;index++){
     const block=blocks[index];
+    if(block.type==='markdown'&&/(?:NMR|\bIR\b|\bMS\b|mass spectr|infrared)/i.test(block.text)){
+      const sequence=[block];let next=index+1;
+      while(blocks[next]?.type==='markdown'&&sequence.length<10)sequence.push(blocks[next++] as typeof block);
+      const combined=sequence.map(part=>part.text).join('\n\n');
+      if(sequence.length>1&&combined.length<200000&&/(?:NMR|\bIR\b|\bMS\b|mass spectr|infrared)/i.test(combined)&&combined.includes('|')){
+        result.push(<RenderBoundary key={block.id}><Markdown text={combined}/></RenderBoundary>);index=next-1;continue;
+      }
+    }
     if(block.type==='molecule'){
       const molecules=[block];
       while(blocks[index+1]?.type==='molecule')molecules.push(blocks[++index] as typeof block);

@@ -2,7 +2,7 @@ export type ProviderName = 'openai' | 'anthropic' | 'gemini' | 'compatible' | 'o
 export interface Config {provider:ProviderName;model:string;endpoint:string;api_key?:string;auth_mode?:'api_key'|'none';fallbacks?:string[]}
 export interface ConfigState {vision_config?:Config|null;vision_has_key?:boolean;config:Config|null;has_key:boolean;warning:string;ready?:boolean;image_support?:'supported'|'unsupported'|'unknown';saved_keys?:Partial<Record<string,boolean>>}
 export interface Molecule {properties?:[string,string][];source?:{label:string;url:string};interpreted?:string;smiles:string;label:string;formula?:string;iupac_name?:string;name_source?:'local'|'model'|'unavailable';svg:string;svg_changes?:string;atom_charges?:number[];encoding?:{available:boolean;shape?:number[];warning?:string;alphabet?:Record<string,number>;one_hot_indices?:number[]}}
-export type Block = {id:string;references?:{title:string;url:string;provenance:string}[]} & (
+export type Block = {id:string;references?:{title:string;url?:string;provenance:string}[]} & (
   | {type:'markdown';text:string}
   | ({type:'molecule'} & Molecule)
   | {type:'reaction';reactants:Molecule[];products:Molecule[];svg:string;caption:string;reagents:string;conditions:string;arrow?:'forward'|'equilibrium'|'retrosynthesis'|'no_reaction'}
@@ -38,6 +38,7 @@ export interface Bridge {
   request(command:'updateConversation',payload:{id:string;title:string;pinned:boolean;archived?:boolean}):Promise<{ok:boolean}>;
   request(command:'searchConversations',query:string):Promise<Conversation[]>;
   request(command:'listDiagrams'):Promise<SavedDiagram[]>;
+  request(command:'resolveCitation',payload:{citation:string}):Promise<{status:'matched'|'unmatched'|'unavailable';title?:string;url?:string;citation?:string;provenance?:string}>;
   request(command:'structure3d',payload:{smiles:string}):Promise<Structure3D>;
   request(command:'analyseStructure',payload:{smiles:string}):Promise<StructureAnalysis>;
   request(command:'suggestQuestion',payload:{id:string;mode:'concise'|'balanced'|'mechanism';command?:string}):Promise<{question:string}>;

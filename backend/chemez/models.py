@@ -7,7 +7,7 @@ class StrictModel(BaseModel):
 
 class Reference(StrictModel):
     title: str = Field(min_length=1, max_length=200)
-    url: str = Field(min_length=1, max_length=2000)
+    url: str | None = Field(default=None, min_length=1, max_length=2000)
 
 class Molecule(StrictModel):
     smiles: str = Field(min_length=1, max_length=2000)

@@ -18,3 +18,16 @@ export function plainChem(text:string){
   return text.replace(/\\(?:text|mathrm|ce|mathbf|textbf)\{([^{}]*)\}/g,'$1').replace(/_\{?([0-9]+)\}?/g,(_,d:string)=>sub(d)).replace(/\^\{?([0-9+-]+)\}?/g,(_,d:string)=>sup(d))
     .replace(/\\(?:rightarrow|to)\b/g,'→').replace(/\\Delta\b/g,'Δ').replace(/[$\\{}]/g,'').replace(/([A-Z][a-z]?|\))(\d+)/g,(_,atom:string,d:string)=>atom+sub(d));
 }
+
+// Resolve formula-only captions from exact, common diatomic structures; never infer isomers.
+export function moleculeCaption(smiles:string,label:string,formula?:string){
+  const known:Record<string,string>={ClCl:'Chlorine',BrBr:'Bromine',II:'Iodine',FF:'Fluorine','O=O':'Oxygen','N#N':'Nitrogen','[H][H]':'Hydrogen'};
+  const normalize=(value:string)=>value.replace(/[₀-₉]/g,d=>String(subscripts.indexOf(d))).replace(/\s/g,'').toLowerCase();
+  if(known[smiles]&&(!label||normalize(label)===normalize(formula||'')||normalize(label)===normalize(smiles)))return known[smiles];
+  return formula&&normalize(label)===normalize(formula)?formulaText(formula):label;
+}
+
+export function spectralAssignment(text:string){
+  return plainChem(text.replace(/(?<![A-Za-z0-9])(13|35|37|79|81)(C|Cl|Br)(?=\d|\b)/g,(_,mass:string,element:string)=>sup(mass)+element))
+    .replace(/\]([+-])/g,(_,sign:string)=>']'+sup(sign));
+}

@@ -853,3 +853,55 @@ main:not(:has(.welcome)) .composer-area.composer-floating:not(.composer-compact)
 ::selection{background:#2f8f5c99;color:#f2fff6}
 textarea::selection,input::selection{background:#2f8f5cb3;color:#ffffff}
 .markdown .katex:not(.katex-display .katex){font-size:1.04em}
+
+.spectrum-figure{margin:12px 0 24px;padding:16px 18px;border:1px solid #bceac425;border-radius:16px;background:#08130d55}
+.spectrum-figure figcaption{display:flex;justify-content:space-between;gap:12px;font-size:13px}.spectrum-figure figcaption span,.spectrum-figure small{color:var(--muted);font-size:10px;line-height:1.6}.spectrum-figure svg{display:block;width:100%;max-height:240px;margin:12px 0;color:var(--text);overflow:visible}.spectrum-figure svg text{fill:currentColor;font-size:10px}.spectrum-figure small{display:block}.spectrum-figure p{font-size:12px;color:var(--muted)}
+
+/* The scroll container owns a complete outer border, including header-only tables. */
+.markdown .markdown-table-scroll{max-width:100%;overflow-x:auto;margin:14px 0;border:1px solid #b7d5c530;border-radius:8px}
+.markdown .markdown-table-scroll table{display:table;width:100%;max-width:none;margin:0;border-collapse:separate;border-spacing:0;overflow:visible}
+.markdown .markdown-table-scroll th,.markdown .markdown-table-scroll td{border:0;border-right:1px solid #b7d5c525;border-bottom:1px solid #b7d5c525}
+.markdown .markdown-table-scroll tr>:last-child{border-right:0}
+.markdown .markdown-table-scroll tbody tr:last-child td{border-bottom:0}
+.markdown .markdown-table-scroll thead:last-child tr:last-child th{border-bottom:0}
+.spectral-table-selected{background:#a4ddbb24!important;box-shadow:inset 3px 0 #a4ddbb}
+.spectrum-tools{display:flex;align-items:center;gap:6px}.spectrum-tools button{width:28px;height:28px;display:grid;place-items:center;border:1px solid #bceac425;border-radius:9px;background:#bceac408;color:var(--green);font-size:12px}.spectrum-tools button[aria-pressed=true]{background:#a4ddbb25;border-color:#a4ddbb88}.spectrum-selection{font-size:11px;line-height:1.6;margin:8px 0;color:var(--text)}.spectrum-figure svg.selecting{cursor:crosshair;touch-action:none}.spectrum-selection button{font-size:10px;text-decoration:underline;margin-left:8px;color:var(--green)}
+.spectral-table-selected>td{background:#a4ddbb24!important}
+
+/* Compact action material follows the Structure popover button. */
+:root .app-shell :is(.compact-action,.structure-popover .structure-button,.settings-buttons>button,.utility-dialog .confirm-actions>button,.appearance-panel .setting-value,.signin-button,.spectrum-tools button){border:0!important;border-radius:6px!important;background:#9be9b718!important;color:#bcebc9!important;box-shadow:none!important;min-height:28px;padding:5px 10px!important;font-size:12px;font-weight:450;line-height:18px;transition:background .12s ease,color .12s ease}
+:root .app-shell :is(.compact-action,.structure-popover .structure-button,.settings-buttons>button,.utility-dialog .confirm-actions>button,.appearance-panel .setting-value,.signin-button,.spectrum-tools button):hover:not(:disabled){background:#9be9b72c!important;color:#e1f7e7!important}
+:root .app-shell :is(.compact-action,.structure-popover .structure-button,.settings-buttons>button,.signin-button){display:inline-flex;align-items:center;justify-content:center;gap:6px}
+:root .app-shell .composer-reply .compact-action{background:#91c9f018!important;color:#c2e5ff!important}
+:root .app-shell :is(.settings-buttons>button,.confirm-actions>button).danger{color:#ffb3ab!important;background:#ff928516!important}
+.spectrum-selection{padding:12px 14px;border-radius:10px;background:#a4ddbb08;border:1px solid #a4ddbb18}
+.spectrum-selection-header{display:flex;align-items:center;justify-content:space-between;gap:12px}.spectrum-selection-header>div{display:flex;flex-direction:column;gap:3px}.spectrum-selection-label{font-size:10px;color:var(--muted)}.spectrum-selection-header strong{font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.spectrum-selection .compact-action{margin:0;text-decoration:none;white-space:nowrap}
+.selected-peaks{list-style:none;margin:10px 0 0;padding:0}.selected-peaks li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px;padding:7px 0;border-top:1px solid #ffffff12;line-height:1.6}.selected-peaks li>span:first-child{font-variant-numeric:tabular-nums;color:var(--green)}.selected-peaks li>span:last-child{overflow-wrap:anywhere}
+@media(max-width:600px){.selected-peaks li{grid-template-columns:80px minmax(0,1fr)}.spectrum-selection-header{align-items:flex-start}}
+.spectrum-method{margin-top:12px;color:var(--muted);font-size:10px;line-height:1.6}.spectrum-method summary{cursor:pointer;width:fit-content}.spectrum-method small{padding-top:7px}
+:root .app-shell :is(.settings .text-action,.connection-tabs button,.appearance-tabs button,.card-tools button,.error-actions button,.model-controls button){border-radius:6px!important;box-shadow:none!important;background:#9be9b712!important;color:#bcebc9!important;border-color:transparent!important}
+:root .app-shell :is(.connection-tabs button,.appearance-tabs button)[aria-selected=true]{background:#9be9b72c!important;color:#e1f7e7!important}
+:root .app-shell :is(.settings .text-action,.card-tools button,.error-actions button,.model-controls button):hover:not(:disabled){background:#9be9b72c!important}
+
+/* Tables may scroll horizontally; ordinary words must not split into letters. */
+.markdown .markdown-table-scroll :is(th,td){overflow-wrap:normal;word-break:normal;hyphens:none;vertical-align:top}
+.markdown .markdown-table-scroll table{table-layout:auto}
+
+.references-dialog{width:min(660px,calc(100vw - 32px));padding:26px;max-height:82vh}
+.references-dialog .reference-list{list-style:none;margin:18px 0 0;padding:0}
+.references-dialog .reference-list>li{margin:0;padding:18px 0;border-top:1px solid #ffffff14;overflow-wrap:normal}
+.reference-heading{display:flex;align-items:flex-start;gap:10px}
+.references-dialog .reference-number{display:grid;place-items:center;flex-shrink:0;width:22px;height:22px;border-radius:6px;background:#9be9b712;margin:0;font-size:11px;opacity:1;color:var(--green)}
+.references-dialog :is(.reference-title,.reference-link){display:block;margin:0;text-align:left;font-size:14px!important;font-weight:500;line-height:1.55;opacity:1!important;color:var(--text);overflow-wrap:anywhere;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.references-dialog .reference-link:hover{color:var(--green)}.references-dialog .reference-link i{font-size:10px;margin-left:8px;color:var(--green)}
+.references-dialog .reference-citation{font-size:12px;line-height:1.7;color:var(--text);margin:10px 0 6px}.references-dialog .reference-provenance{font-size:11px;line-height:1.6;color:var(--muted);margin:0 0 10px}
+.reference-actions{display:flex;gap:8px;flex-wrap:wrap}
+.references-footer{border-top:1px solid #ffffff14;padding-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}.references-footer small{font-size:10px;line-height:1.6;color:var(--muted);max-width:300px}
+
+/* Keep keyboard focus inside each rounded control; never animate beyond clipped panels. */
+:root .app-shell :is(button,select,a,summary,[tabindex]):focus-visible,
+:root .app-shell .composer :is(button,select):focus-visible,
+:root .app-shell .settings-tabs button:focus-visible,
+.structure-popover :is(button,a):focus-visible{outline:1.5px solid #9aefae8c!important;outline-offset:-2px!important;animation:none!important}
+:root .app-shell .sidebar .brand:focus-visible{outline:none!important;animation:none!important}

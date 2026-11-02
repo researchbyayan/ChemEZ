@@ -31,7 +31,7 @@ def references(items):
         if not isinstance(item,dict):continue
         title,url=item.get('title'),item.get('url')
         if not isinstance(title,str) or not title.strip():continue
-        if url is None:
+        if url is None or (isinstance(url,str) and not url.strip()):
             # A book or article named without a link is still listed, just not clickable.
             if title not in [r['title'] for r in result]:
                 result.append({'title':title[:200].replace('\u2014', ', '),'provenance':'model'})
@@ -42,7 +42,7 @@ def references(items):
             host=target.hostname or ''
             safe=target.scheme=='https' and not target.username and not target.password and '.' in host and not re.fullmatch(r'[\d.:]+',host) and not host.endswith(('.local','.localhost'))
         except ValueError: safe=False
-        if safe and len(url)<=2000 and url not in [r['url'] for r in result]:
+        if safe and len(url)<=2000 and url not in [r.get('url') for r in result]:
             result.append({'title':title[:200].replace('\u2014', ', '),'url':url,'provenance':'model'})
     return result
 

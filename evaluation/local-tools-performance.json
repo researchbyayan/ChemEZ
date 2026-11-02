@@ -1,0 +1,60 @@
+{
+  "first_use_ms": {
+    "units": 766.4291099990805,
+    "formula": 15.53843399960897,
+    "balance": 2.3118549997889204
+  },
+  "warm": {
+    "units": {
+      "median_ms": 0.3024754996658885,
+      "max_ms": 1.739158999043866
+    },
+    "formula": {
+      "median_ms": 0.16552499982935842,
+      "max_ms": 5.477573000462144
+    },
+    "balance": {
+      "median_ms": 0.9459789998800261,
+      "max_ms": 18.172178000895656
+    },
+    "unrelated": {
+      "median_ms": 0.003946500328311231,
+      "max_ms": 0.029402001018752344
+    }
+  },
+  "packages": {
+    "pint": {
+      "version": "0.25.3",
+      "installed_bytes": 2790466
+    },
+    "molmass": {
+      "version": "2026.1.8",
+      "installed_bytes": 597157
+    },
+    "flexcache": {
+      "version": "0.3",
+      "installed_bytes": 96599
+    },
+    "flexparser": {
+      "version": "0.4",
+      "installed_bytes": 259960
+    },
+    "platformdirs": {
+      "version": "4.14.3",
+      "installed_bytes": 367493
+    }
+  },
+  "backend_eagerly_imports_tools": "False False",
+  "notes": [
+    "Development machine timings, not installer or clean-machine results.",
+    "No pre-change warmed baseline; cold import timings are filesystem-cache sensitive.",
+    "First use is off the async event loop; subsequent unit registry reuse is cached."
+  ],
+  "spectra_chunks": [
+    {
+      "name": "SpectralMarkdown-BfRCOYf6.js",
+      "bytes": 3015,
+      "gzip_bytes": 1485
+    }
+  ]
+}

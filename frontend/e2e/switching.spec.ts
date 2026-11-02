@@ -327,3 +327,68 @@ test('double-clicking the scrollbar thumb snaps to the latest message',async({pa
   await expect.poll(()=>page.locator('.conversation-scroll').evaluate(e=>Math.round(e.scrollHeight-e.scrollTop-e.clientHeight))).toBeLessThan(2);
   await page.screenshot({path:'/private/tmp/claude-501/-Users-mohammedayanmahmood-Documents-ChatGPT-ChemEZ/3e548582-4ba5-4619-9df5-de70dd068cc9/scratchpad/shots/thumb.png',clip:{x:1260,y:60,width:60,height:780}});
 });
+
+test('spectra tables always receive local graphs with axes and prediction limits',async({page})=>{
+  await mockChats(page);await page.goto('/');await ask(page,'Show ethanol spectra');
+  await page.evaluate(()=>{
+    const emit=(window as unknown as {emit:(e:unknown)=>void}).emit;
+    emit({type:'block',block:{id:'spectra',type:'markdown',text:'**IR**\n\n| cm⁻¹ | Assignment |\n|---|---|\n| 3350 | O–H |\n\n**¹H NMR**\n\n| δ ppm | Assignment |\n|---|---|\n| 1.2 | CH3 |\n| , | no protons |\n\n**¹³C NMR**\n\n| δ ppm | Assignment |\n|---|---|\n| 58 | CH2 |\n\n**MS**\n\n| m/z | Ion |\n|---|---|\n| 46 | M+ |'}});
+  });
+  await expect(page.locator('.spectrum-figure svg')).toHaveCount(4);
+  await expect(page.locator('.spectrum-figure').first()).toContainText('Gaussian band broadening');
+  await expect(page.locator('.spectrum-figure').first()).toContainText('cm⁻¹');
+  await page.getByRole('button',{name:'Highlight IR peaks',exact:true}).click();
+  const graph=page.locator('.spectrum-figure svg').first();await graph.focus();await page.keyboard.press('ArrowRight');
+  await expect(page.locator('.spectral-table-selected')).toHaveCount(1);
+  await expect(page.locator('.spectrum-selection').first()).toContainText('3350');
+  await expect(page.locator('.selected-peaks li')).toHaveCount(1);
+  const clear=page.getByRole('button',{name:'Clear selection',exact:true});
+  await expect(clear).toHaveCSS('border-radius','6px');await expect(clear).toHaveCSS('text-decoration-line','none');
+
+  await expect(page.getByRole('cell',{name:'–',exact:true})).toBeVisible();
+  const tableFrame=page.locator('.markdown-table-scroll').first();
+  await expect(tableFrame).toHaveCSS('border-top-width','1px');await expect(tableFrame).toHaveCSS('border-bottom-width','1px');
+  await page.locator('.spectrum-figure').first().scrollIntoViewIfNeeded();
+  await page.evaluate(()=>{window.chemez.saveImage=async payload=>{(window as unknown as {savedSpectrum:string}).savedSpectrum=payload.data;return true;};});
+  await page.getByRole('button',{name:'Save IR graph as PNG',exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {savedSpectrum?:string}).savedSpectrum?.slice(0,8))).toBe('iVBORw0K');
+  await page.screenshot({path:test.info().outputPath('spectra-graphs.png')});
+  await finish(page);
+});
+
+test('reference dialog resolves an inline citation to an openable DOI and copies corrected metadata',async({page})=>{
+  await mockChats(page);await page.goto('/');await ask(page,'Give me the apple study reference');
+  await page.evaluate(()=>{
+    const w=window as unknown as {emit:(e:unknown)=>void;openedSource?:string;copiedSource?:string;chemez:{request:(c:string,p?:unknown)=>Promise<unknown>;openReference:(url:string)=>Promise<boolean>}};
+    const request=w.chemez.request;
+    w.chemez.request=async(c,p)=>c==='resolveCitation'?{status:'matched',title:'Association Between Apple Consumption and Physician Visits',url:'https://doi.org/10.1001/jamainternmed.2014.5466',citation:'Davis MA et al. JAMA Internal Medicine. 2015;175(5):777–783.',provenance:'Publication metadata matched via Crossref; answer claims are not verified.'}:request(c,p);
+    w.chemez.openReference=async url=>{w.openedSource=url;return true;};
+    Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async(text:string)=>{w.copiedSource=text;}}});
+    w.emit({type:'block',block:{id:'reference',type:'markdown',text:'An analysis found no difference (Davis et al., “Association Between Apple Consumption and Physician Visits,” JAMA Intern Med 175: 1347–1349).'}});
+  });
+  await page.getByRole('button',{name:/References \(1\)/}).click();
+  const dialog=page.getByRole('dialog',{name:'References',exact:true});
+  await expect(dialog).toContainText('777–783');
+  await expect(dialog.getByText('Original answer citation',{exact:true})).toHaveCount(0);
+  await expect(dialog.locator('.reference-doi')).toHaveCount(0);
+  await dialog.getByRole('button',{name:'Open source',exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {openedSource:string}).openedSource)).toBe('https://doi.org/10.1001/jamainternmed.2014.5466');
+  await dialog.getByRole('button',{name:'Copy citation',exact:true}).click();
+  await expect(dialog.getByRole('button',{name:'Copied',exact:true})).toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {copiedSource:string}).copiedSource)).toContain('https://doi.org/');
+  await page.screenshot({path:test.info().outputPath('resolved-reference-dialog.png')});
+  await finish(page);
+});
+
+
+test('brand has no Tab outline and settings focus rings stay inset',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  await page.keyboard.press('Tab');
+  const brand=page.getByRole('link',{name:'ChemEZ home'});await brand.focus();
+  await expect(brand).toHaveCSS('outline-style','none');
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const general=page.getByRole('button',{name:'General',exact:true});await page.keyboard.press('Tab');await general.focus();
+  await expect(general).toHaveCSS('outline-offset','-2px');
+  await expect(general).toHaveCSS('animation-name','none');
+  expect(await general.evaluate(node=>parseFloat(getComputedStyle(node).borderTopLeftRadius))).toBeGreaterThan(0);
+});
