@@ -188,6 +188,8 @@ def restored_block(block):
         if block.get('type') in ('mechanism','resonance'):
             if block['type']=='mechanism':
                 fields={'type':'mechanism','steps':[{k:v for k,v in step.items() if k in ('smiles','label','iupac_name','arrows','limitation')} for step in block['steps']]}
+                if isinstance(block.get('family'),str):
+                    fields['family']=block['family']  # the reaction-type badge survives reopening a chat
             else:
                 fields={'type':'resonance','caption':block.get('caption',''),'hybrid':bool(block.get('hybrid')),'contributors':[{k:v for k,v in contributor.items() if k in ('smiles','label','arrows')} for contributor in block['contributors']]}
             rendered=render_block(block_adapter.validate_python(fields))

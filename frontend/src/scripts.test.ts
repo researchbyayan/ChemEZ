@@ -13,3 +13,14 @@ describe('plain-text sub and superscripts',()=>{
     for(const text of ['`snake_case`','$S_N2$','file_name and x_value','see section 2^nd'])expect(chemScripts(text)).toBe(text);
   });
 });
+
+describe('plain formulas in prose',()=>{
+  it('typesets real formulas with mhchem',()=>{
+    expect(chemScripts('an alkyl halide (e.g., CH₃Cl) and AlCl₃.')).toBe('an alkyl halide (e.g., $\\ce{CH3Cl}$) and $\\ce{AlCl3}$.');
+    expect(chemScripts('With only HCl, nothing happens')).toBe('With only $\\ce{HCl}$, nothing happens');
+    expect(chemScripts('sulfate SO₄²⁻ ions')).toBe('sulfate $\\ce{SO4^{2-}}$ ions');
+  });
+  it('leaves words, abbreviations and existing math alone',()=>{
+    for(const text of ['OK, I see','Use CO and NO carefully? No.','NMR and IR spectra','$\\ce{H2O}$','Benzene does not react'])expect(chemScripts(text)).toBe(text);
+  });
+});

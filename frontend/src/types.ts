@@ -6,7 +6,7 @@ export type Block = {id:string;references?:{title:string;url:string;provenance:s
   | {type:'markdown';text:string}
   | ({type:'molecule'} & Molecule)
   | {type:'reaction';reactants:Molecule[];products:Molecule[];svg:string;caption:string;reagents:string;conditions:string;arrow?:'forward'|'equilibrium'|'retrosynthesis'|'no_reaction'}
-  | {type:'mechanism';steps:{arrows_derived?:boolean;completed?:string;bond_changes?:{action:string;label:string;before:number;after:number}[];smiles:string;label:string;svg:string|null;limitation:string;iupac_name?:string;formula?:string;name_source?:string}[]}
+  | {type:'mechanism';family?:string;steps:{arrows_derived?:boolean;completed?:string;bond_changes?:{action:string;label:string;before:number;after:number}[];smiles:string;label:string;svg:string|null;limitation:string;iupac_name?:string;formula?:string;name_source?:string}[]}
   | {type:'resonance';flow_summary?:string;caption:string;contributors:{bond_changes?:{action:string;label:string;before:number;after:number}[];smiles:string;label:string;svg:string;formula?:string;limitation:string;arrows_derived?:boolean}[];hybrid:{svg:string;label:string}|null}
   | {type:'clarification';question:string;options:string[]}
   | {type:'error';text:string}

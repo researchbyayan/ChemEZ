@@ -150,7 +150,7 @@ export function SmilesExplorer({molecule:m,onClose}:{molecule:Molecule;onClose:(
     return()=>{live=false;};
   },[m.smiles]);
   const title=displayName(m.iupac_name||m.label||m.formula||'Structure');
-  const tabs:[typeof tab,string][]=[['structure','Structure'],['groups','Functional groups'],['smiles','SMILES to atoms'],['properties','Properties']];
+  const tabs:[typeof tab,string][]=[['structure','Structure'],['groups','Functional groups'],['smiles','Partial charges'],['properties','Properties']];
   const model=failed?<p className="notice error" role="alert">This structure could not be analysed.</p>:!data?<p className="smiles-explorer-status" role="status">Building the model…</p>:null;
   return <Dialog title={title} onClose={onClose} className="smiles-explorer">
     <div className="explorer-tabs" role="tablist" aria-label="Structure views">{tabs.map(([key,label])=><button key={key} role="tab" aria-selected={tab===key} onClick={()=>setTab(key)}>{label}</button>)}</div>

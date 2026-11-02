@@ -208,3 +208,94 @@ svg.resonance-arrow { width:52px; height:14px; flex:0 0 52px; padding:0; margin:
 .structure-popover .structure-buttons .structure-button{flex:1;justify-content:center;gap:6px;height:28px;min-height:0;padding:0 10px;border:0;border-radius:6px;background:transparent;color:#9aefae;font-size:12px;white-space:nowrap}
 .structure-popover .structure-buttons .structure-button:hover,.structure-popover .structure-buttons .structure-button:focus-visible{background:#9be9b71a;color:#c7f8d1}
 .structure-popover .structure-buttons .structure-button i{font-size:11px;width:auto}
+
+/* Reaction-type badge beside the mechanism heading. */
+.mechanism h3 .mechanism-family{display:inline-flex;align-items:center;margin-left:10px;padding:2px 9px;border-radius:999px;border:1px solid #9aefae40;background:#9aefae14;color:#b8f2c9;font-size:11px;font-weight:600;letter-spacing:.02em;vertical-align:middle}
+.mechanism h3 .mechanism-family sub{font-size:.75em;line-height:0}
+.mechanism h3 .mechanism-title{display:inline-flex;align-items:center;gap:10px}
+.mechanism h3 .mechanism-family{margin-left:0;width:auto;align-self:center;line-height:1.5;font-size:11.5px}
+.mechanism h3 .mechanism-family sub{font-size:.72em;position:relative;top:.25em}
+
+/* ===== Reaction and mechanism cards, refined =====
+   Serif italics for named reactions and conditions (as in textbooks); upright sans for reagents and labels. */
+:root{--chem-serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif}
+
+/* Reaction scheme card */
+:root .app-shell .reaction-card{padding:16px 20px 18px;border-radius:16px;border:1px solid #ffffff12;background:linear-gradient(180deg,#ffffff07,#ffffff03)}
+:root .app-shell .reaction-card figcaption{display:flex;align-items:baseline;gap:10px;justify-content:flex-start;text-align:left;margin-bottom:6px}
+:root .app-shell .reaction-card figcaption .eyebrow{font-size:10px;letter-spacing:.14em;color:#7fa892}
+:root .app-shell .reaction-card figcaption strong{font-family:var(--chem-serif);font-style:italic;font-weight:500;font-size:17px;color:#e8f1ec;letter-spacing:.005em}
+:root .app-shell .reaction-card figcaption .card-tools{margin-left:auto}
+/* Every participant ends on one baseline: structures sit on the line, names and formulas below. */
+:root .app-shell .reaction-layout,:root .app-shell .reaction-side{align-items:flex-end}
+:root .app-shell .reaction-term{display:flex;align-items:flex-end}
+:root .app-shell .reaction-participant{display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+:root .app-shell .reaction-plus{align-self:center;margin-bottom:34px;color:#8fa79a;font-weight:300;font-size:18px}
+:root .app-shell .reaction-arrow{align-self:center;margin-bottom:30px;gap:4px}
+:root .app-shell .reaction-arrow svg{color:#cfe3d6;width:116px}
+:root .app-shell .reaction-reagents{font-size:12.5px;font-weight:500;color:#dfeee5;font-style:normal}
+:root .app-shell .reaction-conditions{font-family:var(--chem-serif);font-style:italic;font-size:13px;color:#a8bdb0}
+
+/* Mechanism: a vertical timeline of light cards. */
+.mechanism h3 .mechanism-title{font-family:var(--chem-serif);font-style:italic;font-weight:500;font-size:17px;color:#e8f1ec}
+.mechanism h3 .mechanism-family{font-family:inherit;font-style:normal}
+:root .app-shell .mechanism-steps{position:relative;padding-left:0;gap:10px}
+:root .app-shell .mechanism-steps::before{content:'';position:absolute;left:15px;top:22px;bottom:22px;border-left:1px dashed #9aefae33}
+:root .app-shell .mechanism-step{position:relative;padding:12px 16px 12px 44px;border-radius:14px;border:1px solid #ffffff10;background:#ffffff05;min-height:0}
+:root .app-shell .mechanism-step-header{display:block;margin:0}
+:root .app-shell .mechanism-step .step-number{position:absolute;left:4px;top:12px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;color:#0d241a;background:linear-gradient(145deg,#b8f2c9,#7fcf9b);box-shadow:0 0 0 4px #0f1a14}
+:root .app-shell .step-label{margin:0;font-size:13.5px;line-height:1.5;color:#b7c8be}
+:root .app-shell .step-label strong{font-weight:600;color:#eef6f1;margin-right:5px}
+:root .app-shell .step-label span{color:#a9bcb1}
+:root .app-shell .mechanism-step .structure-menu,:root .app-shell .mechanism-step figure{margin:6px 0 2px}
+:root .app-shell .bond-change-list{margin-top:4px;gap:6px}
+:root .app-shell .bond-change{font-size:11px;padding:2px 8px;border-radius:999px}
+:root .app-shell .derived-note,:root .app-shell .mechanism-note{font-family:var(--chem-serif);font-style:italic;font-size:12.5px}
+/* One header row: SCHEME label, the reaction's name, then the tools at the right. */
+:root .app-shell .reaction-card figcaption{display:flex!important;flex-direction:row!important;flex-wrap:nowrap;align-items:center!important;justify-content:flex-start!important;padding:0 0 4px!important}
+:root .app-shell .reaction-card figcaption .eyebrow{display:inline-block!important;position:static!important;width:auto!important;margin:0!important;transform:none!important}
+:root .app-shell .reaction-card figcaption strong{display:inline-block;width:auto;margin:0!important}
+:root .app-shell .reaction-card figcaption .card-tools{position:static!important;margin-left:auto!important;display:inline-flex;gap:6px}
+.mechanism h3 .mechanism-family{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif!important;font-style:normal!important;font-weight:600}
+/* Step header: the stage label, with its bond changes as chips right beneath it. */
+:root .app-shell .mechanism-step-header .bond-change-list{display:flex;flex-wrap:wrap;margin:6px 0 0}
+:root .app-shell .mechanism-steps::before{left:27px}
+:root .app-shell .mechanism-step .step-number{left:16px}
+:root .app-shell .mechanism-step{padding-left:52px}
+
+/* Academic type: Segoe UI Light where installed (Windows), Lexend (bundled) elsewhere.
+   Conditions stay oblique, as in printed schemes; no decorative serif. */
+:root{--chem-sans:"Segoe UI Light","Segoe UI",Lexend,-apple-system,system-ui,sans-serif}
+:root .app-shell .reaction-card figcaption strong,.mechanism h3 .mechanism-title{font-family:var(--chem-sans)!important;font-style:normal!important;font-weight:300!important;font-size:16.5px;letter-spacing:.005em}
+:root .app-shell .reaction-card,:root .app-shell .mechanism-step,.mechanism h3 .mechanism-family{font-family:var(--chem-sans)!important}
+:root .app-shell .reaction-conditions,:root .app-shell .derived-note,:root .app-shell .mechanism-note{font-family:var(--chem-sans)!important;font-style:italic;font-weight:300}
+:root .app-shell .reaction-reagents{font-weight:400}
+:root .app-shell .step-label{font-weight:300}
+:root .app-shell .step-label strong{font-weight:500}
+.mechanism h3 .mechanism-family{font-weight:500!important;letter-spacing:.03em}
+/* No timeline line: numbered cards read as an ordered sequence on their own. */
+:root .app-shell .mechanism-steps::before{display:none}
+:root .app-shell .mechanism-step .step-number{box-shadow:none}
+/* Header centred (label above the reaction's name); tools pinned to the top-right corner. */
+:root .app-shell .reaction-card{position:relative}
+:root .app-shell .reaction-card figcaption{flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;text-align:center!important;padding:2px 0 6px!important}
+:root .app-shell .reaction-card figcaption .card-tools{position:absolute!important;top:14px;right:16px;margin:0!important}
+/* Long scheme titles wrap in the centre, clear of the tools in the corner. */
+:root .app-shell .reaction-card figcaption{padding-left:84px!important;padding-right:84px!important}
+:root .app-shell .reaction-card figcaption strong{max-width:100%;line-height:1.35;overflow-wrap:anywhere}
+.chem-italic{font-style:italic}
+/* Lexend has no italic face and the app disables synthetic styles; allow a slanted face for these. */
+.chem-italic,:root .app-shell .reaction-conditions,:root .app-shell .derived-note,:root .app-shell .mechanism-note{font-synthesis:style}
+:root .app-shell .reaction-card figcaption{padding-left:96px!important;padding-right:96px!important}
+:root .app-shell .reaction-card figcaption strong{white-space:normal!important;text-overflow:clip!important;overflow:visible!important}
+/* No reaction: the crossed arrow is followed by "N.R." rather than a product. */
+:root .app-shell .no-reaction-label{align-self:center;margin:0 0 30px 6px;font-family:var(--chem-sans);font-weight:500;font-size:15px;letter-spacing:.04em;color:#e8f1ec}
+
+/* Reaction row: every structure is centred in a band of equal height; names and formulas share
+   one baseline underneath; the plus signs, arrow and N.R. are centred on the structures' band. */
+:root .app-shell .reaction-layout,:root .app-shell .reaction-side{align-items:stretch!important}
+:root .app-shell .reaction-term{align-items:stretch!important}
+:root .app-shell .reaction-participant{height:100%;justify-content:flex-start!important}
+:root .app-shell .reaction-participant>:first-child{flex:1;display:flex;align-items:center;justify-content:center}
+:root .app-shell .reaction-participant .structure-caption{min-height:38px}
+:root .app-shell .reaction-plus,:root .app-shell .reaction-arrow,:root .app-shell .no-reaction-label{align-self:center;margin-top:0!important;margin-bottom:38px!important}

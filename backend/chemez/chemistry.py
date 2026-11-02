@@ -182,6 +182,27 @@ def draw(mol, arrows: list[Arrow] | None = None, highlight: list[int] | None = N
         drawn = [drawer.GetDrawCoords(i) for i in range(mol.GetNumAtoms())]
         centre = (sum(p.x for p in drawn)/len(drawn), sum(p.y for p in drawn)/len(drawn))
         sites = sites if lone_pairs else {}
+        # The visible middle of each drawn bond. RDKit stops a bond short of a label such as "Cl",
+        # so the midpoint of the two atom centres is not the middle of the line the reader sees.
+        import re as _re
+        drawn_bonds = {}
+        lines = {}
+        for element in root.iter():
+            classes = (element.get('class') or '').split()
+            if element.tag.endswith('path') and classes and classes[0].startswith('bond-'):
+                atoms = tuple(sorted(int(c[5:]) for c in classes if c.startswith('atom-')))
+                values = [float(v) for v in _re.findall(r'-?\d+(?:\.\d+)?', element.get('d', ''))]
+                if len(atoms) == 2 and len(values) >= 4:
+                    lines.setdefault(atoms, []).extend(zip(values[0::2], values[1::2]))
+        for (a_index, b_index), pts in lines.items():
+            pa, pb = drawer.GetDrawCoords(a_index), drawer.GetDrawCoords(b_index)
+            ax, ay, vx, vy = pa.x, pa.y, pb.x - pa.x, pb.y - pa.y
+            norm = vx * vx + vy * vy
+            if not norm:
+                continue
+            ts = [((x - ax) * vx + (y - ay) * vy) / norm for x, y in pts]
+            t = (min(ts) + max(ts)) / 2
+            drawn_bonds[(a_index, b_index)] = (ax + vx * t, ay + vy * t)
         for index, arrow in enumerate(arrows):
             for anchor in (arrow.tail, arrow.head):
                 if any(i < 0 or i >= mol.GetNumAtoms() for i in anchor):
@@ -190,9 +211,18 @@ def draw(mol, arrows: list[Arrow] | None = None, highlight: list[int] | None = N
                     raise ValueError('Mechanism arrow bond anchor does not identify a bond.')
             def point(anchor):
                 coords = [drawer.GetDrawCoords(i) for i in anchor]
+                if len(anchor)==2 and tuple(sorted(anchor)) in drawn_bonds:
+                    return drawn_bonds[tuple(sorted(anchor))]
                 return sum(p.x for p in coords)/len(coords), sum(p.y for p in coords)/len(coords)
             x1,y1 = point(arrow.tail)
             x2,y2 = point(arrow.head)
+            # A lone pair forming a NEW bond (e.g. OH⁻ taking a proton) points at the atom it
+            # bonds to, as textbooks draw it, rather than at the empty midpoint between them.
+            # (Paired fishhooks in radical coupling keep meeting at the new bond's midpoint.)
+            new_bond_target = (arrow.electrons==2 and len(arrow.tail)==1 and len(arrow.head)==2 and arrow.tail[0] in arrow.head
+                               and mol.GetBondBetweenAtoms(*arrow.head) is None)
+            if new_bond_target:
+                x2,y2 = point([i for i in arrow.head if i != arrow.tail[0]])
             if len(arrow.tail)==1 and sites.get(arrow.tail[0]):
                 # A lone pair is the source: start at the dot pair facing the target.
                 # The pair on the side facing the target, so the arrow never crosses the label.
@@ -212,6 +242,9 @@ def draw(mol, arrows: list[Arrow] | None = None, highlight: list[int] | None = N
             if abs(side_a-side_b)<.05:
                 # Symmetric (Cl–Cl): bow upwards, so paired fishhooks sit on one side.
                 outward = 1 if dx/length < 0 else -1
+            if arrow.electrons==1 and len(arrow.head)==2 and len(arrow.tail)==1:
+                # Fishhooks meeting in a bond both arc over the top, as a matched pair.
+                outward = -1 if dx/length > 0 else 1
             cx,cy = mx-dy/length*bow*outward,my+dx/length*bow*outward
             if ring_flow and len(arrow.tail)==len(arrow.head)==2:
                 # Kekulé π flow stays inside the ring instead of looping around
@@ -238,8 +271,15 @@ def draw(mol, arrows: list[Arrow] | None = None, highlight: list[int] | None = N
                 vx,vy=px+.6*ux,py+.6*uy;f=(vx*vx+vy*vy)**.5
                 x2,y2=ax+vx/f*.32*unit,ay+vy/f*.32*unit
                 cx,cy=(x1+x2)/2+px*.45*unit,(y1+y2)/2+py*.45*unit
+                if arrow.electrons==1:
+                    # Homolysis fishhook: rise from the bond, arc over, and come straight down onto
+                    # the atom, so the half head points at the atom it delivers the electron to.
+                    x2,y2=ax+px*.34*unit,ay+py*.34*unit
+                    cx,cy=x1+(ax-x1)*.95+px*1.05*unit,y1+(ay-y1)*.95+py*1.05*unit
             elif len(arrow.head)==1:
                 x2,y2=clear(x2,y2,arrow.head,.3*unit)
+            elif new_bond_target:
+                x2,y2=clear(x2,y2,[i for i in arrow.head if i != arrow.tail[0]],.3*unit)
             elif not ring_flow:
                 # Bond or new-bond targets: stop just short of the midpoint.
                 vx,vy=cx-x2,cy-y2;d=(vx*vx+vy*vy)**.5 or 1
@@ -261,8 +301,17 @@ def draw(mol, arrows: list[Arrow] | None = None, highlight: list[int] | None = N
             points=[(x2,y2),outer,notch,inner] if arrow.electrons==2 else [(x2,y2),outer,notch]
             # The shaft stops inside the head so its end never shows past the tip.
             sx,sy=(x2-tx*head*.6,y2-ty*head*.6) if arrow.electrons==2 else (x2,y2)
-            ET.SubElement(root, f'{{{SVG}}}path', {'d':f'M {x1:.2f} {y1:.2f} Q {cx:.2f} {cy:.2f} {sx:.2f} {sy:.2f}', 'fill':'none','stroke':'#a139ce','stroke-width':'2','stroke-linecap':'round','data-electrons':str(arrow.electrons),'class':'electron-flow','data-layout':'ring' if ring_flow else 'standard'})
-            ET.SubElement(root, f'{{{SVG}}}path', {'d':'M '+' L '.join(f'{x:.2f} {y:.2f}' for x,y in points)+' Z','fill':'#a139ce','stroke':'#a139ce','stroke-width':'.8','stroke-linejoin':'round','class':'electron-flow-head','data-electrons':str(arrow.electrons)})
+            # Electron pairs in purple; single electrons (fishhooks) in blue, so the two read apart.
+            colour='#a139ce' if arrow.electrons==2 else '#1f5fd1'
+            ET.SubElement(root, f'{{{SVG}}}path', {'d':f'M {x1:.2f} {y1:.2f} Q {cx:.2f} {cy:.2f} {sx:.2f} {sy:.2f}', 'fill':'none','stroke':colour,'stroke-width':'2','stroke-linecap':'round','data-electrons':str(arrow.electrons),'class':'electron-flow','data-layout':'ring' if ring_flow else 'standard'})
+            if arrow.electrons==2:
+                ET.SubElement(root, f'{{{SVG}}}path', {'d':'M '+' L '.join(f'{x:.2f} {y:.2f}' for x,y in points)+' Z','fill':colour,'stroke':colour,'stroke-width':'.8','stroke-linejoin':'round','class':'electron-flow-head','data-electrons':'2'})
+            else:
+                # A fishhook (single-barbed arrow): a full arrowhead with one half removed.
+                # Same size as a full head, keeping only the half on the inside of the curve.
+                back,side=.2*unit,.08*unit
+                tip=(x2,y2);barb=(x2-tx*back+nx*side,y2-ty*back+ny*side);heel=(x2-tx*back*.875,y2-ty*back*.875)
+                ET.SubElement(root, f'{{{SVG}}}path', {'d':'M '+' L '.join(f'{x:.2f} {y:.2f}' for x,y in (tip,barb,heel))+' Z','fill':colour,'stroke':colour,'stroke-width':'.8','stroke-linejoin':'round','class':'electron-flow-head','data-electrons':'1'})
             if arrow.electrons==2 and not (len(arrow.tail)==1 and sites.get(arrow.tail[0])):
                 for delta in (-2.4,2.4):
                     ET.SubElement(root,f'{{{SVG}}}circle',{'cx':f'{x1-dy/length*delta:.2f}','cy':f'{y1+dx/length*delta:.2f}','r':'1.6','fill':'#a139ce','class':'electron-pair-dot'})
@@ -1028,6 +1077,18 @@ def add_lone_pairs(root, drawer, display, bounds, sites=None):
     total_pairs=0
     table=Chem.GetPeriodicTable()
     sites={} if sites is None else sites  # atom index -> dot-pair centres, for arrow tails
+    # Each label's drawn extent (RDKit tags a label's glyph paths class="atom-N"), so the dots
+    # can sit around the letters actually drawn rather than around the atom's anchor point.
+    import re as _re
+    extents={}
+    for element in root.iter():
+        name=element.get('class') or ''
+        if element.tag.endswith('path') and _re.fullmatch(r'atom-\d+',name):
+            values=[float(v) for v in _re.findall(r'-?\d+(?:\.\d+)?',element.get('d',''))]
+            xs,ys=values[0::2],values[1::2]
+            if xs and ys:
+                box=extents.get(int(name[5:]),[min(xs),min(ys),max(xs),max(ys)])
+                extents[int(name[5:])]=[min(box[0],*xs),min(box[1],*ys),max(box[2],*xs),max(box[3],*ys)]
     for atom in display.GetAtoms():
         # Limit to main-group atoms with an ordinary Lewis electron count.
         if atom.GetAtomicNum() not in {5,6,7,8,9,14,15,16,17,35,53}:continue
@@ -1056,10 +1117,29 @@ def add_lone_pairs(root, drawer, display, bounds, sites=None):
             free=[c for c in candidates if c not in directions]
             best=max(free,key=lambda c:(min(clearance(c),*(abs((c-d+math.pi)%(2*math.pi)-math.pi) for d in directions)) if directions else clearance(c))+(.3 if c%(math.pi/2)==0 else 0))
             directions.append(best)
+        box=extents.get(atom.GetIdx())
+        if box:
+            # Centre on the drawn letters; clear them by 5 px on every side.
+            centre_x,centre_y=(box[0]+box[2])/2,(box[1]+box[3])/2
+            rx,ry=max(11,(box[2]-box[0])/2+5),max(11,(box[3]-box[1])/2+5)
+        else:
+            centre_x,centre_y,rx,ry=point.x,point.y,13,13
+        if not atom.GetDegree() and not atom.GetTotalNumHs() and slots==4:
+            # A lone ion such as Br⁻ or Cl⁻: the four pairs sit right, below, left and above.
+            directions=[0.0,math.pi/2,math.pi,3*math.pi/2]
         # Radicals take the last slot(s); pairs the rest.
         for index,angle in enumerate(directions):
             single=index>=count
-            cx=point.x+15*math.cos(angle);cy=point.y+15*math.sin(angle)
+            # The dots ride an ellipse sized to the label: wide symbols (Br, Cl, OH) push the side dots
+            # out so they never touch the letters, and the top/bottom pairs stay close above/below.
+            if box:
+                # Textbook placement: side pairs just outside the label's left/right edge, top/bottom
+                # pairs over the element's own letter (the anchor), diagonals at the label's corners.
+                c,sn=math.cos(angle),math.sin(angle)
+                cx=box[2]+4 if c>.3 else box[0]-4 if c<-.3 else point.x
+                cy=box[3]+4 if sn>.3 else box[1]-4 if sn<-.3 else centre_y
+            else:
+                cx=centre_x+rx*math.cos(angle);cy=centre_y+ry*math.sin(angle)
             sites.setdefault(atom.GetIdx(),[]).append((cx,cy))
             for offset in ((0,) if single else (-2.6,2.6)):
                 x=cx-offset*math.sin(angle);y=cy+offset*math.cos(angle)

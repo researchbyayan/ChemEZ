@@ -11,6 +11,8 @@ import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github.css';
 import type {Block,Molecule} from './types';
 import {displayName,plainChem,chemArrows} from './chemText';
+import {academic} from './italics';
+import {titleCase} from './titleCase';
 import {RenderBoundary} from './RenderBoundary';
 const SmilesExplorer=lazy(()=>import('./SmilesExplorer').then(module=>({default:module.SmilesExplorer})));
 
@@ -32,6 +34,15 @@ export function Formula({value}:{value:string}){
   return <>{body.split(/(\d+)/).map((part,index)=>/^\d+$/.test(part)?<sub key={index}>{part}</sub>:part)}{match&&<sup>{match[2]}</sup>}</>;
 }
 export {displayName};
+// "Proton transfer: the base takes the H" → the stage name in weight, the explanation after it in regular text.
+function StepLabel({text}:{text:string}){
+  // "Stage: explanation" → the stage in weight with its colon, then the explanation as a full sentence.
+  const sentence=(value:string)=>{const t=value.trim();if(!t)return t;const first=t[0].toUpperCase()+t.slice(1);return /[.!?)]$/.test(first)?first:first+'.';};
+  const at=text.indexOf(':');
+  return at>0&&at<60?<p className="step-label"><strong>{academic(text.slice(0,at))}:</strong> <span>{academic(sentence(text.slice(at+1)))}</span></p>:<p className="step-label"><strong>{academic(text.trim())}</strong></p>;
+}
+// "SN2" → S with a subscript N, then 2; other families as written.
+function familyLabel(family:string){const m=/^S(N)(1|2|Ar)$/.exec(family);return m?<>S<sub>N</sub>{m[2]}</>:family;}
 // Reagent text: inline math when the model used it, otherwise subscript formula counts (AlCl3 -> AlCl₃).
 function ChemText({text}:{text:string}){
   text=chemScripts(text);
@@ -84,7 +95,7 @@ function StructureFigure({molecule:m,className,changes=false}:{molecule:Molecule
   const name=m.label||m.iupac_name;
   return <div className={'structure '+className}>
     <StructureMenu svg={changes&&m.svg_changes?m.svg_changes:m.svg} label={`${name||m.formula||'Molecule'} molecular structure`} name={m.iupac_name} formula={m.formula} onExplore={()=>setExploring(true)} imageStyle={structureStyle(m.svg)}/>
-    <div className="structure-caption">{name&&<span className="structure-name">{displayName(name)}</span>}{m.formula&&<span className="structure-formula"><Formula value={m.formula}/></span>}</div>
+    <div className="structure-caption">{name&&<span className="structure-name">{academic(displayName(name))}</span>}{m.formula&&<span className="structure-formula"><Formula value={m.formula}/></span>}</div>
     {exploring&&<Suspense fallback={null}><SmilesExplorer molecule={m} onClose={()=>setExploring(false)}/></Suspense>}
   </div>;
 }
@@ -99,7 +110,7 @@ function ReactionParticipant({molecule:m,changes}:{molecule:Molecule;changes:boo
 function ReactionView({block:b}:{block:Extract<Block,{type:'reaction'}>}){
   const [changes,setChanges]=useState(false);
   const comparable=[...b.reactants,...b.products].some(m=>m.svg_changes);
-  return <figure className="chem-card reaction-card"><figcaption><span className="eyebrow">Reaction scheme</span><strong>{b.caption||'Reaction'}</strong><span className="card-tools">{comparable&&<button className="changes-toggle" aria-pressed={changes} aria-label={changes?'Hide changes':'Highlight changes'} title={changes?'Hide changes':'Highlight changes'} onClick={()=>setChanges(!changes)}><i className="fas fa-highlighter" aria-hidden="true"/></button>}<button className="changes-toggle" aria-label="Save PNG" title="Save PNG" onClick={()=>void savePNG(b.svg).catch(()=>undefined)}><i className="fas fa-download" aria-hidden="true"/></button></span></figcaption><Diagram svg={b.svg} label={b.caption||'Reaction scheme'} menu={false}><div className="reaction-layout" role="group" aria-label={b.caption||'Reaction scheme'}><div className="reaction-side">{b.reactants.map((m,index)=><div className="reaction-term" key={'r'+index}>{index>0&&<span className="reaction-plus" aria-hidden="true">+</span>}<ReactionParticipant molecule={m} changes={changes}/></div>)}</div><div className="reaction-side"><div className="reaction-arrow"><span className="reaction-reagents"><ChemText text={b.reagents}/></span><ReactionArrow kind={b.arrow||'forward'}/><span className="reaction-conditions"><ChemText text={b.conditions}/></span></div>{b.products.map((m,index)=><div className="reaction-term" key={'p'+index}>{index>0&&<span className="reaction-plus" aria-hidden="true">+</span>}<ReactionParticipant molecule={m} changes={changes}/></div>)}</div></div></Diagram></figure>;
+  return <figure className="chem-card reaction-card"><figcaption><span className="eyebrow">Reaction scheme</span><strong>{academic(titleCase(b.caption||'Reaction'))}</strong><span className="card-tools">{comparable&&<button className="changes-toggle" aria-pressed={changes} aria-label={changes?'Hide changes':'Highlight changes'} title={changes?'Hide changes':'Highlight changes'} onClick={()=>setChanges(!changes)}><i className="fas fa-highlighter" aria-hidden="true"/></button>}<button className="changes-toggle" aria-label="Save PNG" title="Save PNG" onClick={()=>void savePNG(b.svg).catch(()=>undefined)}><i className="fas fa-download" aria-hidden="true"/></button></span></figcaption><Diagram svg={b.svg} label={b.caption||'Reaction scheme'} menu={false}><div className="reaction-layout" role="group" aria-label={b.caption||'Reaction scheme'}><div className="reaction-side">{b.reactants.map((m,index)=><div className="reaction-term" key={'r'+index}>{index>0&&<span className="reaction-plus" aria-hidden="true">+</span>}<ReactionParticipant molecule={m} changes={changes}/></div>)}</div><div className="reaction-side"><div className="reaction-arrow"><span className="reaction-reagents"><ChemText text={b.reagents}/></span><ReactionArrow kind={b.arrow||'forward'}/><span className="reaction-conditions"><ChemText text={titleCase(b.conditions)}/></span></div>{b.arrow==='no_reaction'&&<span className="no-reaction-label" title="No reaction">N.R.</span>}{(b.arrow==='no_reaction'?[]:b.products).map((m,index)=><div className="reaction-term" key={'p'+index}>{index>0&&<span className="reaction-plus" aria-hidden="true">+</span>}<ReactionParticipant molecule={m} changes={changes}/></div>)}</div></div></Diagram></figure>;
 }
 // Reaction arrows (ACS style). Equilibrium: two shafts with half heads on opposite outer
 // sides; retrosynthesis: open double-shafted arrow; no reaction: a crossed arrow.
@@ -118,7 +129,7 @@ function ResonanceArrow(){
 }
 function ResonanceView({block:b}:{block:Extract<Block,{type:'resonance'}>}){
   const title=b.caption||'Resonance structures';
-  return <figure className="chem-card reaction-card resonance-card"><figcaption><span className="eyebrow">Resonance</span><strong>{title}</strong></figcaption>
+  return <figure className="chem-card reaction-card resonance-card"><figcaption><span className="eyebrow">Resonance</span><strong>{academic(titleCase(title))}</strong></figcaption>
     <div className="resonance-layout" role="group" aria-label={title}>
       {b.contributors.map((c,index)=><div className="resonance-term" key={index}>{index>0&&<ResonanceArrow/>}<div className="structure reaction-participant"><StructureMenu svg={c.svg} label={c.label||`Contributor ${index+1}`} formula={c.formula} imageStyle={structureStyle(c.svg)}/><div className="structure-caption"><span className="structure-name">{c.label||`Contributor ${index+1}`}</span>{!b.flow_summary&&!!c.bond_changes?.length&&<span className="resonance-bond-changes">{c.bond_changes.map((change,index)=><span key={index}>{change.label}: {change.before} → {change.after}</span>)}</span>}{c.arrows_derived&&<span className="derived-note" title="The model's arrows were missing or did not produce the next structure, so ChemEZ derived and verified them.">Arrows derived by ChemEZ</span>}{c.limitation&&<span className="mechanism-note">{c.limitation}</span>}</div></div></div>)}
     </div>
@@ -145,5 +156,5 @@ export function AnswerBlock({block:b,onChoice}:{block:Block;onChoice:(text:strin
   if(b.type==='clarification')return <div className="clarification"><span className="eyebrow">A little more context</span><p><ChemText text={b.question}/></p><div className="choices">{b.options.map(option=><button key={option} onClick={()=>onChoice(plainChem(option))}><span className="choice-label"><ChemText text={option}/> ↗</span></button>)}</div></div>;
   if(b.type==='reaction')return <ReactionView block={b}/>;
   if(b.type==='resonance')return <ResonanceView block={b}/>;
-  return <section className="mechanism"><h3><span className="eyebrow">Mechanism</span>Step by step</h3><ol className="mechanism-steps">{b.steps.map((s,i)=><li key={i} className="chem-card mechanism-step"><div className="mechanism-step-header"><span className="step-number" aria-hidden="true">{i+1}</span><strong>{s.label}</strong></div>{s.svg&&<StructureMenu svg={s.svg} label={s.label} name={s.iupac_name} formula={s.formula} imageStyle={structureStyle(s.svg)}/>}{!!s.bond_changes?.length&&<div className="bond-change-list" aria-label="Bond changes">{s.bond_changes.map((change,index)=><span key={index} className={'bond-change '+change.action.toLowerCase()}>{change.action==='FORM_BOND'?'Forms':change.action==='BREAK_BOND'?'Breaks':'Changes'} {change.label}{change.action==='CHANGE_BOND'?` (${change.before} → ${change.after})`:''}</span>)}</div>}{s.arrows_derived&&<span className="derived-note" title="The model's arrows were missing or incomplete, so ChemEZ completed and verified them.">Arrows completed by ChemEZ</span>}{s.completed&&<span className="derived-note">{s.completed}</span>}{s.limitation&&<p className="notice mechanism-note">{s.limitation}</p>}</li>)}</ol></section>;
+  return <section className="mechanism"><h3><span className="eyebrow">Mechanism</span><span className="mechanism-title">Step by step{b.family&&<span className="mechanism-family" title="Reaction type">{familyLabel(b.family)}</span>}</span></h3><ol className="mechanism-steps">{b.steps.map((s,i)=><li key={i} className="chem-card mechanism-step"><div className="mechanism-step-header"><span className="step-number" aria-hidden="true">{i+1}</span><StepLabel text={s.label}/>{!!s.bond_changes?.length&&<div className="bond-change-list" aria-label="Bond changes">{s.bond_changes.map((change,index)=><span key={index} className={'bond-change '+change.action.toLowerCase()}>{change.action==='FORM_BOND'?'Forms':change.action==='BREAK_BOND'?'Breaks':'Changes'} {change.label}{change.action==='CHANGE_BOND'?` (${change.before} → ${change.after})`:''}</span>)}</div>}</div>{s.svg&&<StructureMenu svg={s.svg} label={s.label} name={s.iupac_name} formula={s.formula} imageStyle={structureStyle(s.svg)}/>}{s.arrows_derived&&<span className="derived-note" title="The model's arrows were missing or incomplete, so ChemEZ completed and verified them.">Arrows completed by ChemEZ</span>}{s.completed&&<span className="derived-note">{s.completed}</span>}{s.limitation&&<p className="notice mechanism-note">{s.limitation}</p>}</li>)}</ol></section>;
 }

@@ -67,6 +67,7 @@ class MechanismStep(StrictModel):
 class MechanismBlock(StrictModel):
     type: Literal['mechanism']
     steps: list[MechanismStep] = Field(min_length=1, max_length=20)
+    family: str = Field(default='', max_length=60)  # e.g. "SN2", shown as a badge
 
 class ResonanceContributor(StrictModel):
     smiles: str = Field(min_length=1, max_length=2000)
