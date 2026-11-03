@@ -335,15 +335,13 @@ test('spectra tables always receive local graphs with axes and prediction limits
     emit({type:'block',block:{id:'spectra',type:'markdown',text:'**IR**\n\n| cm⁻¹ | Assignment |\n|---|---|\n| 3350 | O–H |\n\n**¹H NMR**\n\n| δ ppm | Assignment |\n|---|---|\n| 1.2 | CH3 |\n| , | no protons |\n\n**¹³C NMR**\n\n| δ ppm | Assignment |\n|---|---|\n| 58 | CH2 |\n\n**MS**\n\n| m/z | Ion |\n|---|---|\n| 46 | M+ |'}});
   });
   await expect(page.locator('.spectrum-figure svg')).toHaveCount(4);
-  await expect(page.locator('.spectrum-figure').first()).toContainText('Lorentzian bands');
+  await expect(page.locator('.spectrum-figure').first()).toContainText('Transmittance (%)');
   await expect(page.locator('.spectrum-figure').first()).toContainText('cm⁻¹');
   await page.getByRole('button',{name:'Highlight IR peaks',exact:true}).click();
   const graph=page.locator('.spectrum-figure svg').first();await graph.focus();await page.keyboard.press('ArrowRight');
   await expect(page.locator('.spectral-table-selected')).toHaveCount(1);
-  await expect(page.locator('.spectrum-selection').first()).toContainText('3350');
-  await expect(page.locator('.selected-peaks li')).toHaveCount(1);
-  const clear=page.getByRole('button',{name:'Clear selection',exact:true});
-  await expect(clear).toHaveCSS('border-radius','6px');await expect(clear).toHaveCSS('text-decoration-line','none');
+  // The selected band shows through its highlighted table row; no separate list.
+  await expect(page.locator('.spectrum-selection')).toHaveCount(0);
 
   await expect(page.getByRole('cell',{name:'–',exact:true})).toBeVisible();
   const tableFrame=page.locator('.markdown-table-scroll').first();
