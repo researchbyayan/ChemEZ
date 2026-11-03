@@ -325,7 +325,7 @@ test('double-clicking the scrollbar thumb snaps to the latest message',async({pa
   const thumb=(await page.locator('.chat-scrollbar-thumb').boundingBox())!;
   await page.mouse.dblclick(thumb.x+thumb.width/2,thumb.y+8);
   await expect.poll(()=>page.locator('.conversation-scroll').evaluate(e=>Math.round(e.scrollHeight-e.scrollTop-e.clientHeight))).toBeLessThan(2);
-  await page.screenshot({path:'/private/tmp/claude-501/-Users-mohammedayanmahmood-Documents-ChatGPT-ChemEZ/3e548582-4ba5-4619-9df5-de70dd068cc9/scratchpad/shots/thumb.png',clip:{x:1260,y:60,width:60,height:780}});
+  await page.screenshot({path:test.info().outputPath('scrollbar-thumb.png'),clip:{x:1260,y:60,width:60,height:780}});
 });
 
 test('spectra tables always receive local graphs with axes and prediction limits',async({page})=>{
@@ -338,7 +338,7 @@ test('spectra tables always receive local graphs with axes and prediction limits
   await expect(page.locator('.spectrum-figure').first()).toContainText('Transmittance (%)');
   await expect(page.locator('.spectrum-figure').first()).toContainText('cm⁻¹');
   await page.getByRole('button',{name:'Highlight IR peaks',exact:true}).click();
-  const graph=page.locator('.spectrum-figure svg').first();await graph.focus();await page.keyboard.press('ArrowRight');
+  const graph=page.locator('.spectrum-figure svg').first();await expect(graph).toHaveAttribute('tabindex','0');await graph.focus();await page.keyboard.press('ArrowRight');
   await expect(page.locator('.spectral-table-selected')).toHaveCount(1);
   // The selected band shows through its highlighted table row; no separate list.
   await expect(page.locator('.spectrum-selection')).toHaveCount(0);
