@@ -417,7 +417,8 @@ def structure_check(mol, declared=''):
         raise ValueError('The structure contains a placeholder atom (*). Draw the actual atoms.')
     if any(a.GetIsotope() for a in mol.GetAtoms()) and not re.search(r'isotop|deuter|tritium|label|\b\d+[A-Z]|\[\d|-d\d?\b',declared,re.I):
         raise ValueError('The structure specifies an isotope that its name does not mention. Remove the isotope label, or name the labelled compound.')
-    if any(a.GetNumRadicalElectrons() for a in mol.GetAtoms()) and not re.search(r'radical|carbene|nitrene|oxygen|\bO2\b|dioxygen|nitric oxide|NO\b|nitrogen dioxide|triplet|biradical|diradical|\u2022|·',declared,re.I):
+    # A lone atom (e.g. [Mg] for "magnesium") is the free element, not an unexplained radical.
+    if not (mol.GetNumAtoms()==1 and mol.GetAtomWithIdx(0).GetTotalNumHs()==0) and any(a.GetNumRadicalElectrons() for a in mol.GetAtoms()) and not re.search(r'radical|carbene|nitrene|oxygen|\bO2\b|dioxygen|nitric oxide|NO\b|nitrogen dioxide|triplet|biradical|diradical|\u2022|·',declared,re.I):
         raise ValueError('The structure has an unpaired electron, but it is not named as a radical. Add the missing hydrogens or bonds, or name the radical.')
     for bond in mol.GetBonds():
         ends={bond.GetBeginAtom().GetSymbol(),bond.GetEndAtom().GetSymbol()}

@@ -396,6 +396,8 @@ def test_unbracketed_charges_and_structure_checks():
             pass
     structure_check(Chem.MolFromSmiles('[CH3]'),'methyl radical')
     structure_check(Chem.MolFromSmiles('CC(=O)[O-].[Na+]'),'sodium acetate')
+    # A free element is drawn as a lone atom, not flagged as a radical.
+    structure_check(Chem.MolFromSmiles('[Mg]'),'Magnesium')
 
 
 def test_reaction_arrow_kinds():
