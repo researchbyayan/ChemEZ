@@ -26,3 +26,8 @@ it('shows Click Here for both bare URLs and named Markdown links',()=>{
  expect(html.match(/>Click Here<\/a>/g)).toHaveLength(2);
  expect(html).not.toContain('>https://');expect(html).not.toContain('>website</a>');
 });
+
+it('renders a collapsed spectral table as a table rather than raw pipes',()=>{
+ const html=render({type:'markdown',text:'| δ (ppm) | Assignment ||---|---|| 165 | CO3 |'});
+ expect(html).toContain('<table>');expect(html).toContain('<th>');expect(html).toContain('165');expect(html).not.toContain('||---');
+});

@@ -3,6 +3,7 @@ import {createPortal} from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import {chemScripts} from './scripts';
 import {sourceURL} from './sourceLinks';
+import {markdownTables} from './markdownTables';
 import {prosePunctuation} from './prosePunctuation';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -20,6 +21,7 @@ const SmilesExplorer=lazy(()=>import('./SmilesExplorer').then(module=>({default:
 
 const SpectralMarkdown=lazy(()=>import('./SpectralMarkdown'));
 export function Markdown({text}:{text:string}) {
+  text=markdownTables(text);
   if(/(?:NMR|\bIR\b|\bMS\b|mass spectr|infrared)/i.test(text)&&text.includes('|'))return <Suspense fallback={<MarkdownBase text={text}/>}><SpectralMarkdown text={text} renderText={part=><MarkdownBase text={part}/>}/></Suspense>;
   return <MarkdownBase text={text}/>;
 }

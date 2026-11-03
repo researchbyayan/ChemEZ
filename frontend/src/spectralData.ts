@@ -1,8 +1,9 @@
+import {markdownTables} from './markdownTables';
 export type SpectralKind='IR'|'¹H NMR'|'¹³C NMR'|'MS';
 export type SpectralPart={text:string;kind?:SpectralKind;peaks?:{position:number;label:string;intensity?:number}[]};
 // Only turn explicit numeric table entries into markers. Never invent intensities or splitting.
 export function spectralParts(text:string):SpectralPart[]{
-  const lines=text.split('\n'),parts:SpectralPart[]=[];let chunk:string[]=[],kind:SpectralKind|undefined;
+  const lines=markdownTables(text).split('\n'),parts:SpectralPart[]=[];let chunk:string[]=[],kind:SpectralKind|undefined;
   const flush=()=>{if(chunk.length)parts.push({text:chunk.join('\n')});chunk=[];};
   for(let i=0;i<lines.length;i++){
     const line=lines[i];
