@@ -335,7 +335,7 @@ test('spectra tables always receive local graphs with axes and prediction limits
     emit({type:'block',block:{id:'spectra',type:'markdown',text:'**IR**\n\n| cm⁻¹ | Assignment |\n|---|---|\n| 3350 | O–H |\n\n**¹H NMR**\n\n| δ ppm | Assignment |\n|---|---|\n| 1.2 | CH3 |\n| , | no protons |\n\n**¹³C NMR**\n\n| δ ppm | Assignment |\n|---|---|\n| 58 | CH2 |\n\n**MS**\n\n| m/z | Ion |\n|---|---|\n| 46 | M+ |'}});
   });
   await expect(page.locator('.spectrum-figure svg')).toHaveCount(4);
-  await expect(page.locator('.spectrum-figure').first()).toContainText('Gaussian band broadening');
+  await expect(page.locator('.spectrum-figure').first()).toContainText('Lorentzian bands');
   await expect(page.locator('.spectrum-figure').first()).toContainText('cm⁻¹');
   await page.getByRole('button',{name:'Highlight IR peaks',exact:true}).click();
   const graph=page.locator('.spectrum-figure svg').first();await graph.focus();await page.keyboard.press('ArrowRight');
