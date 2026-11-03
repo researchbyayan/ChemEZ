@@ -184,7 +184,7 @@ test('floating composer and tools are explicit and preserve default docked mode'
   await history(page).getByTitle('Ethanol polarity',{exact:true}).click();await page.mouse.move(5,5);
   // Resting in a chat, the floating chatbox folds into a small pill.
   await expect(page.locator('form.composer')).toHaveCSS('opacity','0');
-  await expect.poll(()=>page.locator('.composer-area').evaluate(e=>getComputedStyle(e,'::after').width)).toBe('110px');
+  await expect(page.getByRole('button',{name:'Open message box'})).toBeVisible();
   await page.locator('.composer-area').hover();
   await expect(page.locator('.composer-area')).toHaveCSS('opacity','1');
 });
@@ -207,14 +207,14 @@ test('floating chatbox stays put, follows up on an answer and clears on chat nav
   await page.getByRole('button',{name:'Reply to this answer'}).click();
 
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Why is that?');
-  await expect(page.locator('.reply-anchor')).toContainText('Ethanol has an O–H bond.');
+  await expect(page.locator('.composer-context-header')).toContainText('Ethanol has an O–H bond.');
   await expect(page.locator('.composer-area')).toHaveClass(/composer-reply/);
   await page.screenshot({path:test.info().outputPath('floating-contextual-reply.png')});
   await page.getByRole('textbox',{name:'Chemistry question'}).press('Enter');
   await expect(page.locator('.message.user').last().locator('.user-reply-quote')).toContainText('Ethanol has an O–H bond.');
   await expect(page.getByText('First part of the answer.')).toBeVisible();await finish(page);
   await history(page).getByTitle('Benzene resonance',{exact:true}).click();
-  await expect(page.locator('.reply-anchor')).toHaveCount(0);
+  await expect(page.locator('.composer-context-header')).toHaveCount(0);
 });
 
 test('disabled send keeps the original arrow while only its circle dims',async({page})=>{
@@ -235,18 +235,16 @@ test('explicit replies keep their anchor and new floating chats return to the we
   await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:'Appearance',exact:true}).click();
   await page.getByRole('switch',{name:'Dock chatbox at bottom'}).click();await page.getByRole('button',{name:'Close Settings',exact:true}).click();
   await page.getByRole('button',{name:'Reply to this answer'}).click();
-  await expect(page.locator('form.composer .reply-anchor')).toContainText('Ethanol has an O–H bond.');
+  await expect(page.locator('.composer-context-header')).toContainText('Ethanol has an O–H bond.');
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('Tell me more');
-  await expect(page.locator('.reply-anchor')).toContainText('Ethanol has an O–H bond.');
+  await expect(page.locator('.composer-context-header')).toContainText('Ethanol has an O–H bond.');
   const close=page.getByRole('button',{name:'Clear reply context'});
   await expect(page.getByRole('button',{name:'Reply to this question'})).toHaveCount(0);
-  await expect(page.locator('.reply-anchor')).toContainText('Follow-up on:');
+  await expect(page.locator('.composer-context-header')).toContainText('Follow-up on:');
   await page.waitForTimeout(400); // let the chatbox finish expanding before measuring
   const form=await page.locator('form.composer').boundingBox();
-  // The follow-up close sits in the chatbox's top-right corner, slightly larger than send.
-  const x=(await close.boundingBox())!,box=(await page.locator('form.composer').boundingBox())!;
-  expect(Math.round(x.width)).toBe(40);
-  expect(box.x+box.width-(x.x+x.width)).toBeLessThan(20);expect(x.y-box.y).toBeLessThan(16);
+  // The follow-up close now sits in the context header.
+  await expect(close).toBeVisible();
   await expect(page.locator('form.composer')).toHaveCSS('transform','none');
   // The chatbox has no side tab; jumping to the latest message lives on the scrollbar.
   await expect(page.locator('.composer-side-controls')).toHaveCount(0);
@@ -254,7 +252,8 @@ test('explicit replies keep their anchor and new floating chats return to the we
 
   await page.getByRole('textbox',{name:'Chemistry question'}).blur();await page.mouse.move(5,5);
   await page.screenshot({path:test.info().outputPath('follow-up-side-controls.png')});
-  await page.locator('.composer-area').hover();await close.click();await expect(page.locator('.reply-anchor')).toHaveCount(0);
+  // Resting floating chatbox opens after a one-second hover.
+  await page.getByRole('button',{name:'Open message box'}).click();await close.click();await expect(page.locator('.composer-context-header')).toHaveCount(0);
   await page.getByRole('button',{name:'New conversation',exact:true}).click();
   await expect(page.locator('.composer-floating')).toHaveCSS('position','relative');
   await expect(page.getByRole('heading',{name:'Chemistry, clearer.'})).toBeVisible();
@@ -268,11 +267,8 @@ test('clicking the compact typing area still focuses it during expansion',async(
   await page.mouse.move(5,5);
   await expect(page.locator('.composer-area')).toHaveClass(/composer-compact/);
   // Resting, the chatbox is a pill; clicking the pill opens it and focuses typing straight away.
-  const field=page.getByRole('textbox',{name:'Chemistry question'}),area=(await page.locator('.composer-area').boundingBox())!;
-  const pill={x:area.x+area.width/2,y:area.y+area.height-29};
-  await page.mouse.move(pill.x,pill.y);
-  await page.waitForTimeout(70);
-  await page.mouse.click(pill.x,pill.y);
+  const field=page.getByRole('textbox',{name:'Chemistry question'});
+  await page.getByRole('button',{name:'Open message box'}).click();
   await page.keyboard.type('Explain this');
   await expect(field).toBeFocused();await expect(field).toHaveValue('Explain this');
 });
@@ -283,7 +279,7 @@ test('a question typed at the bottom of a chat is not treated as a follow-up',as
   await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:'Appearance',exact:true}).click();
   await page.getByRole('switch',{name:'Dock chatbox at bottom'}).click();await page.getByRole('button',{name:'Close Settings',exact:true}).click();
   await page.getByRole('textbox',{name:'Chemistry question'}).fill('What is an ester?');
-  await expect(page.locator('.reply-anchor')).toHaveCount(0);
+  await expect(page.locator('.composer-context-header')).toHaveCount(0);
   await expect(page.locator('.composer-area')).not.toHaveClass(/composer-reply/);
 });
 
@@ -299,8 +295,8 @@ test('a sent follow-up shows a one-line quote and edits back to the plain questi
   await page.evaluate(()=>(window as unknown as {release:()=>void}).release());
   await bubble.hover();await bubble.getByRole('button',{name:'Edit this question'}).click();
   await expect(page.getByRole('textbox',{name:'Chemistry question'})).toHaveValue('Is this correct');
-  await expect(page.locator('form.composer .reply-anchor')).toContainText('Ethanol has an O–H bond.');
-  await page.screenshot({path:test.info().outputPath('follow-up.png')});
+  // While editing, the single context header describes the edit; the follow-up link is kept for sending.
+  await expect(page.locator('.composer-context-header')).toContainText('Editing an earlier question');
 });
 
 test('the scrollbar rests hidden, wakes near the pointer, and its cap jumps to the latest message',async({page})=>{
@@ -308,6 +304,8 @@ test('the scrollbar rests hidden, wakes near the pointer, and its cap jumps to t
   await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
   await expect(page.locator('.chat-scrollbar')).toHaveCSS('opacity','0');
   await page.evaluate(()=>{for(let i=0;i<60;i++){const p=document.createElement('p');p.textContent='filler '+i;document.querySelector('.messages')!.append(p);}});
+  // Chats open pinned to their latest message for 1.5 s; then scroll up to put newer content below.
+  await page.waitForTimeout(1700);await page.locator('.conversation-scroll').evaluate(e=>{e.scrollTop=0;});
   await expect(page.locator('.chat-scrollbar')).toHaveClass(/has-more/);
   const bar=(await page.locator('.chat-scrollbar').boundingBox())!;await page.mouse.move(bar.x+bar.width/2,bar.y+20);
   await expect(page.locator('.chat-scrollbar')).toHaveCSS('opacity','0.64');
@@ -321,6 +319,8 @@ test('double-clicking the scrollbar thumb snaps to the latest message',async({pa
   await mockChats(page);await page.goto('/');
   await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
   await page.evaluate(()=>{for(let i=0;i<60;i++){const p=document.createElement('p');p.textContent='filler '+i;document.querySelector('.messages')!.append(p);}});
+  // Chats open pinned to their latest message for 1.5 s; then scroll up to put newer content below.
+  await page.waitForTimeout(1700);await page.locator('.conversation-scroll').evaluate(e=>{e.scrollTop=0;});
   await expect(page.locator('.chat-scrollbar')).toHaveClass(/has-more/);
   const thumb=(await page.locator('.chat-scrollbar-thumb').boundingBox())!;
   await page.mouse.dblclick(thumb.x+thumb.width/2,thumb.y+8);

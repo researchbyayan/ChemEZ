@@ -457,8 +457,8 @@ test('the likeliest follow-up is suggested in the composer and Tab accepts it',a
   const input=page.getByRole('textbox',{name:'Chemistry question'});
   await input.fill('Draw ethanol');
   await input.press('Enter');
-  // Quick answer suggests a quick question about the compound in context.
-  await expect(input).toHaveAttribute('placeholder',/What is ethanol used for\?/);
+  // The answer's own follow-up is suggested when it was written for the current answer style.
+  await expect(input).toHaveAttribute('placeholder',/Why is ethanol polar\?/);
   await page.locator('.composer-area').hover(); // Reveal proximity-driven controls before interacting with them.
   await page.getByRole('combobox',{name:'Answer style'}).selectOption('mechanism');
   await expect(input).toHaveAttribute('placeholder',/mechanism of a typical reaction of ethanol/);
@@ -674,10 +674,10 @@ test('answer references popup lists lookup sources and handles no sources',async
   const popup=page.getByRole('dialog',{name:'References',exact:true});
   await expect(popup.getByText('Compound lookup source')).toBeVisible();
   await expect(popup.getByRole('button',{name:'PubChem'})).toBeVisible();
-  await expect(popup.getByRole('button',{name:'Copy references'})).toBeVisible();
+  await expect(popup.getByRole('button',{name:'Copy all references'})).toBeVisible();
   await page.context().grantPermissions(['clipboard-read','clipboard-write']);
-  await popup.getByRole('button',{name:'Copy references'}).click();
-  await expect(popup.getByRole('status')).toHaveText('Copied references.');
+  await popup.getByRole('button',{name:'Copy all references'}).click();
+  await expect(popup.getByRole('button',{name:'Copied'})).toBeVisible();
   expect(await page.evaluate(()=>navigator.clipboard.readText())).toContain('https://pubchem.ncbi.nlm.nih.gov/compound/62695');
   await popup.getByRole('button',{name:'Close References'}).click();
   await input.fill('Draw ethanol');await input.press('Enter');
