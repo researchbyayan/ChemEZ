@@ -58,3 +58,12 @@ def test_the_family_badge_survives_reopening_a_chat():
     from chemez.app import restored_block
     blocks, _ = prepare_answer(json.dumps({'blocks': [mechanisms.build('SN2', ['CCBr', '[OH-]'])]}))
     assert restored_block(blocks[0])['family'] == 'SN2'
+
+
+def test_spectra_asks_for_ms_intensities_when_the_table_has_none(monkeypatch):
+    from chemez.styles import command_issue
+    from chemez import nmr
+    monkeypatch.setattr(nmr, 'issue', lambda *args: None)  # only the MS rule is under test here
+    table = lambda header: [{'type': 'molecule', 'smiles': 'O'}, {'type': 'markdown', 'text': '**MS**\n\n' + header + '\n|---|---|\n| 18 | M+ |'}]
+    assert 'Relative intensity' in command_issue('spectra', table('| m/z | Ion |'))
+    assert command_issue('spectra', table('| m/z | Ion | Relative intensity (%) |')) is None

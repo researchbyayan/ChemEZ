@@ -597,7 +597,7 @@ async def test_each_slash_command_reaches_the_model_and_passes_checks(tmp_path):
         'nomenclature':{'blocks':[{'type':'molecule','smiles':'CC(C)CC(=O)O','label':'3-Methylbutanoic acid','formula':'C5H10O2','iupac_name':'3-methylbutanoic acid'},{'type':'markdown','text':'1. Parent: butanoic acid. 2. Methyl at C3.'}]},
         'lab':{'blocks':[{'type':'markdown','text':'**Reagents** salicylic acid, acetic anhydride, H3PO4. **Hazards** acetic anhydride is corrosive.'}]},
         'calc':{'blocks':[{'type':'markdown','text':'1. $[H^+] = 0.01$ M\n2. pH $= -\\log 0.01 = 2.00$'}]},
-        'spectra':{'blocks':[{'type':'molecule','smiles':'CCOC(C)=O','label':'Ethyl acetate','formula':'C4H8O2'},{'type':'markdown','text':'**IR**\n\n| cm⁻¹ | Bond |\n|---|---|\n| 1740 | C=O |\n\n**¹H NMR**\n\n| δ | H | m |\n|---|---|---|\n| 4.1 | 2H | q |\n| 2.0 | 3H | s |\n| 1.2 | 3H | t |\n\n**¹³C NMR**\n\n| δ | C |\n|---|---|\n| 171 | C=O |\n| 60 | OCH2 |\n| 21 | CH3 |\n| 14 | CH3 |\n\n**MS**\n\n| m/z | Ion |\n|---|---|\n| 88 | M⁺ |'}]},
+        'spectra':{'blocks':[{'type':'molecule','smiles':'CCOC(C)=O','label':'Ethyl acetate','formula':'C4H8O2'},{'type':'markdown','text':'**IR**\n\n| cm⁻¹ | Bond |\n|---|---|\n| 1740 | C=O |\n\n**¹H NMR**\n\n| δ | H | m |\n|---|---|---|\n| 4.1 | 2H | q |\n| 2.0 | 3H | s |\n| 1.2 | 3H | t |\n\n**¹³C NMR**\n\n| δ | C |\n|---|---|\n| 171 | C=O |\n| 60 | OCH2 |\n| 21 | CH3 |\n| 14 | CH3 |\n\n**MS**\n\n| m/z | Ion | Relative intensity (%) |\n|---|---|---|\n| 88 | M⁺ | 100 |'}]},
     }
     class CommandProvider(FakeProvider):
         async def stream(self,messages,system=None):
@@ -645,7 +645,7 @@ def test_spectra_checked_against_structure_counts():
     from chemez.styles import command_issue
     f=facts('CCOC(C)=O')
     assert (f['carbons'],f['hydrogens'],f['mass'])==(4,8,88) and 'distinct carbon' in f['text']
-    good='**IR**\n\n| cm⁻¹ | Bond |\n|---|---|\n| 1740 | C=O |\n\n**¹H NMR**\n\n| δ | H | m |\n|---|---|---|\n| 4.1 | 2H | q |\n| 2.0 | 3H | s |\n| 1.2 | 3H | t |\n\n**¹³C NMR**\n\n| δ | C |\n|---|---|\n| 171 | C=O |\n| 60 | OCH2 |\n| 21 | CH3 |\n| 14 | CH3 |\n\n**MS**\n\n| m/z | Ion |\n|---|---|\n| 88 | M⁺ |'
+    good='**IR**\n\n| cm⁻¹ | Bond |\n|---|---|\n| 1740 | C=O |\n\n**¹H NMR**\n\n| δ | H | m |\n|---|---|---|\n| 4.1 | 2H | q |\n| 2.0 | 3H | s |\n| 1.2 | 3H | t |\n\n**¹³C NMR**\n\n| δ | C |\n|---|---|\n| 171 | C=O |\n| 60 | OCH2 |\n| 21 | CH3 |\n| 14 | CH3 |\n\n**MS**\n\n| m/z | Ion | Relative intensity (%) |\n|---|---|---|\n| 88 | M⁺ | 100 |'
     assert issue('CCOC(C)=O',good) is None
     bad=good.replace('| 14 | CH3 |\n','').replace('| 1.2 | 3H | t |','| 1.2 | 2H | t |').replace('| 88 | M⁺','| 102 | M⁺')
     message=issue('CCOC(C)=O',bad)
