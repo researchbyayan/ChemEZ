@@ -515,3 +515,16 @@ test('floating reply pill opens when hovering its visible position',async({page}
   await expect(area).not.toHaveClass(/composer-compact/,{timeout:3000});
   await expect(page.getByRole('button',{name:'Clear reply context',exact:true})).toBeVisible();
 });
+
+test('structure library close button dismisses the panel at wide and narrow sizes',async({page})=>{
+  await mockChats(page);await page.goto('/');
+  for(const width of [1440,1000]){
+    await page.setViewportSize({width,height:900});
+    await page.getByRole('button',{name:'Structure library',exact:true}).click();
+    const panel=page.getByRole('complementary',{name:'Structure library',exact:true});
+    await expect(panel).toBeVisible();
+    const close=page.getByRole('button',{name:'Close structure library',exact:true});
+    expect(await close.evaluate(el=>getComputedStyle(el).getPropertyValue('-webkit-app-region'))).toBe('no-drag');
+    await close.click();await expect(panel).toHaveCount(0);
+  }
+});

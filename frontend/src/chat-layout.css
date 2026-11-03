@@ -885,3 +885,8 @@ textarea::selection,input::selection{background:#2f8f5cb3;color:#ffffff}
 .composer-resting-trigger::before{content:'';position:absolute;inset:-12px -18px;border-radius:999px}
 :root .app-shell .composer-charging .composer-resting-trigger{transform:scale(1.08)!important;border-color:#fff!important}
 @media(prefers-reduced-motion:reduce){:root .app-shell .composer-resting-trigger{transition:none}}
+
+/* Library controls must accept clicks even when covering the native titlebar drag area. */
+.structure-panel,.structure-panel>header,.structure-panel .library-close{-webkit-app-region:no-drag}
+:root .app-shell .structure-panel .library-close{position:relative;z-index:1;width:36px;height:36px;min-width:36px;min-height:36px;padding:0!important;display:grid;place-items:center;pointer-events:auto;border-radius:50%}
+.structure-panel .library-close>i{pointer-events:none}
