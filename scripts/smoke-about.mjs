@@ -24,7 +24,7 @@ try{
   await page.getByRole('textbox',{name:'Chemistry question'}).fill(captureReadme?'Acetone + methylmagnesium bromide, then acidic workup: what forms?':'Show Grignard addition of methylmagnesium bromide to acetone');await page.getByRole('button',{name:'Send question',exact:true}).click();await expect(page.locator('.reaction-card')).toBeVisible({timeout:60000});
   if(captureReadme){
    await mkdir(path.join(root,'docs/images'),{recursive:true});
-   await expect(page.getByRole('button',{name:'Send question',exact:true})).toBeVisible({timeout:60000});
+   await expect(page.getByRole('button',{name:/^(Send question|Open message box)$/})).toBeVisible({timeout:60000});
    await expect(page.locator('.message.user')).toContainText('methylmagnesium bromide');
    await expect(page.locator('.message.assistant')).toContainText('protonates the resulting alkoxide');
    await page.evaluate(()=>document.fonts.ready);
@@ -60,7 +60,7 @@ try{
  await mkdir(path.join(root,'test-results/release'),{recursive:true});await page.screenshot({path:path.join(root,'test-results/release/about.png')});
  await page.keyboard.press('Escape');
  await page.getByRole('textbox',{name:'Chemistry question'}).fill('Show Grignard addition of methylmagnesium bromide to acetone');await page.getByRole('button',{name:'Send question',exact:true}).click();
- await expect(page.locator('.reaction-card')).toBeVisible({timeout:60000});await expect(page.getByRole('button',{name:'Send question',exact:true})).toBeVisible({timeout:60000});
+ await expect(page.locator('.reaction-card')).toBeVisible({timeout:60000});await expect(page.getByRole('button',{name:/^(Send question|Open message box)$/})).toBeVisible({timeout:60000});
  for(const width of [360,480,760]){
   await instance.evaluate(({BrowserWindow},width)=>BrowserWindow.getAllWindows()[0].setSize(width,900),width);
   // Measure the narrow-card case even when the desktop window has a larger minimum width.
