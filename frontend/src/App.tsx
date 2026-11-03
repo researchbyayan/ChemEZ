@@ -76,6 +76,7 @@ export default function App(){
   const composerCollapseTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined);
   // Clicking the resting pill opens the box and puts the cursor in it once it has re-rendered open.
   const focusOnOpen=useRef(false);
+  const pinRelease=useRef<(()=>void)|null>(null);
   const [showJump,setShowJump]=useState(false);
   const [search,setSearch]=useState('');
   const [collapsed,setCollapsed]=useState(()=>localStorage.getItem('chemez-sidebar')==='collapsed');
@@ -249,12 +250,17 @@ export default function App(){
     restoreLatest.current=false;
     const viewport=scroll.current,content=viewport?.firstElementChild;
     if(!viewport||!content)return;
+    // The pin outlives later message updates (titles, follow-ups): it lets go 1.5 s after the last
+    // size change (6 s at most), or as soon as the learner scrolls, clicks or types.
+    pinRelease.current?.();
     const bottom=()=>{viewport.scrollTop=viewport.scrollHeight;};
-    bottom();const observer=new ResizeObserver(bottom);observer.observe(content);observer.observe(viewport);
-    const stop=()=>{observer.disconnect();};
-    viewport.addEventListener('wheel',stop,{passive:true});viewport.addEventListener('pointerdown',stop);viewport.addEventListener('keydown',stop);
-    const timer=setTimeout(stop,1500);
-    return()=>{stop();clearTimeout(timer);viewport.removeEventListener('wheel',stop);viewport.removeEventListener('pointerdown',stop);viewport.removeEventListener('keydown',stop);};
+    let timer=0;
+    const release=()=>{observer.disconnect();clearTimeout(timer);clearTimeout(cap);pinRelease.current=null;viewport.removeEventListener('wheel',release);viewport.removeEventListener('pointerdown',release);viewport.removeEventListener('keydown',release);};
+    const settle=()=>{clearTimeout(timer);timer=window.setTimeout(release,1500);};
+    const observer=new ResizeObserver(()=>{bottom();settle();});observer.observe(content);observer.observe(viewport);
+    const cap=window.setTimeout(release,6000);
+    viewport.addEventListener('wheel',release,{passive:true});viewport.addEventListener('pointerdown',release);viewport.addEventListener('keydown',release);
+    pinRelease.current=release;bottom();settle();
   },[messages]);
   // Anchor once at a new answer's beginning. Streaming never takes over scrolling.
   useEffect(()=>{if(answerAnchor.current){const pending=scroll.current?.querySelector('[data-pending-answer=true]');if(pending){answerAnchor.current=false;pending.scrollIntoView({block:'start',behavior:'auto'});}}},[messages]);

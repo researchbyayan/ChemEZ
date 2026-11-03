@@ -70,11 +70,17 @@ function Spectrum({kind,peaks,onSelect}:{kind:SpectralKind;peaks:Peak[];onSelect
 export default function SpectralMarkdown({text,renderText}:{text:string;renderText:(text:string)=>ReactNode}){
   const root=useRef<HTMLDivElement>(null),[region,setRegion]=useState<{index:number;range:Region}|null>(null);
   const parts=useMemo(()=>spectralParts(text),[text]);
+  // Reapplied whenever the tables re-render underneath (late typesetting can replace the rows).
   useEffect(()=>{
+    const apply=()=>{
     const rows=root.current?.querySelectorAll('tr');rows?.forEach(row=>row.classList.remove('spectral-table-selected'));
     if(!region)return;
     const tables=root.current?.querySelector(`[data-spectral-text="${region.index-1}"]`);
     tables?.querySelectorAll('tbody tr').forEach(row=>{const match=row.querySelector('td')?.textContent?.match(/[-~≈]?\s*(\d+(?:\.\d+)?)(?:\s*[–-]\s*(\d+(?:\.\d+)?))?/);if(!match)return;const value=match[2]?(Number(match[1])+Number(match[2]))/2:Number(match[1]);if(value>=region.range.low&&value<=region.range.high)row.classList.add('spectral-table-selected');});
+    };
+    apply();if(!region||!root.current)return;
+    const observer=new MutationObserver(()=>{observer.disconnect();apply();if(root.current)observer.observe(root.current,{childList:true,subtree:true});});
+    observer.observe(root.current,{childList:true,subtree:true});return()=>observer.disconnect();
   },[region]);
   return <div ref={root}>{parts.map((part,i)=>part.kind?<Spectrum key={i} kind={part.kind} peaks={part.peaks||[]} onSelect={range=>setRegion(range?{index:i,range}:null)}/>:<div key={i} data-spectral-text={i}>{renderText(part.text)}</div>)}</div>;
 }

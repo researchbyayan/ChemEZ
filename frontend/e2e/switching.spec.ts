@@ -304,8 +304,8 @@ test('the scrollbar rests hidden, wakes near the pointer, and its cap jumps to t
   await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
   await expect(page.locator('.chat-scrollbar')).toHaveCSS('opacity','0');
   await page.evaluate(()=>{for(let i=0;i<60;i++){const p=document.createElement('p');p.textContent='filler '+i;document.querySelector('.messages')!.append(p);}});
-  // Chats open pinned to their latest message for 1.5 s; then scroll up to put newer content below.
-  await page.waitForTimeout(1700);await page.locator('.conversation-scroll').evaluate(e=>{e.scrollTop=0;});
+  // Chats open pinned to their latest message; a wheel releases the pin, then scroll up.
+  await page.locator('.conversation-scroll').evaluate(e=>{e.dispatchEvent(new WheelEvent('wheel'));e.scrollTop=0;});
   await expect(page.locator('.chat-scrollbar')).toHaveClass(/has-more/);
   const bar=(await page.locator('.chat-scrollbar').boundingBox())!;await page.mouse.move(bar.x+bar.width/2,bar.y+20);
   await expect(page.locator('.chat-scrollbar')).toHaveCSS('opacity','0.64');
@@ -319,8 +319,8 @@ test('double-clicking the scrollbar thumb snaps to the latest message',async({pa
   await mockChats(page);await page.goto('/');
   await history(page).getByTitle('Ethanol polarity',{exact:true}).click();
   await page.evaluate(()=>{for(let i=0;i<60;i++){const p=document.createElement('p');p.textContent='filler '+i;document.querySelector('.messages')!.append(p);}});
-  // Chats open pinned to their latest message for 1.5 s; then scroll up to put newer content below.
-  await page.waitForTimeout(1700);await page.locator('.conversation-scroll').evaluate(e=>{e.scrollTop=0;});
+  // Chats open pinned to their latest message; a wheel releases the pin, then scroll up.
+  await page.locator('.conversation-scroll').evaluate(e=>{e.dispatchEvent(new WheelEvent('wheel'));e.scrollTop=0;});
   await expect(page.locator('.chat-scrollbar')).toHaveClass(/has-more/);
   const thumb=(await page.locator('.chat-scrollbar-thumb').boundingBox())!;
   await page.mouse.dblclick(thumb.x+thumb.width/2,thumb.y+8);
@@ -337,9 +337,13 @@ test('spectra tables always receive local graphs with axes and prediction limits
   await expect(page.locator('.spectrum-figure svg')).toHaveCount(4);
   await expect(page.locator('.spectrum-figure').first()).toContainText('Transmittance (%)');
   await expect(page.locator('.spectrum-figure').first()).toContainText('cm⁻¹');
-  await page.getByRole('button',{name:'Highlight IR peaks',exact:true}).click();
-  const graph=page.locator('.spectrum-figure svg').first();await expect(graph).toHaveAttribute('tabindex','0');await graph.focus();await page.keyboard.press('ArrowRight');
-  await expect(page.locator('.spectral-table-selected')).toHaveCount(1);
+  // The figure can re-render as the answer settles, so retry until a peak is selected.
+  const graph=page.locator('.spectrum-figure svg').first();
+  await expect(async()=>{
+    if(await graph.getAttribute('tabindex')!=='0')await page.getByRole('button',{name:'Highlight IR peaks',exact:true}).click();
+    await expect(graph).toHaveAttribute('tabindex','0',{timeout:1000});await graph.focus();await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.spectral-table-selected')).toHaveCount(1,{timeout:1000});
+  }).toPass({timeout:10000});
   // The selected band shows through its highlighted table row; no separate list.
   await expect(page.locator('.spectrum-selection')).toHaveCount(0);
 
