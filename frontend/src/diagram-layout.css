@@ -299,3 +299,4 @@ svg.resonance-arrow { width:52px; height:14px; flex:0 0 52px; padding:0; margin:
 :root .app-shell .reaction-participant>:first-child{flex:1;display:flex;align-items:center;justify-content:center}
 :root .app-shell .reaction-participant .structure-caption{min-height:38px}
 :root .app-shell .reaction-plus,:root .app-shell .reaction-arrow,:root .app-shell .no-reaction-label{align-self:center;margin-top:0!important;margin-bottom:38px!important}
+.spectrum-figure .spectrum-tick{font-size:9px;opacity:.6}

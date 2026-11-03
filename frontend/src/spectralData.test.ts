@@ -27,3 +27,13 @@ it('preserves a supplied intensity column rather than assigning equal heights',(
  const graph=spectralParts('**MS isotope envelope (calculated)**\n| m/z | Relative intensity (%) | Assignment |\n|---|---|---|\n| 70 | 100 | M |\n| 72 | 64 | M+2 |').find(p=>p.kind);
  expect(graph?.peaks?.map(p=>p.intensity)).toEqual([100,64]);
 });
+
+import {irBand} from './spectralData';
+describe('IR band shapes',()=>{
+  it('reads strength and width tags, else the bond type',()=>{
+    expect(irBand(3300,'O–H stretch · s, broad')).toEqual({strength:.85,width:150});
+    expect(irBand(1715,'C=O stretch · s')).toMatchObject({strength:.85,width:11});
+    expect(irBand(3019,'C–H stretch · w')).toMatchObject({strength:.25});
+    expect(irBand(757,'C–Cl stretch').strength).toBeGreaterThan(irBand(3019,'C–H stretch').strength);
+  });
+});

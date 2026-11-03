@@ -36,14 +36,35 @@ export function spectralParts(text:string):SpectralPart[]{
 }
 
 // Display broadening only: input peak positions remain estimates, not a quantum prediction.
+// IR bands: Lorentzian (condensed-phase) shape. Depth comes from a strength tag in the row
+// (vs/s/m/w, strong/medium/weak) or, failing that, from the bond type; width from a "broad"/"sharp"
+// tag or the bond type (H-bonded O–H ~300 cm⁻¹, N–H ~70, C=O ~18, C–H ~12).
+export function irBand(position:number,label:string){
+  const text=label.toLowerCase();
+  const tagged=/\b(vs|very strong)\b/.test(text)?1:/\b(s|strong)\b/.test(text)?.85:/\b(m|medium)\b/.test(text)?.55:/\b(w|weak)\b/.test(text)?.25:NaN;
+  const oh=/o[–-]h/.test(text),nh=/n[–-]h/.test(text),carbonyl=/c=o|carbonyl/.test(text),ch=/c[–-]h/.test(text),polar=/c[–-](o|cl|f|br|n)|s=o|n=o|no2|p=o/.test(text);
+  const strength=Number.isFinite(tagged)?tagged:oh||carbonyl?.9:polar?.8:nh?.55:ch&&position>2700?.35:.5;
+  const broad=/broad|br\b/.test(text),sharp=/sharp/.test(text);
+  const width=sharp?7:oh&&(broad||position<3500)?150:oh?40:nh?(broad?60:35):broad?40:carbonyl?11:ch&&position>2700?9:polar?12:9;
+  return {strength,width};
+}
 export function lineShape(kind:SpectralKind,peaks:{position:number;label:string;intensity?:number}[],low:number,high:number){
   if(kind==='MS'||!peaks.length)return [];
+  if(kind==='IR'){
+    // Absorbance-like depth (0–0.97); the graph draws it hanging down from a near-100 %T baseline.
+    const bands=peaks.map(peak=>({centre:peak.position,...irBand(peak.position,peak.label)}));
+    return Array.from({length:1400},(_,i)=>{
+      const position=low+(high-low)*i/1399;
+      const depth=bands.reduce((sum,b)=>{const d=(position-b.centre)/b.width;return sum+b.strength/(1+d*d);},0);
+      return {position,value:Math.min(.97,depth)};
+    });
+  }
   const samples=720,values=Array.from({length:samples},(_,i)=>{
     const position=low+(high-low)*i/(samples-1);
     const value=peaks.reduce((sum,peak)=>{
-      const width=kind==='IR'?(/broad|O[–-]H|N[–-]H/i.test(peak.label)?100:18):kind==='¹H NMR'?.025:.4;
+      const width=kind==='¹H NMR'?.025:.4;
       const delta=(position-peak.position)/width;
-      return sum+(kind==='IR'?Math.exp(-delta*delta/2):1/(1+delta*delta));
+      return sum+1/(1+delta*delta);
     },0);
     return {position,value};
   });
