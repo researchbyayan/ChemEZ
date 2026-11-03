@@ -15,8 +15,9 @@ async def test_native_worker_failure_does_not_kill_the_next_answer():
 
 
 async def test_processing_timeout_stops_worker_and_next_request_works():
+    # A structure no other test draws, so no cached result can beat the timeout.
     with pytest.raises(ProcessingError,match='too long'):
-        await process_chemistry('answer','{"blocks":[{"type":"molecule","smiles":"CCO"}]}',timeout=0.001)
+        await process_chemistry('answer','{"blocks":[{"type":"molecule","smiles":"CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCO"}]}',timeout=0.001)
     blocks,failed=await process_chemistry('answer','{"blocks":[{"type":"markdown","text":"Still running."}]}')
     assert not failed and blocks[0]['text']=='Still running.'
 

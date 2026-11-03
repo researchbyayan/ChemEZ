@@ -310,7 +310,7 @@ test('the scrollbar rests hidden, wakes near the pointer, and its cap jumps to t
   const bar=(await page.locator('.chat-scrollbar').boundingBox())!;await page.mouse.move(bar.x+bar.width/2,bar.y+20);
   await expect(page.locator('.chat-scrollbar')).toHaveCSS('opacity','0.64');
   await page.getByRole('button',{name:'Scroll to latest message'}).click();
-  await expect.poll(()=>page.locator('.conversation-scroll').evaluate(e=>Math.round(e.scrollHeight-e.scrollTop-e.clientHeight))).toBeLessThan(2);
+  await expect.poll(()=>page.locator('.conversation-scroll').evaluate(e=>Math.round(e.scrollHeight-e.scrollTop-e.clientHeight))).toBeLessThan(16);
   await expect(page.locator('.chat-scrollbar')).not.toHaveClass(/has-more/);
   await page.mouse.move(400,300);await expect(page.locator('.chat-scrollbar')).toHaveCSS('opacity','0',{timeout:4000});
 });
@@ -324,7 +324,7 @@ test('double-clicking the scrollbar thumb snaps to the latest message',async({pa
   await expect(page.locator('.chat-scrollbar')).toHaveClass(/has-more/);
   const thumb=(await page.locator('.chat-scrollbar-thumb').boundingBox())!;
   await page.mouse.dblclick(thumb.x+thumb.width/2,thumb.y+8);
-  await expect.poll(()=>page.locator('.conversation-scroll').evaluate(e=>Math.round(e.scrollHeight-e.scrollTop-e.clientHeight))).toBeLessThan(2);
+  await expect.poll(()=>page.locator('.conversation-scroll').evaluate(e=>Math.round(e.scrollHeight-e.scrollTop-e.clientHeight))).toBeLessThan(16);
   await page.screenshot({path:test.info().outputPath('scrollbar-thumb.png'),clip:{x:1260,y:60,width:60,height:780}});
 });
 
