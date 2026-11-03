@@ -19,8 +19,21 @@ describe('plain formulas in prose',()=>{
     expect(chemScripts('an alkyl halide (e.g., CH₃Cl) and AlCl₃.')).toBe('an alkyl halide (e.g., $\\ce{CH3Cl}$) and $\\ce{AlCl3}$.');
     expect(chemScripts('With only HCl, nothing happens')).toBe('With only $\\ce{HCl}$, nothing happens');
     expect(chemScripts('sulfate SO₄²⁻ ions')).toBe('sulfate $\\ce{SO4^{2-}}$ ions');
+    expect(chemScripts('44 | CO₂− |')).toBe('44 | $\\ce{CO2^{-}}$ |');
+    expect(chemScripts('the H2O+ ion and NH4+')).toBe('the $\\ce{H2O^{+}}$ ion and $\\ce{NH4^{+}}$');
   });
   it('leaves words, abbreviations and existing math alone',()=>{
     for(const text of ['OK, I see','Use CO and NO carefully? No.','NMR and IR spectra','$\\ce{H2O}$','Benzene does not react'])expect(chemScripts(text)).toBe(text);
+  });
+});
+
+describe('charges written as plain + or −',()=>{
+  it('lifts a trailing sign after a formula into a superscript charge',()=>{
+    expect(chemScripts('44 | CO₂− |')).toBe('44 | $\\ce{CO2^{-}}$ |');
+    expect(chemScripts('the H2O+ ion and NH4+')).toBe('the $\\ce{H2O^{+}}$ ion and $\\ce{NH4^{+}}$');
+  });
+  it('leaves molecular-ion notation and hyphenated words alone',()=>{
+    for(const text of ['62 (M+)','C=C double bond'])expect(chemScripts(text)).toBe(text);
+    expect(chemScripts('a H2O-soluble salt')).toBe('a $\\ce{H2O}$-soluble salt');
   });
 });
