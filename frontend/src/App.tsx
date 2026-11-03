@@ -422,7 +422,7 @@ export default function App(){
             <div ref={end}/>
           </div>}
         </div>
-        {messages.length>0&&<ChatScrollbar target={scroll} onLatest={()=>{follows.current=true;scroll.current?.scrollTo({top:scroll.current.scrollHeight,behavior:'smooth'});setShowJump(false);}}/>}
+        {messages.length>0&&<ChatScrollbar target={scroll} onLatest={()=>{follows.current=true;const element=scroll.current;if(element){element.addEventListener('scrollend',()=>{if(follows.current)element.scrollTop=element.scrollHeight;},{once:true});element.scrollTo({top:element.scrollHeight,behavior:'smooth'});}setShowJump(false);}}/>}
         <div ref={composerArea} className={'composer-area'+(composerCompact?' composer-compact':'')+(!composerDocked?' composer-floating':'')+(replyTarget?' composer-reply':'')} onFocusCapture={()=>{clearTimeout(composerCollapseTimer.current);setComposerCompact(false);}} onBlurCapture={()=>{clearTimeout(composerCollapseTimer.current);composerCollapseTimer.current=setTimeout(()=>{if(!composerNear.current&&!composerArea.current?.contains(document.activeElement))setComposerCompact(true);},250);}}>
 
 
