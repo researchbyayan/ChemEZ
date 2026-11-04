@@ -95,8 +95,11 @@ try{
   await expect(page.getByRole('img',{name:'Ethanol molecular structure',exact:true})).toBeVisible({timeout:30000});
   await expect(page.getByRole('group',{name:'Esterification'})).toBeVisible();
   const participant=page.getByRole('group',{name:'Esterification'}).locator('.structure-trigger').first();
-  await participant.hover();
-  await expect(page.getByRole('dialog',{name:'ethanol molecular structure details'})).toContainText('C2H6O');
+  // The answer may still be settling (layout, typesetting), so re-hover until the details open.
+  await expect(async()=>{
+    await page.mouse.move(5,5);await participant.hover();
+    await expect(page.getByRole('dialog',{name:'ethanol molecular structure details'})).toContainText('C2H6O',{timeout:2500});
+  }).toPass({timeout:20000});
   await page.keyboard.press('Escape');
   await participant.focus();
   await expect(page.getByRole('dialog',{name:'ethanol molecular structure details'}).getByRole('button',{name:'Save PNG',exact:true})).toBeVisible();
