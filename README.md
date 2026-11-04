@@ -34,6 +34,8 @@ ChemEZ is unsigned, so macOS and Windows may show an initial security warning. F
 
 **Updates:** ChemEZ checks GitHub for a new release and offers it at most once a week. On Windows and Linux it downloads in the background and installs when you restart. On Mac it downloads the new DMG and opens it for you to drag into Applications (installing in place needs an Apple-signed app). If you have the 0.1.2 beta, install 0.1.3 by hand once; it can't update itself.
 
+> **Coming in the next release:** spectra graphs, 24 labelled mechanism families with fishhook arrows, typeset formulas, offline calculations, DOI-resolved references, and a refreshed chat window with a floating message box. These are on `main` now; [build from source](#build-from-source) to try them before the installers update.
+
 ## See it in action
 
 <div align="center">
@@ -64,6 +66,7 @@ The reaction drawing shows acetone and methylmagnesium bromide forming tert-buta
 | **One molecule** | One validated 2D drawing, its name and formula, with a 3D view when available. |
 | **A reaction** | Structures arranged as a scheme with reagents, conditions, and products. |
 | **A mechanism** | Ordered intermediates, supported bond changes, lone pairs, and curved arrows. |
+| **Spectra** | IR (% transmittance), ¹H and ¹³C NMR, and mass-spectrum graphs plotted from the answer's peak tables, with labelled peaks you can highlight. |
 | **An image explanation** | An attached, pasted, or dropped image interpreted by a capable model or a separate image reader. |
 
 Choose **Quick answer**, **Explain**, or **Mechanism** for the amount of detail you need. Chemistry level lives in Settings. Equations, Markdown, syntax highlighting, fonts, and chemical notation are bundled locally.
@@ -73,7 +76,11 @@ Choose **Quick answer**, **Explain**, or **Mechanism** for the amount of detail 
 - **Answer-first layout.** Molecules and schemes appear with the explanation, with a compact structure menu on hover.
 - **Chemistry checks.** RDKit validates supported structures, molecular formulas, charge, and stereochemistry before display. Supported electron-flow transitions receive additional checks.
 - **Room to inspect.** Explore a structure in 3D, read its IUPAC name and formula, or save a PNG.
-- **A real workspace.** Restore chats, search, keep a structure library, copy answers, and delete your data.
+- **Electron flow you can follow.** 24 built-in mechanism families (S<sub>N</sub>1, S<sub>N</sub>2, E1, E2, aldol, Diels–Alder, radical halogenation, acid–base and more), each labelled, with curved arrows centred on the bonds they break and half-headed fishhook arrows for single electrons.
+- **Formulas that read like a textbook.** Formulas and charges in prose are typeset (CO<sub>2</sub>, NH<sub>4</sub><sup>+</sup>), and reaction cards use academic type with italic conditions.
+- **Offline calculations.** Unit conversions, formula masses, and equation balancing run locally before the model answers.
+- **Sources you can open.** The References panel resolves cited papers to DOI links through Crossref, sending only the citation title.
+- **A real workspace.** Chats name themselves from your first question, reopen at the latest message, and can be searched. Reply to a specific answer, keep a structure library, copy answers, and delete your data.
 
 ## Connect a model
 
