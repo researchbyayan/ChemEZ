@@ -31,3 +31,10 @@ it('renders a collapsed spectral table as a table rather than raw pipes',()=>{
  const html=render({type:'markdown',text:'| δ (ppm) | Assignment ||---|---|| 165 | CO3 |'});
  expect(html).toContain('<table>');expect(html).toContain('<th>');expect(html).toContain('165');expect(html).not.toContain('||---');
 });
+
+it('typesets plain reagents in the card font: abbreviations, counts and charges, no KaTeX',()=>{
+ const html=render({id:'r',type:'reaction',caption:'Grignard',reactants:[{smiles:'CC(C)=O',label:'Acetone',svg:'<svg/>'}],products:[{smiles:'CC(C)(C)O',label:'tert-Butanol',svg:'<svg/>'}],reagents:'1. Et2O; 2. H3O+',conditions:''});
+ const reagents=html.slice(html.indexOf('reaction-reagents'));
+ expect(reagents).toContain('Et<sub>2</sub></span>O');expect(reagents).toContain('H<sub>3</sub></span>O<sup>+</sup>');
+ expect(reagents.slice(0,400)).not.toContain('katex');
+});

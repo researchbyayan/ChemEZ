@@ -58,12 +58,16 @@ function StepLabel({text}:{text:string}){
 }
 // "SN2" → S with a subscript N, then 2; other families as written.
 function familyLabel(family:string){const m=/^S(N)(1|2|Ar)$/.exec(family);return m?<>S<sub>N</sub>{m[2]}</>:family;}
-// Reagent text: inline math when the model used it, otherwise subscript formula counts (AlCl3 -> AlCl₃).
+// Reagent text: inline math when the model wrote it; otherwise the card's own type with subscript
+// counts and superscript charges (AlCl3 -> AlCl₃, Et2O -> Et₂O, H3O+ -> H₃O⁺), so one line never
+// mixes KaTeX's serif with the sans-serif around it.
 function ChemText({text}:{text:string}){
-  text=chemScripts(text);
+  if(/[$\\]/.test(text))text=chemScripts(text);
   if(/[$\\]/.test(text))return <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[[rehypeKatex,{trust:false,strict:'ignore',throwOnError:false,maxExpand:1000,maxSize:20}]]} skipHtml components={{p:({children})=><>{children}</>}}>{text}</ReactMarkdown>;
   text=chemArrows(text);
-  return <>{text.split(/((?:[A-Z][a-z]?|\))\d+)/).map((part,index)=>{const match=part.match(/^((?:[A-Z][a-z]?|\)))(\d+)$/);return match&&!(match[1]==='E'&&/^[12]$/.test(match[2]))?<span key={index}>{match[1]}<sub>{match[2]}</sub></span>:part;})}</>;
+  return <>{text.split(/((?:[A-Z][a-z]?|\))\d+|(?<=[A-Za-z\d)\]])[+\u2212-](?=$|[\s;,)]))/).map((part,index)=>{
+    if(/^[+\u2212-]$/.test(part))return <sup key={index}>{part==='+'?'+':'\u2212'}</sup>;
+    const match=part.match(/^((?:[A-Z][a-z]?|\)))(\d+)$/);return match&&!(match[1]==='E'&&/^[12]$/.test(match[2]))?<span key={index}>{match[1]}<sub>{match[2]}</sub></span>:part;})}</>;
 }
 function CopyValue({label,value,children,onError}:{label:string;value:string;children:ReactNode;onError:(text:string)=>void}){
   const [copied,setCopied]=useState(false);
