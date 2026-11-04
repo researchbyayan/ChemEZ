@@ -529,6 +529,7 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
         return ' '.join(w if any(c.isupper() or c.isdigit() for c in w) else w[:1].upper()+w[1:] for w in words) if len(words)>=2 else ''
 
     GENERIC=re.compile(r'^(none|n/?a|(general |basic |intro(ductory)? )?(chemistry|chem)( (chat|help|question|questions|tutor|tutoring|session|conversation|basics|discussion))?|(chemistry )?(chat|greeting|greetings|hello|hi|conversation|new chat|untitled)( chat)?)$',re.I)
+    casual_titles=set()  # chats named from small talk, renamed at their first chemistry question
     def generic_title(title):
         """Names that say nothing about the chat's topic."""
         return not title or bool(GENERIC.match(title.strip()))
@@ -928,16 +929,20 @@ def create_app(directory: Path, token: str, credentials=None, provider_factory=P
                 asked_texts=[(m['content'].get('text','') if isinstance(m['content'],dict) else str(m['content']))[:160] for m in store.messages(cid) if m['role']=='user']
                 # Until the chat has a real topic name (it still shows the first question, or a generic
                 # name such as "Chemistry Chat"), try again after every question; then every 5 questions.
-                unnamed=not store.renamed(cid) and (old_title.strip()==(asked_texts[0].strip()[:80] if asked_texts else '') or generic_title(old_title))
+                unnamed=not store.renamed(cid) and (cid in casual_titles or old_title.strip()==(asked_texts[0].strip()[:80] if asked_texts else '') or generic_title(old_title))
                 if decisions() and (asked==1 or unnamed or asked%5==0) and any(block['type']!='error' for block in blocks):
                     try:
-                        prompt=('Name this chemistry chat in 2 or 3 words, Title Case, no quotes or punctuation, naming its chemistry topic (a compound, reaction or concept). If there is no chemistry topic yet, reply NONE. Cover the whole chat but lean toward the latest questions'
+                        prompt=('Name this chemistry chat in 2 or 3 words, Title Case, no quotes or punctuation, naming its chemistry topic (a compound, reaction or concept). If there is no chemistry topic yet (a greeting or small talk), reply CASUAL: followed by a 2 or 3 word Title Case name for what was said, such as CASUAL: Friendly Greeting. Cover the whole chat but lean toward the latest questions'
                                 +(f'; the current name is "{old_title}", so give a clearly different name that shows where the chat has moved' if asked>1 else '')+'.\n'
                                 +(f'Earlier questions:\n'+'\n'.join(asked_texts[:-5])[-1200:]+'\n' if len(asked_texts)>5 else '')
                                 +'Latest questions:\n'+'\n'.join(asked_texts[-5:]))
-                        title=chat_title(await ask_plain(config,key,prompt))
-                        if title and not generic_title(title):
+                        reply=(await ask_plain(config,key,prompt) or '').strip()
+                        # A casual name is polished now but replaced once the chat has a chemistry topic.
+                        casual=bool(re.match(r'casual\s*:',reply,re.I))
+                        title=chat_title(re.sub(r'^casual\s*:\s*','',reply,flags=re.I))
+                        if title and (casual or not generic_title(title)):
                             store.auto_title(cid,title)
+                            (casual_titles.add if casual else casual_titles.discard)(cid)
                     except Exception:
                         pass
             except (ProviderError,ProcessingError) as exc:
