@@ -7,7 +7,7 @@ async function mockDesktop(page:import('@playwright/test').Page){
     const svg='<svg xmlns="http://www.w3.org/2000/svg" width="600" height="340" viewBox="0 0 600 340"><path d="M 180 200 L 290 140 L 400 200" stroke="#243b3c" stroke-width="3" fill="none"/><text x="405" y="205" font-size="24" fill="#b42c2c">OH</text></svg>';
     let listener:(event:unknown)=>void=()=>{};
     const blocks=[{id:'b1',type:'markdown',text:'Ethanol is an alcohol. Its formula is $\\ce{C2H6O}$.\n\n$$\n\\ce{CH3CH2OH + 3O2 -> 2CO2 + 3H2O}\n$$\n\n```python\nprint("chemistry")\n```'},{id:'b2',type:'molecule',label:'Ethanol',iupac_name:'ethanol',smiles:'CCO',formula:'C2H6O',svg,encoding:{available:true,shape:[150,3],alphabet:{C:0,O:1,' ':2},one_hot_indices:[0,0,1]}},{id:'b3',type:'markdown',text:'The hydroxyl group makes it polar.'}];
-    let config={config:{provider:'openai',model:'test-model',endpoint:''},has_key:true,warning:''};
+    let config={config:{provider:'openai',model:'test-model',endpoint:''},has_key:!sessionStorage.getItem('no-key'),warning:''};
     let messages:unknown[]=[];
     let turn=0;
     let title='Draw ethanol';let pinned=false;
@@ -434,6 +434,13 @@ test('first launch asks for a chemistry level and sends it with questions',async
   await page.getByRole('button',{name:'Model settings',exact:true}).click();
   await expect(page.getByLabel('Chemistry level')).toHaveValue('graduate');
   await page.screenshot({path:'test-results/level-preference.png'});
+});
+
+test('first launch without a key goes from the level picker to API setup',async({page})=>{
+  await page.addInitScript(()=>{sessionStorage.setItem('fresh-launch','1');sessionStorage.setItem('no-key','1');localStorage.removeItem('chemez-level');});
+  await mockDesktop(page);await page.goto('/');
+  await page.getByRole('radio',{name:/High school/}).click();
+  await expect(page.getByRole('heading',{name:'Model & API'})).toBeVisible();
 });
 
 test('glass effects switch on and off from Settings',async({page})=>{

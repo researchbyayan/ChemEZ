@@ -188,7 +188,7 @@ export default function App(){
   const [glassMode,setGlassMode]=useState<GlassMode>(storedGlassMode);
   useEffect(()=>{try{localStorage.setItem('chemez-glass-effects',glassMode);}catch{/* per session */}document.documentElement.dataset.glass=glassMode;},[glassMode]);
   const [levelOpen,setLevelOpen]=useState(()=>storedLevel()===null);
-  const chooseLevel=(value:Level)=>{setLevel(value);saveLevel(value);setLevelOpen(false);};
+  const chooseLevel=(value:Level)=>{const firstRun=level===null;setLevel(value);saveLevel(value);setLevelOpen(false);if(firstRun&&!(config.ready??config.has_key))setSettings(true);};
   // Repaint after big view changes so the transparent window drops stale pixels (ghosted
   // welcome text). Two frames later, once React and the compositor have committed the change.
   const showingWelcome=messages.length===0;
