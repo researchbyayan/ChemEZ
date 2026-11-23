@@ -12,18 +12,20 @@
 
 <br><br>
 
-<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="https://img.shields.io/badge/download-macOS-0071e3?style=for-the-badge&labelColor=555" alt="Download for macOS"></a>
-<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="https://img.shields.io/badge/download-Windows-0071e3?style=for-the-badge&labelColor=555" alt="Download for Windows"></a>
-<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="https://img.shields.io/badge/download-Linux-0071e3?style=for-the-badge&labelColor=555" alt="Download for Linux"></a>
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="assets/readme-download-macos.svg" width="168" height="34" alt="Download for macOS"></a>
+&nbsp;
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="assets/readme-download-windows.svg" width="168" height="34" alt="Download for Windows"></a>
+&nbsp;
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="assets/readme-download-linux.svg" width="168" height="34" alt="Download for Linux"></a>
 
 <br>
 
-<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="https://img.shields.io/github/v/release/researchbyayan/ChemEZ?label=release&color=0071e3" alt="Latest release"></a>
-<img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0071e3" alt="Platforms: macOS, Windows, Linux">
-<a href="https://github.com/researchbyayan/ChemEZ/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/researchbyayan/ChemEZ/build.yml?branch=main&label=build" alt="Build status"></a>
-<img src="https://img.shields.io/badge/python-3.11-3776ab?logo=python&logoColor=white" alt="Python 3.11">
-<img src="https://img.shields.io/badge/electron-45-47848f?logo=electron&logoColor=white" alt="Electron 45">
-<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-4c1" alt="License: MIT"></a>
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="https://img.shields.io/github/v/release/researchbyayan/ChemEZ?label=release&color=5CCD98&labelColor=14241B" alt="Latest release"></a>
+<img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-5CCD98?labelColor=14241B" alt="Platforms: macOS, Windows, Linux">
+<a href="https://github.com/researchbyayan/ChemEZ/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/researchbyayan/ChemEZ/build.yml?branch=main&label=build&labelColor=14241B" alt="Build status"></a>
+<img src="https://img.shields.io/badge/python-3.11-5CCD98?logo=python&logoColor=white&labelColor=14241B" alt="Python 3.11">
+<img src="https://img.shields.io/badge/electron-45-5CCD98?logo=electron&logoColor=white&labelColor=14241B" alt="Electron 45">
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-5CCD98?labelColor=14241B" alt="License: MIT"></a>
 
 <br><br>
 
