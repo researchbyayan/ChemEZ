@@ -80,8 +80,10 @@ try{
   // A fresh profile is asked for its chemistry level first.
   const welcome=page.getByRole('dialog',{name:'Welcome to ChemEZ'});
   if(await welcome.isVisible().catch(()=>false)||await welcome.waitFor({timeout:5000}).then(()=>true,()=>false))await welcome.getByRole('radio',{name:/University/}).click();
-  await page.getByRole('button',{name:/Model settings/}).click();
-  await expect(page.getByRole('heading',{name:'Model & API'})).toBeVisible();
+  // First launch opens Model & API right after the level picker; open it only if it is not already up.
+  const apiHeading=page.getByRole('heading',{name:'Model & API'});
+  if(!await apiHeading.waitFor({timeout:3000}).then(()=>true,()=>false))await page.getByRole('button',{name:/Model settings/}).click();
+  await expect(apiHeading).toBeVisible();
   await page.getByRole('radio',{name:localOllama?/Ollama/:/Custom/}).click();
   if(localOllama){await expect(page.getByLabel('API key',{exact:true})).toHaveCount(0);}
   else{await page.getByLabel('API base URL').fill(endpoint);await page.getByLabel('API key',{exact:true}).fill('smoke-test-key');}

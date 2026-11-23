@@ -12,11 +12,11 @@
 
 <br><br>
 
-<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="assets/readme-download-macos.svg" width="184" height="34" alt="Download for macOS"></a>
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="assets/readme-get-macos.svg" width="184" height="34" alt="Download for macOS"></a>
 &nbsp;
-<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="assets/readme-download-windows.svg" width="184" height="34" alt="Download for Windows"></a>
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="assets/readme-get-windows.svg" width="184" height="34" alt="Download for Windows"></a>
 &nbsp;
-<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="assets/readme-download-linux.svg" width="184" height="34" alt="Download for Linux"></a>
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="assets/readme-get-linux.svg" width="184" height="34" alt="Download for Linux"></a>
 
 <br>
 
