@@ -12,6 +12,21 @@
 
 <br><br>
 
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="https://img.shields.io/badge/download-macOS-0071e3?style=for-the-badge&labelColor=555" alt="Download for macOS"></a>
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="https://img.shields.io/badge/download-Windows-0071e3?style=for-the-badge&labelColor=555" alt="Download for Windows"></a>
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="https://img.shields.io/badge/download-Linux-0071e3?style=for-the-badge&labelColor=555" alt="Download for Linux"></a>
+
+<br>
+
+<a href="https://github.com/researchbyayan/ChemEZ/releases/latest"><img src="https://img.shields.io/github/v/release/researchbyayan/ChemEZ?label=release&color=0071e3" alt="Latest release"></a>
+<img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0071e3" alt="Platforms: macOS, Windows, Linux">
+<a href="https://github.com/researchbyayan/ChemEZ/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/researchbyayan/ChemEZ/build.yml?branch=main&label=build" alt="Build status"></a>
+<img src="https://img.shields.io/badge/python-3.11-3776ab?logo=python&logoColor=white" alt="Python 3.11">
+<img src="https://img.shields.io/badge/electron-45-47848f?logo=electron&logoColor=white" alt="Electron 45">
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-4c1" alt="License: MIT"></a>
+
+<br><br>
+
 <a href="https://www.producthunt.com/products/chemez?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-chemez" target="_blank" rel="noopener noreferrer" title="ChemEZ on Product Hunt"><img alt="ChemEZ - Your desktop AI chemistry tutor. | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1299602&amp;theme=light&amp;t=1793719261006"></a>
 <a href="https://devhunt.org/tool/chemez" target="_blank" rel="noopener noreferrer" title="ChemEZ on DevHunt"><img src="https://devhunt.org/badge/chemez.svg" alt="ChemEZ - Featured on DevHunt" width="220" height="54"></a>
 
